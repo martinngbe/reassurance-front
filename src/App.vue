@@ -9,7 +9,6 @@ const authenticated = ref(false)
 const theme = ref<Theme>('dark')
 const accentColor = ref('#6C5CE7')
 
-// Palette prédéfinie (pour le sélecteur dans le header)
 const palettes = [
   { name: 'Violet', value: '#6C5CE7' },
   { name: 'Bleu', value: '#0EA5E9' },
@@ -17,6 +16,19 @@ const palettes = [
   { name: 'Rose', value: '#F43F5E' },
   { name: 'Ambre', value: '#F59E0B' },
 ]
+
+// ✅ Applique la classe "dark" sur <html> pour que tous les composants (même fixed) en héritent
+watch(
+  theme,
+  (newTheme) => {
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  },
+  { immediate: true }
+)
 
 function handleLogin() {
   authenticated.value = true
@@ -28,7 +40,8 @@ function handleLogout() {
 </script>
 
 <template>
-  <div :class="{ dark: theme === 'dark' }" class="min-h-screen">
+  <!-- Plus besoin de :class="{ dark: ... }" ici, c'est géré sur <html> -->
+  <div class="min-h-screen">
     <Login
       v-if="!authenticated"
       :theme="theme"
