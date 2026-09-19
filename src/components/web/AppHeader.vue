@@ -1,15 +1,15 @@
 <script setup lang="ts">
-defineProps<{
-  theme: 'light' | 'dark'
-  accentColor: string
-  palettes: { name: string; value: string }[]
-}>()
+      defineProps<{
+        theme: 'light' | 'dark'
+        accentColor: string
+        palettes: { name: string; value: string }[]
+      }>()
 
-const emit = defineEmits<{
-  (e: 'update:theme', value: 'light' | 'dark'): void
-  (e: 'update:accent-color', value: string): void
-  (e: 'logout'): void
-}>()
+      const emit = defineEmits<{
+        (e: 'update:theme', value: 'light' | 'dark'): void
+        (e: 'update:accent-color', value: string): void
+        (e: 'logout'): void
+      }>()
 </script>
 
 <template>

@@ -10,7 +10,6 @@ const props = withDefaults(
     right?: ZoneConfig | boolean
     footer?: ZoneConfig | boolean
     splitterSize?: string
-    // ✨ Props de visibilité séparées (prioritaires sur config.visible)
     headerVisible?: boolean
     leftVisible?: boolean
     rightVisible?: boolean
@@ -56,7 +55,7 @@ interface ResolvedZone {
 function resolve(
   config: ZoneConfig | boolean | undefined,
   defaults: { size: string; minSize: string; collapsedSize: string },
-  visibleOverride: boolean | undefined, // ← NOUVEAU : priorité au v-model
+  visibleOverride: boolean | undefined,
 ): ResolvedZone {
   if (config === undefined || config === false) {
     return { enabled: false, visible: false, fixed: false, ...defaults }
@@ -64,14 +63,14 @@ function resolve(
   if (config === true) {
     return {
       enabled: true,
-      visible: visibleOverride ?? true, // ← utilise le v-model s'il existe
+      visible: visibleOverride ?? true,
       fixed: false,
       ...defaults,
     }
   }
   return {
     enabled: true,
-    visible: visibleOverride ?? config.visible ?? true, // ← priorité v-model
+    visible: visibleOverride ?? config.visible ?? true,
     size: config.size ?? defaults.size,
     minSize: config.minSize ?? defaults.minSize,
     fixed: config.fixed ?? false,
@@ -86,7 +85,6 @@ const zones = computed(() => ({
   footer: resolve(props.footer, DEFAULTS.footer, props.footerVisible),
 }))
 
-// ... (reste du script inchangé : drag, toggle, gridStyle)
 // ==================== SPLITTER DRAG ====================
 type SplitterDir = 'top' | 'bottom' | 'left' | 'right'
 
@@ -94,7 +92,6 @@ const activeSplitter = ref<SplitterDir | null>(null)
 const startPos = ref(0)
 const startSizePx = ref(0)
 
-// Tailles courantes (pour le resize)
 const currentSizes = ref({
   header: '',
   left: '',
@@ -212,16 +209,19 @@ const gridStyle = computed(() => {
 </script>
 
 <template>
-  <div class="tlayout" :style="gridStyle">
+  <div class="tlayout fixed inset-0 overflow-hidden" :style="gridStyle">
     <!-- ================= HEADER ================= -->
     <header
       v-if="zones.header.enabled"
-      class="tlayout__zone tlayout__header"
+      class="tlayout__zone relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm"
       :class="{ 'tlayout__zone--collapsed': !zones.header.visible }"
       style="grid-row: 1; grid-column: 1 / -1"
     >
       <button
-        class="tlayout__toggle tlayout__toggle--header"
+        class="tlayout__toggle absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-primary-contrast shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 bottom-1.5 right-3"
+        :class="{
+          '!bottom-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-b-lg shadow-[0_2px_8px_rgb(0_0_0/0.1)] hover:!scale-105': !zones.header.visible
+        }"
         :title="zones.header.visible ? 'Masquer' : 'Afficher'"
         @click="toggle('top')"
       >
@@ -239,8 +239,8 @@ const gridStyle = computed(() => {
         </svg>
       </button>
       <div
-        class="tlayout__content custom-scrollbar"
-        :class="zones.header.visible ? 'opacity-100' : 'pointer-events-none opacity-0'"
+        class="h-full overflow-auto p-3 transition-opacity duration-200 custom-scrollbar"
+        :class="zones.header.visible ? 'opacity-100' : 'opacity-0 pointer-events-none p-0'"
       >
         <slot name="header" />
       </div>
@@ -249,8 +249,8 @@ const gridStyle = computed(() => {
     <!-- SPLITTER HAUT -->
     <div
       v-if="zones.header.enabled && zones.header.visible && !zones.header.fixed"
-      class="splitter splitter-h"
-      :class="{ 'splitter--active': activeSplitter === 'top' }"
+      class="splitter splitter-h relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500"
+      :class="{ '!bg-primary-500': activeSplitter === 'top' }"
       style="grid-row: 2; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'top')"
     />
@@ -258,12 +258,15 @@ const gridStyle = computed(() => {
     <!-- ================= LEFT ================= -->
     <aside
       v-if="zones.left.enabled"
-      class="tlayout__zone tlayout__left"
+      class="tlayout__zone relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-r border-neutral-200 dark:border-neutral-800"
       :class="{ 'tlayout__zone--collapsed': !zones.left.visible }"
       style="grid-row: 3; grid-column: 1"
     >
       <button
-        class="tlayout__toggle tlayout__toggle--left"
+        class="tlayout__toggle absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-primary-contrast shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-2 right-2"
+        :class="{
+          '!top-1/2 !-translate-y-1/2 !right-0 w-7 h-12 rounded-r-lg rounded-l-none shadow-[2px_0_8px_rgb(0_0_0/0.1)] hover:!scale-105': !zones.left.visible
+        }"
         :title="zones.left.visible ? 'Masquer' : 'Afficher'"
         @click="toggle('left')"
       >
@@ -281,8 +284,8 @@ const gridStyle = computed(() => {
         </svg>
       </button>
       <div
-        class="tlayout__content custom-scrollbar"
-        :class="zones.left.visible ? 'opacity-100' : 'pointer-events-none opacity-0'"
+        class="h-full overflow-auto p-3 transition-opacity duration-200 custom-scrollbar"
+        :class="zones.left.visible ? 'opacity-100' : 'opacity-0 pointer-events-none p-0'"
       >
         <slot name="left" />
       </div>
@@ -291,22 +294,25 @@ const gridStyle = computed(() => {
     <!-- SPLITTER GAUCHE -->
     <div
       v-if="zones.left.enabled && zones.left.visible && !zones.left.fixed"
-      class="splitter splitter-v"
-      :class="{ 'splitter--active': activeSplitter === 'left' }"
+      class="splitter splitter-v relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500"
+      :class="{ '!bg-primary-500': activeSplitter === 'left' }"
       style="grid-row: 3; grid-column: 2"
       @mousedown="startDrag($event, 'left')"
     />
 
-    <!-- ================= MAIN (toujours visible) ================= -->
-    <main class="tlayout__main custom-scrollbar" style="grid-row: 3; grid-column: 3">
+    <!-- ================= MAIN ================= -->
+    <main
+      class="overflow-auto bg-white dark:bg-neutral-900 p-4 custom-scrollbar"
+      style="grid-row: 3; grid-column: 3"
+    >
       <slot />
     </main>
 
     <!-- SPLITTER DROIT -->
     <div
       v-if="zones.right.enabled && zones.right.visible && !zones.right.fixed"
-      class="splitter splitter-v"
-      :class="{ 'splitter--active': activeSplitter === 'right' }"
+      class="splitter splitter-v relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500"
+      :class="{ '!bg-primary-500': activeSplitter === 'right' }"
       style="grid-row: 3; grid-column: 4"
       @mousedown="startDrag($event, 'right')"
     />
@@ -314,12 +320,15 @@ const gridStyle = computed(() => {
     <!-- ================= RIGHT ================= -->
     <aside
       v-if="zones.right.enabled"
-      class="tlayout__zone tlayout__right"
+      class="tlayout__zone relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-l border-neutral-200 dark:border-neutral-800"
       :class="{ 'tlayout__zone--collapsed': !zones.right.visible }"
       style="grid-row: 3; grid-column: 5"
     >
       <button
-        class="tlayout__toggle tlayout__toggle--right"
+        class="tlayout__toggle absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-primary-contrast shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-2 left-2"
+        :class="{
+          '!top-1/2 !-translate-y-1/2 !left-0 w-7 h-12 rounded-l-lg rounded-r-none shadow-[-2px_0_8px_rgb(0_0_0/0.1)] hover:!scale-105': !zones.right.visible
+        }"
         :title="zones.right.visible ? 'Masquer' : 'Afficher'"
         @click="toggle('right')"
       >
@@ -337,8 +346,8 @@ const gridStyle = computed(() => {
         </svg>
       </button>
       <div
-        class="tlayout__content custom-scrollbar"
-        :class="zones.right.visible ? 'opacity-100' : 'pointer-events-none opacity-0'"
+        class="h-full overflow-auto p-3 transition-opacity duration-200 custom-scrollbar"
+        :class="zones.right.visible ? 'opacity-100' : 'opacity-0 pointer-events-none p-0'"
       >
         <slot name="right" />
       </div>
@@ -347,8 +356,8 @@ const gridStyle = computed(() => {
     <!-- SPLITTER BAS -->
     <div
       v-if="zones.footer.enabled && zones.footer.visible && !zones.footer.fixed"
-      class="splitter splitter-h"
-      :class="{ 'splitter--active': activeSplitter === 'bottom' }"
+      class="splitter splitter-h relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500"
+      :class="{ '!bg-primary-500': activeSplitter === 'bottom' }"
       style="grid-row: 4; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'bottom')"
     />
@@ -356,12 +365,15 @@ const gridStyle = computed(() => {
     <!-- ================= FOOTER ================= -->
     <footer
       v-if="zones.footer.enabled"
-      class="tlayout__zone tlayout__footer"
+      class="tlayout__zone relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm"
       :class="{ 'tlayout__zone--collapsed': !zones.footer.visible }"
       style="grid-row: 5; grid-column: 1 / -1"
     >
       <button
-        class="tlayout__toggle tlayout__toggle--footer"
+        class="tlayout__toggle absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-primary-contrast shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-1.5 right-3"
+        :class="{
+          '!top-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-t-lg shadow-[0_-2px_8px_rgb(0_0_0/0.1)] hover:!scale-105': !zones.footer.visible
+        }"
         :title="zones.footer.visible ? 'Masquer' : 'Afficher'"
         @click="toggle('bottom')"
       >
@@ -379,8 +391,8 @@ const gridStyle = computed(() => {
         </svg>
       </button>
       <div
-        class="tlayout__content custom-scrollbar"
-        :class="zones.footer.visible ? 'opacity-100' : 'pointer-events-none opacity-0'"
+        class="h-full overflow-auto p-3 transition-opacity duration-200 custom-scrollbar"
+        :class="zones.footer.visible ? 'opacity-100' : 'opacity-0 pointer-events-none p-0'"
       >
         <slot name="footer" />
       </div>
@@ -389,194 +401,7 @@ const gridStyle = computed(() => {
 </template>
 
 <style scoped>
-.tlayout {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-}
-
-/* ============ ZONES ============ */
-.tlayout__zone {
-  position: relative;
-  overflow: hidden;
-  /* Même fond que la zone principale */
-  background-color: rgb(var(--tw-neutral-0, 255 255 255));
-}
-
-:is(.dark) .tlayout__zone {
-  background-color: rgb(var(--tw-neutral-900, 23 23 23) / 0.5);
-}
-
-.tlayout__header,
-.tlayout__footer {
-  border-color: rgb(var(--tw-neutral-200, 229 229 229));
-  background-color: rgb(var(--tw-neutral-0, 255 255 255));
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
-}
-
-:is(.dark) .tlayout__header,
-:is(.dark) .tlayout__footer {
-  background-color: rgb(var(--tw-neutral-900, 23 23 23));
-  border-color: rgb(var(--tw-neutral-800, 38 38 38));
-}
-
-.tlayout__header {
-  border-bottom-width: 1px;
-}
-.tlayout__footer {
-  border-top-width: 1px;
-}
-.tlayout__left {
-  border-right-width: 1px;
-  border-color: rgb(var(--tw-neutral-200, 229 229 229));
-}
-.tlayout__right {
-  border-left-width: 1px;
-  border-color: rgb(var(--tw-neutral-200, 229 229 229));
-}
-
-:is(.dark) .tlayout__left,
-:is(.dark) .tlayout__right {
-  border-color: rgb(var(--tw-neutral-800, 38 38 38));
-}
-
-.tlayout__main {
-  overflow: auto;
-  background-color: rgb(var(--tw-neutral-0, 255 255 255));
-  padding: 1rem;
-}
-
-:is(.dark) .tlayout__main {
-  background-color: rgb(var(--tw-neutral-900, 23 23 23));
-}
-
-.tlayout__content {
-  height: 100%;
-  overflow: auto;
-  padding: 0.75rem;
-  transition: opacity 0.2s ease;
-}
-
-.tlayout__zone--collapsed .tlayout__content {
-  padding: 0;
-}
-
-/* ============ TOGGLES ============ */
-.tlayout__toggle {
-  position: absolute;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 9999px;
-  background-color: rgb(var(--tw-primary-500, 99 102 241));
-  color: rgb(var(--tw-primary-contrast, 255 255 255));
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
-  transition: all 0.25s ease;
-  cursor: pointer;
-  border: none;
-}
-
-.tlayout__toggle:hover {
-  background-color: rgb(var(--tw-primary-600, 79 70 229));
-  transform: scale(1.15);
-}
-
-.tlayout__toggle:active {
-  transform: scale(0.9);
-}
-
-/* Positionnement par zone */
-.tlayout__toggle--header {
-  bottom: 6px;
-  right: 12px;
-}
-.tlayout__toggle--footer {
-  top: 6px;
-  right: 12px;
-}
-.tlayout__toggle--left {
-  top: 8px;
-  right: 8px;
-}
-.tlayout__toggle--right {
-  top: 8px;
-  left: 8px;
-}
-
-/* État collapsed → tab allongé centré */
-.tlayout__zone--collapsed .tlayout__toggle--left,
-.tlayout__zone--collapsed .tlayout__toggle--right {
-  top: 50%;
-  width: 28px;
-  height: 48px;
-  border-radius: 0 8px 8px 0;
-  box-shadow: 2px 0 8px rgb(0 0 0 / 0.1);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle--left {
-  right: 0;
-  transform: translateY(-50%);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle--right {
-  left: 0;
-  border-radius: 8px 0 0 8px;
-  box-shadow: -2px 0 8px rgb(0 0 0 / 0.1);
-  transform: translateY(-50%);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle--header {
-  bottom: 0;
-  right: 50%;
-  transform: translateX(50%);
-  width: 48px;
-  height: 24px;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle--footer {
-  top: 0;
-  right: 50%;
-  transform: translateX(50%);
-  width: 48px;
-  height: 24px;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 -2px 8px rgb(0 0 0 / 0.1);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle:hover {
-  transform: translateY(-50%) scale(1.05);
-}
-
-.tlayout__zone--collapsed .tlayout__toggle--header:hover,
-.tlayout__zone--collapsed .tlayout__toggle--footer:hover {
-  transform: translateX(50%) scale(1.05);
-}
-
-/* ============ SPLITTERS ============ */
-.splitter {
-  position: relative;
-  background-color: rgb(var(--tw-primary-200, 199 210 254) / 0.5);
-  transition: background-color 0.15s ease;
-  z-index: 10;
-}
-
-.splitter:hover,
-.splitter--active {
-  background-color: rgb(var(--tw-primary-500, 99 102 241));
-}
-
-.splitter-v {
-  cursor: col-resize;
-}
-.splitter-h {
-  cursor: row-resize;
-}
-
+/* ============ SPLITTERS (pseudo-éléments non gérés par Tailwind) ============ */
 .splitter::after {
   content: '';
   position: absolute;
@@ -587,7 +412,7 @@ const gridStyle = computed(() => {
 }
 
 .splitter:hover::after,
-.splitter--active::after {
+.splitter.splitter--active::after {
   opacity: 1;
 }
 
@@ -607,7 +432,7 @@ const gridStyle = computed(() => {
   transform: translate(-50%, -50%);
 }
 
-/* ============ SCROLLBAR DYNAMIQUE ============ */
+/* ============ SCROLLBAR (non géré par Tailwind) ============ */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--tw-primary-500, 99 102 241)) transparent;

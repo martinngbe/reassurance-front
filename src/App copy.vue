@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { useTheme } from './theme/useTheme'
+import { useTheme } from './theme/useTheme.ts'
 import type {
   CheckboxModel,
   Option,
@@ -9,7 +9,7 @@ import type {
   TableRow,
   SortState,
   ZoneConfig,
-} from './components/forms/common'
+} from './components/forms/common.ts'
 
 // ==================== THÈME ====================
 import ThemePicker from './components/theme/ThemePicker.vue'

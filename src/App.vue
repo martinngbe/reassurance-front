@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import Login from './components/Login.vue'
-import EcranPrincipal from './components/EcranPrincipal.vue'
+import EcranPrincipal from './components/web/EcranPrincipal.vue'
 
 type Theme = 'light' | 'dark'
 
@@ -10,11 +10,11 @@ const theme = ref<Theme>('dark')
 const accentColor = ref('#6C5CE7')
 
 const palettes = [
-  { name: 'Violet', value: '#6C5CE7' },
-  { name: 'Bleu', value: '#0EA5E9' },
+  { name: 'Violet'  , value: '#6C5CE7' },
+  { name: 'Bleu'    , value: '#0EA5E9' },
   { name: 'Émeraude', value: '#10B981' },
-  { name: 'Rose', value: '#F43F5E' },
-  { name: 'Ambre', value: '#F59E0B' },
+  { name: 'Rose'    , value: '#F43F5E' },
+  { name: 'Ambre'   , value: '#F59E0B' },
 ]
 
 // ✅ Applique la classe "dark" sur <html> pour que tous les composants (même fixed) en héritent
@@ -43,7 +43,7 @@ function handleLogout() {
   <!-- Plus besoin de :class="{ dark: ... }" ici, c'est géré sur <html> -->
   <div class="min-h-screen">
     <Login
-      v-if="!authenticated"
+      v-if="authenticated"
       :theme="theme"
       :accent-color="accentColor"
       @submit="handleLogin"
