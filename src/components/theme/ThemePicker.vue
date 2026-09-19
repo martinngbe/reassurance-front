@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { useTheme } from '../../theme/useTheme'
+import TToolTip from '../display/TToolTip.vue';
 
 const { theme, setPrimary } = useTheme()
 
 const presets: readonly string[] = [
-  '#6366f1',
-  '#2563eb',
-  '#0891b2',
-  '#0d9488',
-  '#16a34a',
-  '#ca8a04',
-  '#ea580c',
-  '#dc2626',
-  '#db2777',
-  '#7c3aed',
-  '#0f172a',
+
+  '#0051ff',//bleu
+  '#02f75c',//vert
+  '#fbff00',//Jaune
+  '#ff0000',//Rouge
+  //'#16a34a',
+  //'#ca8a04',
+  //'#ea580c',
+  //'#db2777',
 ] as const
 </script>
 
@@ -30,20 +29,24 @@ const presets: readonly string[] = [
       :style="{ backgroundColor: c }"
       @click="setPrimary(c)"
     />
-    <label
-      class="relative ml-1 flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-neutral-300 bg-white"
-      title="Couleur personnalisée"
-    >
-      <span class="h-full w-full" :style="{ backgroundColor: theme.primary }" />
-      <input
-        type="color"
-        class="absolute inset-0 cursor-pointer opacity-0"
-        :value="theme.primary"
-        @input="setPrimary(($event.target as HTMLInputElement).value)"
-      />
-    </label>
-    <code class="ml-1 rounded bg-neutral-200 px-2 py-1 font-mono text-xs text-neutral-600">{{
+
+    <TToolTip content="Couleur personnalisée" position="right">
+          <label
+            class="relative ml-10 flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-neutral-300 bg-white"
+            title=""
+          >
+            <span class="h-full w-full" :style="{ backgroundColor: theme.primary }" />
+            <input
+              type="color"
+              class="absolute inset-0 cursor-pointer opacity-0"
+              :value="theme.primary"
+              @input="setPrimary(($event.target as HTMLInputElement).value)"
+            />
+          </label>
+    </TToolTip>
+    <!-- <code class="ml-1 rounded bg-neutral-200 px-2 py-1 font-mono text-xs text-neutral-600">{{
       theme.primary
-    }}</code>
+    }}
+    </code> -->
   </div>
 </template>

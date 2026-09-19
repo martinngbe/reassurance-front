@@ -54,8 +54,8 @@ const rootEl = ref<HTMLElement | null>(null)
 // ==================== NORMALISATION ====================
 const DEFAULTS = {
   header: { size: '5%', minSize: '40px', collapsedSize: '36px' },
-  left: { size: '20%', minSize: '160px', collapsedSize: '40px' },
-  right: { size: '20%', minSize: '160px', collapsedSize: '40px' },
+  left:   { size: '20%', minSize: '160px', collapsedSize: '40px' },
+  right:  { size: '20%', minSize: '160px', collapsedSize: '40px' },
   footer: { size: '5%', minSize: '40px', collapsedSize: '36px' },
 } as const
 
@@ -253,12 +253,12 @@ const rootClass = computed(() =>
     <!-- ================= HEADER ================= -->
     <header
       v-if="zones.header.enabled"
-      class="relative overflow-hidden bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm"
       :class="{ 'opacity-50': !zones.header.visible }"
       style="grid-row: 1; grid-column: 1 / -1"
     >
       <button
-        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 bottom-1.5 right-3"
+        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 bottom-1.5 right-3"
         :class="{
           '!bottom-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-b-lg shadow-lg hover:!scale-105': !zones.header.visible
         }"
@@ -305,7 +305,7 @@ const rootClass = computed(() =>
       style="grid-row: 3; grid-column: 1"
     >
       <button
-        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-2 right-2"
+        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-2 right-2"
         :class="{
           '!top-1/2 !-translate-y-1/2 !right-0 w-7 h-12 rounded-r-lg rounded-l-none shadow-lg hover:!scale-105': !zones.left.visible
         }"
@@ -336,7 +336,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER GAUCHE -->
     <div
       v-if="zones.left.enabled && zones.left.visible && !zones.left.fixed"
-      class="relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-neutral-50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'left' }"
       style="grid-row: 3; grid-column: 2"
       @mousedown="startDrag($event, 'left')"
@@ -346,7 +346,7 @@ const rootClass = computed(() =>
 
     <!-- ================= MAIN ================= -->
     <main
-      class="relative min-h-0 min-w-0 bg-white dark:bg-neutral-900"
+      class="relative min-h-0 min-w-0  bg-neutral-50 dark:bg-neutral-900"
       :class="[mainPadding, mainOverflow === 'auto' ? 'overflow-auto' : 'overflow-hidden']"
       style="grid-row: 3; grid-column: 3"
     >
@@ -372,7 +372,7 @@ const rootClass = computed(() =>
       style="grid-row: 3; grid-column: 5"
     >
       <button
-        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-2 left-2"
+        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-2 left-2"
         :class="{
           '!top-1/2 !-translate-y-1/2 !left-0 w-7 h-12 rounded-l-lg rounded-r-none shadow-lg hover:!scale-105': !zones.right.visible
         }"
@@ -403,7 +403,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER BAS -->
     <div
       v-if="zones.footer.enabled && zones.footer.visible && !zones.footer.fixed"
-      class="relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'bottom' }"
       style="grid-row: 4; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'bottom')"
@@ -414,12 +414,12 @@ const rootClass = computed(() =>
     <!-- ================= FOOTER ================= -->
     <footer
       v-if="zones.footer.enabled"
-      class="relative overflow-hidden bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden  bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
       :class="{ 'opacity-50': !zones.footer.visible }"
       style="grid-row: 5; grid-column: 1 / -1"
     >
       <button
-        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-primary-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-primary-600 hover:scale-110 active:scale-90 top-1.5 right-3"
+        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-1.5 right-3"
         :class="{
           '!top-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-t-lg shadow-lg hover:!scale-105': !zones.footer.visible
         }"

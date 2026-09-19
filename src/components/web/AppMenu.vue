@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-
+import { useTheme } from '@/theme/useTheme';
+import { computed, ref } from 'vue';
+const { theme, toggleMode } = useTheme()
 defineProps<{
  // activeMenu: string
   accentColor: string
 }>()
 
+
+/** mode réellement appliqué ('system' déjà résolu) */
+const isDark = computed<boolean>(() => theme.resolvedMode === 'dark')
 const emit = defineEmits<{
   (e: 'select', menuId: string): void
 }>()
@@ -37,6 +41,11 @@ const menus: MenuItem[] = [
     id: 'sinistre',
     label: 'Sinistre',
     icon: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  },
+  {
+    id: 'compte',
+    label: 'Compte',
+    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
   },
   {
     id: 'reglement',
@@ -75,16 +84,13 @@ function selectMenu(menuId: string) {
       <li v-for="menu in menus" :key="menu.id">
         <button
           class="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all"
-          :class="
+        
+         :class="
             activeMenu === menu.id
-              ? 'text-white shadow-md'
+              ? 'text-primary-600 shadow-lg shadow-primary-700 dark:shadow-primary-500/50'
               : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
           "
-          :style="
-            activeMenu === menu.id
-              ? { backgroundColor: accentColor }
-              : {}
-          "
+          
         
           @click="selectMenu( menu.id)"
           
@@ -99,12 +105,19 @@ function selectMenu(menuId: string) {
             stroke-linejoin="round"
             v-html="menu.icon"
           />
-          <!--span>{{ menu.label }}</span-->
-          <span class="uppercase text-lg font-bold  text-slate-800 dark:text-slate-100">{{ menu.label }}</span>
+         <span :class=" activeMenu === menu.id ? 'text-primary-700 dark:text-primary-300' :  'text-slate-800 dark:text-slate-100'  "
+            class="uppercase text-lg font-bold"
+         >
+            {{ menu.label }}
+          </span>
+          
+          <!-- <span class="uppercase text-lg font-bold  text-slate-800 dark:text-slate-100">
+            {{ menu.label }}
+          </span>
           <span
             v-if="activeMenu === menu.id"
-            class="ml-auto h-2 w-2 rounded-full bg-white/80"
-          />
+            class="ml-auto h-2 w-2 rounded-full bg-white/80 "
+          /> -->
         </button>
       </li>
     </ul>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
 import TLayout from '@/components/layout/TLayout.vue'
-import ModuleLayout from '@/components/layout/ModuleLayout.vue'
-import AppHeader from './AppHeader.vue'
-import AppMenu from './AppMenu.vue'
+import AppHeader from '@/components/web/AppHeader.vue'
+import AppMenu from '@/components/web/AppMenu.vue'
 
 const props = defineProps<{
   theme: 'light' | 'dark'
@@ -62,18 +61,7 @@ const moduleComponents: Record<string, any> = {
   parametrage: defineAsyncComponent(() => import('./parametrage/Parametrage.vue')),
 }
 
-const moduleTitles: Record<string, string> = {
-  accueil: 'Accueil',
-  acceptation: 'Acceptation',
-  cession: 'Cession',
-  sinistre: 'Sinistre',
-  reglement: 'Règlement',
-  acteur: 'Acteur',
-  parametrage: 'Paramétrage',
-}
-
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
-const currentTitle = computed(() => moduleTitles[activeMenu.value] || 'Module')
 
 const quickInfos = [
   { label: 'Utilisateur', value: 'Admin Demo' },

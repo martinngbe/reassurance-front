@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ModuleLayout from '@/components/layout/ModuleLayout.vue'
+import ModuleLayout from '@/components/layout/TLayoutModule.vue'
 </script>
 
 <template>
