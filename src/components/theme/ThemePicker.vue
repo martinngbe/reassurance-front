@@ -9,6 +9,7 @@ const presets: readonly string[] = [
   '#0051ff',//bleu
   '#02f75c',//vert
   '#fbff00',//Jaune
+  '#d400ff',//violet
   '#ff0000',//Rouge
   //'#16a34a',
   //'#ca8a04',

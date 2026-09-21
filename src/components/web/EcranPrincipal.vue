@@ -24,7 +24,7 @@ const footerVisible = ref(true)
 
 // Configuration EcranPrincipal (zones principales de l'écran)
 const headerConfig = { size: '64px', minSize: '56px', collapsedSize: '36px', fixed: false }
-const leftConfig = { size: '240px', minSize: '180px', collapsedSize: '40px', fixed: false }
+const leftConfig = { size: '270px', minSize: '180px', collapsedSize: '40px', fixed: false }
 const rightConfig = { size: '280px', minSize: '200px', collapsedSize: '40px', fixed: false }
 const footerConfig = { size: '40px', minSize: '32px', collapsedSize: '0px', fixed: false }
 
@@ -58,6 +58,9 @@ const moduleComponents: Record<string, any> = {
   sinistre: defineAsyncComponent(() => import('./sinistre/Sinistre.vue')),
   reglement: defineAsyncComponent(() => import('./reglement/Reglement.vue')),
   acteur: defineAsyncComponent(() => import('./acteur/Acteur.vue')),
+  compte: defineAsyncComponent(() => import('./compte/Compte.vue')),
+  comptabilisation: defineAsyncComponent(() => import('./comptabilisation/Comptabilisation.vue')),
+  consultation: defineAsyncComponent(() => import('./consultation/Consultation.vue')),
   parametrage: defineAsyncComponent(() => import('./parametrage/Parametrage.vue')),
 }
 
@@ -136,7 +139,7 @@ function selectMenu(menuId: string) {
 
           <template #footer>
             <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
-              <span>© 2026 Assurance Plus International — Tous droits réservés</span>
+              <span>© 2026 A Free K Soft — Tous droits réservés</span>
               <span class="hidden sm:inline">
                 Connecté en tant que <strong class="text-slate-700 dark:text-slate-300">Admin Demo</strong>
               </span>

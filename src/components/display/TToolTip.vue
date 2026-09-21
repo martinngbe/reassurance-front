@@ -259,10 +259,10 @@ const arrowBgClass = computed(() => {
 
 const arrowPositionClass = computed(() => {
   const map: Record<Position, string> = {
-    top: 'bottom-[-4px] left-1/2 -translate-x-1/2',
-    bottom: 'top-[-4px] left-1/2 -translate-x-1/2',
-    left: 'right-[-4px] top-1/2 -translate-y-1/2',
-    right: 'left-[-4px] top-1/2 -translate-y-1/2',
+    top: 'bottom-[-4px] left-1/2 -translate-x-1/2  border-l border-b border-primary',
+    bottom: 'top-[-4px] left-1/2 -translate-x-1/2  border-l border-t border-primary',
+    left: 'right-[-4px] top-1/2 -translate-y-1/2 border-r border-b border-primary',
+    right: 'left-[-4px] top-1/2 -translate-y-1/2 border-l border-b border-primary',
   }
   return map[actualPosition.value]
 })
@@ -300,15 +300,13 @@ const triggerAttrs = computed(() => {
         ref="tooltipRef"
         role="tooltip"
         :aria-hidden="!effectiveVisible"
-        class="ttooltip__box rounded-lg px-3 py-2 text-sm font-medium transition-opacity duration-200"
+        class="ttooltip__box rounded-lg px-3 py-2 text-sm font-medium transition-opacity duration-200  border border-primary"
         :class="[themeClasses, effectiveVisible && isMeasured ? 'opacity-100' : 'opacity-0']"
         :style="tooltipStyle"
         @mouseenter="trigger === 'hover' && show()"
         @mouseleave="trigger === 'hover' && hide()"
       >
         <slot name="content">{{ content }}</slot>
-
-        <!-- Flèche style Flowbite : carré tourné à 45° -->
         <span
           v-if="arrow"
           class="absolute h-2 w-2 rotate-45"

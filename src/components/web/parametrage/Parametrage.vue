@@ -1,17 +1,40 @@
 <script setup lang="ts">
-import ModuleLayout from '@/components/layout/TLayoutModule.vue'
+import TLayoutModule from '@/components/layout/TLayoutModule.vue'
+import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
+import MenuAcceptation from '../acceptation/MenuAcceptation.vue';
+import MenuParametrage from './MenuParametrage.vue';
+
+
+const menuModule: Record<string, string> = {
+  accueil: 'Accueil',
+  acceptation: 'Facultative',
+  cession: 'Traité',
+  placement: 'Placement',
+  compte: 'Compte',
+  reglement: 'Règlement',
+}
+
+
 </script>
 
 <template>
-  <ModuleLayout title="Paramétrage" subtitle="Configuration de l'application">
-    <template #content>
-      <div class="p-6">
-        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
-          <p class="text-slate-600 dark:text-slate-300">
-            Module <strong class="text-primary-600 dark:text-primary-400">Paramétrage</strong> — Configuration système
-          </p>
-        </div>
-      </div>
+  <TLayoutModule
+    topSize="100px"
+    :showBottom=false
+    >
+   <template #header>
+        <TTitreModule libelle="Paramétrage"/>     
     </template>
-  </ModuleLayout>
+
+   <template #left>
+      <MenuParametrage />
+    </template>
+
+    <template #default>
+     
+    </template>
+
+ 
+
+  </TLayoutModule>
 </template>

@@ -336,7 +336,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER GAUCHE -->
     <div
       v-if="zones.left.enabled && zones.left.visible && !zones.left.fixed"
-      class="relative z-10  bg-neutral-50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'left' }"
       style="grid-row: 3; grid-column: 2"
       @mousedown="startDrag($event, 'left')"
