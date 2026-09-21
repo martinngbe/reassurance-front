@@ -105,13 +105,11 @@ function selectMenu(menuId: string) {
       </template>
 
       <template #left>
-        <nav class="flex h-full flex-col bg-neutral-50 dark:bg-neutral-900/50 border-r border-neutral-200 dark:border-neutral-800">
-          <AppMenu
+       <AppMenu
             :active-menu="activeMenu"
             :accent-color="props.accentColor"
             @select="selectMenu"
           />
-        </nav>
       </template>
 
           <!-- CONTENU PRINCIPAL : ModuleLayout remplit exactement la zone centrale -->

@@ -1,18 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
-import MenuAcceptation from '../acceptation/MenuAcceptation.vue';
 import MenuParametrage from './MenuParametrage.vue';
-
-
-const menuModule: Record<string, string> = {
-  accueil: 'Accueil',
-  acceptation: 'Facultative',
-  cession: 'Traité',
-  placement: 'Placement',
-  compte: 'Compte',
-  reglement: 'Règlement',
-}
 
 
 </script>
@@ -20,6 +9,7 @@ const menuModule: Record<string, string> = {
 <template>
   <TLayoutModule
     topSize="100px"
+    leftSize="300px"
     :showBottom=false
     >
    <template #header>

@@ -10,7 +10,7 @@ import MenuComptabilisation from './MenuComptabilisation.vue';
 <template>
   <TLayoutModule
     topSize="100px"
-    leftSize="30%"
+    leftSize="300px"
     :showBottom=false
     >
    <template #header>

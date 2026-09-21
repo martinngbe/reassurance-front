@@ -45,9 +45,6 @@ const presets: readonly string[] = [
             />
           </label>
     </TToolTip>
-    <!-- <code class="ml-1 rounded bg-neutral-200 px-2 py-1 font-mono text-xs text-neutral-600">{{
-      theme.primary
-    }}
-    </code> -->
+  
   </div>
 </template>

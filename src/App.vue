@@ -43,7 +43,7 @@ function handleLogout() {
   <!-- Plus besoin de :class="{ dark: ... }" ici, c'est géré sur <html> -->
   <div class="min-h-screen">
     <Login
-      v-if="!authenticated"
+      v-if="authenticated"
       :theme="theme"
       :accent-color="accentColor"
       @submit="handleLogin"

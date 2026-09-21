@@ -253,7 +253,7 @@ const rootClass = computed(() =>
     <!-- ================= HEADER ================= -->
     <header
       v-if="zones.header.enabled"
-      class="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm"
       :class="{ 'opacity-50': !zones.header.visible }"
       style="grid-row: 1; grid-column: 1 / -1"
     >
@@ -289,7 +289,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER HAUT -->
     <div
       v-if="zones.header.enabled && zones.header.visible && !zones.header.fixed"
-      class="relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-900/50 dark:bg-primary-200/50   transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'top' }"
       style="grid-row: 2; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'top')"
@@ -300,7 +300,7 @@ const rootClass = computed(() =>
     <!-- ================= LEFT ================= -->
     <aside
       v-if="zones.left.enabled"
-      class="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-r border-neutral-200 dark:border-neutral-800"
+      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50 border-r border-neutral-200 dark:border-neutral-800"
       :class="{ 'opacity-50': !zones.left.visible }"
       style="grid-row: 3; grid-column: 1"
     >
@@ -336,7 +336,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER GAUCHE -->
     <div
       v-if="zones.left.enabled && zones.left.visible && !zones.left.fixed"
-      class="relative z-10  bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
+      class="relative z-10   bg-primary-900/50 dark:bg-primary-200/50   transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'left' }"
       style="grid-row: 3; grid-column: 2"
       @mousedown="startDrag($event, 'left')"
@@ -346,7 +346,7 @@ const rootClass = computed(() =>
 
     <!-- ================= MAIN ================= -->
     <main
-      class="relative min-h-0 min-w-0  bg-neutral-50 dark:bg-neutral-900"
+      class="relative min-h-0 min-w-0  bg-neutral-100 dark:bg-neutral-900"
       :class="[mainPadding, mainOverflow === 'auto' ? 'overflow-auto' : 'overflow-hidden']"
       style="grid-row: 3; grid-column: 3"
     >
@@ -356,7 +356,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER DROIT -->
     <div
       v-if="zones.right.enabled && zones.right.visible && !zones.right.fixed"
-      class="relative z-10 bg-primary-200/50 transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-900/50 dark:bg-primary-200/50   transition-colors duration-150 cursor-col-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'right' }"
       style="grid-row: 3; grid-column: 4"
       @mousedown="startDrag($event, 'right')"
@@ -367,7 +367,7 @@ const rootClass = computed(() =>
     <!-- ================= RIGHT ================= -->
     <aside
       v-if="zones.right.enabled"
-      class="relative overflow-hidden bg-neutral-50 dark:bg-neutral-900/50 border-l border-neutral-200 dark:border-neutral-800"
+      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50 border-l border-neutral-200 dark:border-neutral-800"
       :class="{ 'opacity-50': !zones.right.visible }"
       style="grid-row: 3; grid-column: 5"
     >
@@ -403,7 +403,7 @@ const rootClass = computed(() =>
     <!-- SPLITTER BAS -->
     <div
       v-if="zones.footer.enabled && zones.footer.visible && !zones.footer.fixed"
-      class="relative z-10  bg-primary-200/50 transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-900/50 dark:bg-primary-200/50  transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'bottom' }"
       style="grid-row: 4; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'bottom')"
@@ -414,7 +414,7 @@ const rootClass = computed(() =>
     <!-- ================= FOOTER ================= -->
     <footer
       v-if="zones.footer.enabled"
-      class="relative overflow-hidden  bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden  bg-neutral-100 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
       :class="{ 'opacity-50': !zones.footer.visible }"
       style="grid-row: 5; grid-column: 1 / -1"
     >

@@ -10,6 +10,7 @@ import MenuConsultation from './MenuConsultation.vue';
 <template>
   <TLayoutModule
     topSize="100px"
+    leftSize="300px"
     :showBottom=false
     >
    <template #header>

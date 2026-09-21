@@ -104,7 +104,7 @@ const accentVars = computed(() => ({
 
       <!-- ==================== ZONE BASSE ==================== -->
       <template #footer>
-        <slot name="default"></slot>       
+        <slot name="footer"></slot>       
       </template>
     </TLayout>
   </div>
