@@ -10,7 +10,7 @@ import CompteFooter from '@/components/web/compte/CompteFooter.vue';
 <template>
   <TLayoutModule
     bottomSize="50%"
-    topSize="100px"
+    topSize="55px"
     :show-left="false"
     >
     <template #header>
@@ -23,11 +23,8 @@ import CompteFooter from '@/components/web/compte/CompteFooter.vue';
           </p>
     </template>
 
-    <template #footer>
-     
+    <template #footer>     
       <CompteFooter/>
-       
-    
     </template>
 
   </TLayoutModule>

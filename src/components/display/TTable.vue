@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T extends TableRow">
-import { computed, ref, useSlots, onBeforeUnmount } from 'vue'
+import { computed, ref, useSlots, onBeforeUnmount, onMounted, watch, nextTick } from 'vue'
 import type { TableColumn, SortState, SortDirection, Density, TableRow } from '../forms/common'
 
-// ==================== PROPS ====================
+// =============== ===== PROPS ====================
 const props = withDefaults(
   defineProps<{
     columns: TableColumn[]
@@ -15,14 +15,13 @@ const props = withDefaults(
     title?: string
     stickyHeader?: boolean
     captionPosition?: 'top' | 'bottom'
-    // ✨ Nouvelles props
     loading?: boolean
     density?: Density
     selectable?: boolean
     rowKey?: string | ((row: T) => string | number)
     theme?: {
       primary?: string
-      primaryHover?: string // Pour l'effet hover de l'ascenseur
+      primaryHover?: string
       surface?: string
       surfaceAlt?: string
       border?: string
@@ -154,16 +153,95 @@ function toNumber(v: string | number | undefined): number {
   return parseFloat(v) || 0
 }
 
+// ✨ Résout la largeur effective d'une colonne : redimensionnement manuel > largeur
+// explicite (col.width) > 120px par défaut. `toNumber` renvoie toujours un nombre
+// (0 si absent), donc `toNumber(col.width) ?? 120` ne se déclenchait jamais — on
+// teste explicitement la présence d'une largeur avant d'appliquer le fallback.
+function resolveColWidth(col: TableColumn): number {
+  if (columnWidths.value[col.key]) return columnWidths.value[col.key]
+  if (col.width !== undefined && col.width !== null && col.width !== '') return toNumber(col.width)
+  return 120
+}
+
 function getColWidth(col: TableColumn): string | undefined {
   if (columnWidths.value[col.key]) return `${columnWidths.value[col.key]}px`
   if (col.width) return typeof col.width === 'number' ? `${col.width}px` : col.width
   return undefined
 }
 
+// ✨ Calcul de la largeur totale minimale du tableau (pour forcer le scroll horizontal)
+const tableMinWidth = computed(() => {
+  let total = 0
+  let hasExplicitWidth = false
+  for (const col of props.columns) {
+    const w = columnWidths.value[col.key] ?? toNumber(col.width)
+    if (w > 0) {
+      total += w
+      hasExplicitWidth = true
+    } else {
+      total += 120 // largeur par défaut estimée
+    }
+  }
+  if (props.selectable) total += 40 // largeur de la colonne checkbox
+  return hasExplicitWidth ? `${total}px` : undefined
+})
+
 onBeforeUnmount(() => {
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
+  resizeObserver?.disconnect()
+  window.removeEventListener('resize', checkHorizontalOverflow)
 })
+
+// ==================== SCROLL HORIZONTAL (mesure explicite, pas de "auto" implicite) ====================
+// ✨ On ne se fie plus à `overflow-x: auto` (dont le recalcul par le navigateur
+// peut rester bloqué après un redimensionnement animé du parent, ex: TLayout).
+// On mesure nous-mêmes scrollWidth vs clientWidth et on pilote l'overflow-x
+// explicitement (scroll / hidden), ce qui force le navigateur à repeindre.
+const scrollEl = ref<HTMLElement | null>(null)
+const hasHorizontalOverflow = ref(false)
+let resizeObserver: ResizeObserver | null = null
+
+function checkHorizontalOverflow() {
+  //console.log('scrollEl.value:',scrollEl.value)
+  const el = scrollEl.value
+  if (!el) return
+  // +1px de marge pour éviter les faux positifs liés aux arrondis sub-pixel
+  hasHorizontalOverflow.value = el.scrollWidth > el.clientWidth + 1
+  // console.log('hasHorizontalOverflow.value:',hasHorizontalOverflow.value)
+}
+
+onMounted(() => {
+  checkHorizontalOverflow()
+  // ✨ Second passage après le premier paint : couvre les cas où la largeur
+  // réelle du contenu (polices web, slots personnalisés, composants enfants
+  // async) n'est pas encore stabilisée au moment exact du montage.
+  requestAnimationFrame(checkHorizontalOverflow)
+
+  if (typeof ResizeObserver !== 'undefined' && scrollEl.value) {
+    resizeObserver = new ResizeObserver(() => {
+      checkHorizontalOverflow()
+    })
+    // On observe le conteneur de scroll lui-même...
+    resizeObserver.observe(scrollEl.value)
+    // ...et son parent direct, pour capter aussi les redimensionnements
+    // déclenchés par les zones (header/footer) du layout englobant.
+    if (scrollEl.value.parentElement) {
+      resizeObserver.observe(scrollEl.value.parentElement)
+    }
+  }
+  // Filet de sécurité supplémentaire (couvre les environnements sans ResizeObserver
+  // ou les redimensionnements de fenêtre qui ne déclenchent pas l'observer ci-dessus).
+  window.addEventListener('resize', checkHorizontalOverflow)
+})
+
+// Recalcule quand les colonnes, leur largeur (redimensionnement manuel) ou les
+// lignes changent, puisque cela modifie la largeur totale du tableau.
+watch(
+  [() => props.columns, columnWidths, () => props.rows.length],
+  () => nextTick(checkHorizontalOverflow),
+  { deep: true },
+)
 
 // ==================== DENSITÉ ====================
 const densityClasses = computed(() => {
@@ -176,16 +254,19 @@ const densityClasses = computed(() => {
 })
 
 // ==================== UTILITAIRES ====================
-const isSticky = computed(() => props.stickyHeader ?? props.height !== undefined)
+// ✨ L'entête reste figée par défaut (même sans hauteur explicite passée par le parent) ;
+// stickyHeader: false permet de désactiver explicitement ce comportement.
+const isSticky = computed(() => props.stickyHeader ?? true)
 
 function toCssSize(value: string | number | undefined): string | undefined {
   if (value === undefined || value === null) return undefined
   return typeof value === 'number' ? `${value}px` : value
 }
 
+// ✨ Dimensions par défaut : le composant occupe tout son parent si non spécifié
 const wrapperStyle = computed(() => ({
-  width: toCssSize(props.width),
-  height: toCssSize(props.height),
+  width: toCssSize(props.width) ?? '100%',
+  height: toCssSize(props.height) ?? '100%',
 }))
 
 function alignClass(col: TableColumn): string {
@@ -193,21 +274,58 @@ function alignClass(col: TableColumn): string {
   if (col.align === 'center') return 'text-center'
   return 'text-left'
 }
-
+// ✨ Calcul de la position "left" pour les colonnes fixes
+function getFixedLeft(colIndex: number, isBody = false): string {
+  let left = 0
+  const offset = props.selectable ? 40 : 0 // largeur de la colonne checkbox
+  
+  // Pour les th (header), on commence après la checkbox si selectable
+  // Pour les td (body), idem
+  const startIndex = isBody ? 0 : 0
+  
+  for (let i = 0; i < colIndex; i++) {
+    const col = props.columns[i]
+    if (col) {
+      left += resolveColWidth(col)
+    }
+  }
+  
+  return `${left + (props.selectable ? 40 : 0)}px`
+}
 const hasCaption = computed(() => !!props.title || !!slots.caption || !!slots['caption-extra'])
 
 const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
+
+// ✨ Calcul de la largeur totale du tableau
+const tableWidth = computed(() => {
+  let total = 0
+  for (const col of props.columns) {
+    total += resolveColWidth(col)
+  }
+  if (props.selectable) total += 40 // largeur de la colonne checkbox
+  console.log('TTable tableWidth:',total)
+  return `${total}px`
+})
+
 </script>
 
 <template>
+  <!-- ✨ MODIFICATION 1 : overflow-hidden + dimensions contraintes pour figer le composant -->
+  <!-- min-w-0/min-h-0 : empêche le composant de repousser son parent flex/grid
+       (comportement par défaut sinon : min-width/min-height: auto = taille du contenu) -->
   <div
-    class="ttable flex flex-col rounded-xl ring-1 ring-neutral-200 dark:ring-neutral-800 bg-white dark:bg-neutral-900"
-    :style="{ ...wrapperStyle, ...themeVars }"
+    class="ttable flex flex-col overflow-hidden h-full w-full min-w-0 min-h-0
+    rounded-xl ring-1 
+    ring-neutral-200  
+    dark:ring-neutral-800 bg-white 
+    dark:bg-neutral-900"
+    :style="{ ...wrapperStyle, ...themeVars, boxSizing: 'border-box' }"
   >
     <!-- ================= CAPTION (haut) ================= -->
+    <!-- ✨ Le caption est EN DEHORS de la zone scroll → il reste figé -->
     <div
       v-if="hasCaption && captionPosition === 'top'"
-      class="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800"
+      class="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800 shrink-0"
     >
       <div class="flex min-w-0 items-center gap-3">
         <h3
@@ -221,23 +339,35 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
       <slot name="caption" :selected-count="selectedKeys.length" :total="rows.length" />
     </div>
 
-    <!-- ================= ZONE SCROLL (avec custom-scrollbar) ================= -->
+    <!-- ================= ZONE SCROLL ================= -->
+    <!-- ✨ MODIFICATION 2 : flex-1 + min-h-0 + overflow-auto gère les scrolls H et V -->
     <div
-      class="ttable__scroll custom-scrollbar relative flex-1 min-h-0 overflow-auto bg-white dark:bg-neutral-900"
-    >
-      <table
-        class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800"
-        :class="[densityClasses.text, hasFixedColumns && 'table-fixed']"
+      ref="scrollEl"
+      class="ttable__scroll custom-scrollbar relative 
+      flex-1 min-h-0 min-w-0 overflow-y-auto
+      bg-white dark:bg-neutral-900 pb-6 "
+      
+      :style="{ overflowX: hasHorizontalOverflow ? 'scroll' : 'hidden' }"
       >
+      <table
+        class="divide-y divide-neutral-200 dark:divide-neutral-800 "
+        :class="[densityClasses.text, hasFixedColumns && 'table-fixed']"
+        :style="{ width: tableWidth }"
+      >
+        <!-- ✨ MODIFICATION 3 : thead sticky + background OPAQUE (sinon le contenu transparaît) -->
         <thead
           :class="[
-            'bg-neutral-50 dark:bg-neutral-800/60',
+            'bg-neutral-100 dark:bg-neutral-600',
             isSticky && 'sticky top-0 z-20 shadow-[0_1px_0_0_rgb(0_0_0/0.05)]',
           ]"
         >
           <tr>
             <!-- Colonne sélection -->
-            <th v-if="selectable" class="w-10 px-3" :class="densityClasses.head">
+            <th
+              v-if="selectable"
+              class="w-10 px-3 bg-neutral-50 dark:bg-neutral-800"
+              :class="[densityClasses.head, isSticky && 'sticky left-0 z-30']"
+            >
               <input
                 type="checkbox"
                 :checked="allSelected"
@@ -246,10 +376,9 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
                 @change="allSelected = ($event.target as HTMLInputElement).checked"
               />
             </th>
-
             <!-- Colonnes -->
             <th
-              v-for="col in columns"
+              v-for="(col, colIndex) in columns"
               :key="col.key"
               scope="col"
               class="relative select-none text-neutral-500 dark:text-neutral-400"
@@ -257,10 +386,16 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
                 densityClasses.head,
                 'font-semibold uppercase tracking-wide',
                 alignClass(col),
-                isSticky && 'bg-neutral-50 dark:bg-neutral-800/60',
+                // ✨ Background opaque obligatoire pour le sticky vertical
+                isSticky && 'bg-neutral-300 dark:bg-neutral-700',
                 col.sortable && 'cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-200',
+                // ✨ Support des colonnes fixes horizontalement
+                col.fixed === 'left' && 'sticky z-20 bg-neutral-50 dark:bg-neutral-800',
               ]"
-              :style="{ width: getColWidth(col) }"
+              :style="{
+                width: getColWidth(col),
+                left: col.fixed === 'left' ? getFixedLeft(colIndex) : undefined,
+              }"
               @click="toggleSort(col)"
             >
               <div
@@ -299,7 +434,6 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
                   >
                 </span>
               </div>
-
               <!-- Handle de redimensionnement -->
               <span
                 v-if="col.resizable"
@@ -309,7 +443,6 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
             </th>
           </tr>
         </thead>
-
         <tbody
           class="divide-y divide-neutral-100 bg-white dark:divide-neutral-800 dark:bg-neutral-900"
         >
@@ -318,14 +451,18 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
             :key="rowIndex"
             :class="[
               hoverable && 'transition-colors hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
-              striped && rowIndex % 2 === 1 && 'bg-neutral-50/60 dark:bg-neutral-800/30',
+              striped && rowIndex % 2 === 1 && 'bg-neutral-800/10 dark:bg-neutral-800/60',
               isSelected(row, rowIndex) && 'bg-primary-500/10 dark:bg-primary-500/15',
               'cursor-default',
             ]"
             @click="emit('row-click', row, rowIndex)"
           >
             <!-- Checkbox de sélection -->
-            <td v-if="selectable" class="w-10 px-3" :class="densityClasses.cell">
+            <td
+              v-if="selectable"
+              class="w-10 px-3 bg-white dark:bg-neutral-900"
+              :class="[densityClasses.cell, hasFixedColumns && 'sticky left-0 z-10']"
+            >
               <input
                 type="checkbox"
                 :checked="isSelected(row, rowIndex)"
@@ -334,12 +471,19 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
                 @change="toggleRow(row, rowIndex)"
               />
             </td>
-
             <td
-              v-for="col in columns"
+              v-for="(col, colIndex) in columns"
               :key="col.key"
               class="text-neutral-700 dark:text-neutral-200"
-              :class="[densityClasses.cell, alignClass(col)]"
+              :class="[
+                densityClasses.cell,
+                alignClass(col),
+                // ✨ Background opaque pour les colonnes fixes (sinon le contenu défile derrière)
+                col.fixed === 'left' && 'sticky z-10 bg-white dark:bg-neutral-900',
+              ]"
+              :style="{
+                left: col.fixed === 'left' ? getFixedLeft(colIndex, true) : undefined,
+              }"
             >
               <slot
                 :name="`cell-${col.key}`"
@@ -354,7 +498,6 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
               </slot>
             </td>
           </tr>
-
           <tr v-if="rows.length === 0">
             <td
               :colspan="columns.length + (selectable ? 1 : 0)"
@@ -400,7 +543,7 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
     <!-- ================= CAPTION (bas) ================= -->
     <div
       v-if="hasCaption && captionPosition === 'bottom'"
-      class="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800"
+      class="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800 shrink-0"
     >
       <div class="flex min-w-0 items-center gap-3">
         <h3
@@ -416,6 +559,8 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
   </div>
 </template>
 
+
+
 <style scoped>
 /* --- Transitions du loader --- */
 .fade-enter-active,
@@ -427,11 +572,29 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
   opacity: 0;
 }
 
+/* ✨ IMPORTANT : le composant TTable doit respecter les dimensions de son parent */
+.ttable {
+  display: flex;
+  flex-direction: column;
+  /* Évite que le composant ne dépasse de son parent */
+  max-width: 100%;
+  max-height: 100%;
+  /* Empêche le composant de forcer l'agrandissement d'un parent flex/grid
+     (le contenu large du tableau doit scroller à l'intérieur, jamais pousser le parent) */
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ✨ overflow-x piloté explicitement en JS (scroll/hidden) plutôt que "auto" :
+   garantit un repaint fiable de la scrollbar custom même quand la taille du
+   conteneur change via une transition CSS d'un ancêtre (ex: TLayout). */
+.ttable__scroll {
+  min-width: 0;
+}
+
 /* ==========================================
-   ✨ SCROLLBAR DYNAMIQUE
-   Utilise les variables globales --tw-primary-*
-   injectées par useTheme() → change en temps réel
-   ========================================== */
+✨ SCROLLBAR DYNAMIQUE
+========================================== */
 
 /* Firefox */
 .custom-scrollbar {
@@ -453,7 +616,6 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgb(var(--tw-primary-500));
   border-radius: 4px;
-  /* Astuce : ascenseur plus fin et élégant */
   border: 2px solid transparent;
   background-clip: content-box;
   transition: background-color 0.2s ease;
@@ -467,7 +629,6 @@ const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
   background: transparent;
 }
 
-/* --- Fallback si les variables ne sont pas encore définies (SSR / premier paint) --- */
 @supports not (color: rgb(var(--tw-primary-500))) {
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #6366f1;

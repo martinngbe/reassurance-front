@@ -70,7 +70,6 @@ const accentVars = computed(() => ({
 </script>
 
 <template>
-  <!-- h-full/w-full : ModuleLayout épouse exactement la zone centrale du parent -->
   <div :style="accentVars" class="h-full w-full">
     <TLayout
       :header="headerConfig"

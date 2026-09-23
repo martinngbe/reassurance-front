@@ -3,6 +3,7 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import TLayout from '@/components/layout/TLayout.vue'
 import AppHeader from '@/components/web/AppHeader.vue'
 import AppMenu from '@/components/web/AppMenu.vue'
+import TLayoutModule from '../layout/TLayoutModule.vue';
 
 const props = defineProps<{
   theme: 'light' | 'dark'
@@ -79,70 +80,76 @@ function selectMenu(menuId: string) {
 </script>
 
 <template>
-  <div :style="accentVars" class="h-screen w-screen">
-    <TLayout
-      :header="headerConfig"
-      :left="leftConfig"
-      :right="rightConfig"
-      :footer="footerConfig"
-      splitter-size="2px"
-      main-padding="p-0"
-      main-overflow="hidden"
-      v-model:header-visible="headerVisible"
-      v-model:left-visible="leftVisible"
-      v-model:right-visible="rightVisible"
-      v-model:footer-visible="footerVisible"
-    >
-      <template #header>
-        <AppHeader
-          :theme="props.theme"
-          :palettes="props.palettes"
-          :accent-color="props.accentColor"
-          @logout="handleLogout"
-          @update:theme="updateTheme"
-          @update:accent-color="updateAccentColor"
-        />
-      </template>
+    <div :style="accentVars" class="h-screen w-screen  ">
+      
+          <!--TLayout
+            :header="headerConfig"
+            :left="leftConfig"
+            :right="rightConfig"
+            :footer="footerConfig"
+            splitter-size="2px"
+            main-padding="p-0"
+            main-overflow="hidden"
+            v-model:header-visible="headerVisible"
+            v-model:left-visible="leftVisible"
+            v-model:right-visible="rightVisible"
+            v-model:footer-visible="footerVisible"
+    -->
+       <TLayoutModule
+          topSize= '75px'
+          leftSize= '250px'
+          bottomSize= '50px'
+        >
+            <template #header>
+                  <AppHeader
+                    :theme="props.theme"
+                    :palettes="props.palettes"
+                    :accent-color="props.accentColor"
+                    @logout="handleLogout"
+                    @update:theme="updateTheme"
+                    @update:accent-color="updateAccentColor"
+                  />
+            </template>
 
-      <template #left>
-       <AppMenu
-            :active-menu="activeMenu"
-            :accent-color="props.accentColor"
-            @select="selectMenu"
-          />
-      </template>
+            <template #left>
+                <AppMenu
+                      :active-menu="activeMenu"
+                      :accent-color="props.accentColor"
+                      @select="selectMenu"
+                    />
+            </template>
 
-          <!-- CONTENU PRINCIPAL : ModuleLayout remplit exactement la zone centrale -->
-          <template #default>
-            
-            <keep-alive>
-               <component :is="currentModule" :accent-color="props.accentColor" />
-            </keep-alive>
-          </template>
+            <!-- CONTENU PRINCIPAL : ModuleLayout remplit exactement la zone centrale -->
+            <template #default>        
+              <keep-alive>
+                  <component :is="currentModule" :accent-color="props.accentColor" />
+              </keep-alive>
+            </template>
 
-          <template #right>
-            <div class="flex h-full flex-col p-3 bg-neutral-50 dark:bg-neutral-900/50 border-l border-neutral-200 dark:border-neutral-800">
-              <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Informations
-              </h3>
-              <div class="space-y-2">
-                <div v-for="info in quickInfos" :key="info.label"
-                    class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs text-slate-500 dark:text-slate-400">{{ info.label }}</p>
-                  <p class="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ info.value }}</p>
+            <template #right>
+              <div class="flex h-full flex-col p-3 bg-neutral-50 dark:bg-neutral-900/50  dark:border-neutral-800">
+                <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Informations
+                </h3>
+                <div class="space-y-2">
+                  <div v-for="info in quickInfos" :key="info.label"
+                      class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ info.label }}</p>
+                    <p class="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ info.value }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
+            </template>
 
-          <template #footer>
-            <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
-              <span>© 2026 A Free K Soft — Tous droits réservés</span>
-              <span class="hidden sm:inline">
-                Connecté en tant que <strong class="text-slate-700 dark:text-slate-300">Admin Demo</strong>
-              </span>
-            </div>
-          </template>
-    </TLayout>
-  </div>
+            <template #footer>
+              <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+                <span>© 2026 A Free K Soft — Tous droits réservés</span>
+                <span class="hidden sm:inline">
+                  Connecté en tant que <strong class="text-slate-700 dark:text-slate-300">Admin Demo</strong>
+                </span>
+              </div>
+            </template>
+    </TLayoutModule>        
+          <!--/TLayout-->
+    </div>
 </template>

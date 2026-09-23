@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useTheme } from '@/theme/useTheme.ts';
 import TToolTip from '../display/TToolTip.vue';
-import ThemeModeToggle from '../theme/ThemeModeToggle.vue';
 import ThemePicker from '../theme/ThemePicker.vue';
 import ToggleTheme from '../theme/ToggleTheme.vue';
 import { computed } from 'vue';
@@ -24,7 +23,7 @@ import { computed } from 'vue';
 </script>
 
 <template>
-  <div class="flex h-full items-center justify-between px-4">
+  <div class="flex h-full items-center justify-between px-4 ">
     <!-- GAUCHE : Profil + Toggle -->
     <div class="flex items-center gap-3">
       <!-- Avatar utilisateur -->

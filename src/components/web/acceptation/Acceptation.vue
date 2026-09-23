@@ -2,23 +2,29 @@
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import MenuAcceptation from './MenuAcceptation.vue';
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 
 
-const menuModule: Record<string, string> = {
-  accueil: 'Accueil',
-  acceptation: 'Facultative',
-  cession: 'Traité',
-  placement: 'Placement',
-  compte: 'Compte',
-  reglement: 'Règlement',
+// Chargement dynamique des modules
+const moduleComponents: Record<string, any> = {
+  tableauDeBord: defineAsyncComponent(() => import('@/components/web/acceptation/AcceptationTableauDeBord.vue')),
+  facultative: defineAsyncComponent(() => import('@/components/web/facultative/Facultative.vue')),
+  traite: defineAsyncComponent(() => import('@/components/web/traite/Traite.vue')),
+
 }
 
-
+const activeMenu = ref('tableauDeBord')
+const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
+function selectMenu(menuId: string) {
+  console.log('menuId:'+menuId)
+  activeMenu.value = menuId
+}
 </script>
 
 <template>
   <TLayoutModule
-    topSize="100px"
+    topSize="55px"
+    leftSize="250px"
     :showBottom=false
     >
    <template #header>
@@ -26,11 +32,13 @@ const menuModule: Record<string, string> = {
     </template>
 
    <template #left>
-      <MenuAcceptation />
+      <MenuAcceptation   @select="selectMenu"/>
     </template>
 
-    <template #default>
-     
+    <template #default>      
+        <keep-alive>
+            <component :is="currentModule" />
+        </keep-alive>
     </template>
 
  

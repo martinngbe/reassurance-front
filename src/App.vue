@@ -40,7 +40,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <!-- Plus besoin de :class="{ dark: ... }" ici, c'est géré sur <html> -->
+ 
   <div class="min-h-screen">
     <Login
       v-if="authenticated"

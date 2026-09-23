@@ -8,7 +8,7 @@ import MenuParametrage from './MenuParametrage.vue';
 
 <template>
   <TLayoutModule
-    topSize="100px"
+    topSize="55px"
     leftSize="300px"
     :showBottom=false
     >

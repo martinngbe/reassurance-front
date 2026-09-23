@@ -18,7 +18,8 @@ const menuModule: Record<string, string> = {
 
 <template>
   <TLayoutModule 
-    topSize="100px"
+    topSize="55px"
+    leftSize="250px"
     :showBottom=false
     >
    <template #header>

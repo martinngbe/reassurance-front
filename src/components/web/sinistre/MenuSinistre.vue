@@ -15,8 +15,8 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref('tableau-bord')
-
+const activeMenu = ref('tableauDeBord')
+/*
 const menus: MenuItem[] = [
   {
     id: 'tableau-bord',
@@ -34,9 +34,27 @@ const menus: MenuItem[] = [
     icon: '<path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.5a2.5 2.5 0 0 0-5 0V22"/><path d="M21 3l-9 9"/><path d="M3 3l9 9"/>',
   },
 
- 
-
 ]
+*/
+const menus: MenuItem[] = [
+  {
+    id: 'tableauDeBord',
+    label: 'Tableau de bord',
+    icon: 'pi pi-home', // ou 'pi pi-th-large'
+  },
+  {
+    id: 'declaration',
+    label: 'Déclaration',
+    icon: 'pi pi-file', // ou 'pi pi-clipboard' pour l'analyse de dossier
+  },
+  {
+    id: 'reglement',
+    label: 'Règlement',
+    icon: 'pi pi pi-dollar', // ou 'pi pi-sync' pour le côté automatique, ou 'pi pi-arrows-h'
+  },
+];
+
+
 
 // Gestion sélection menu
 function selectMenu(menuId: string) {
@@ -68,19 +86,13 @@ function selectMenu(menuId: string) {
           @click="selectMenu( menu.id)"
           
         >
-          <svg
-            class="h-5 w-5 flex-shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            v-html="menu.icon"
-          />
-         <span :class=" activeMenu === menu.id ? 'text-primary-700 dark:text-primary-300' :  'text-slate-800 dark:text-slate-100'  "
+          <i :class="[menu.icon, 'h-5 w-5 flex-shrink-0 text-lg text-center']"
+          ></i>
+          
+          <span 
+            :class="activeMenu === menu.id ? 'text-primary-700 dark:text-primary-300' : 'text-slate-800 dark:text-slate-100'"
             class="uppercase text-lg font-bold"
-         >
+          >
             {{ menu.label }}
           </span>
           

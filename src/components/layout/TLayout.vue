@@ -244,16 +244,38 @@ const gridStyle = computed(() => {
 })
 
 const rootClass = computed(() =>
-  props.useViewportSize ? 'fixed inset-0 overflow-hidden' : 'relative h-full w-full overflow-hidden',
+  props.useViewportSize ? 'fixed inset-0 overflow-hidden' : 'relative h-full w-full overflow-hidden  ',
 )
+// ==================== FORCER LE REPAINT DES SCROLLBARS APRÈS LA TRANSITION ====================
+function forceRepaint(el: HTMLElement) {
+  const prev = el.style.overflow
+  el.style.overflow = 'hidden'
+  void el.offsetHeight // force le reflow
+  el.style.overflow = prev
+}
+
+function onGridTransitionEnd(e: TransitionEvent) {
+  if (e.propertyName !== 'grid-template-rows' && e.propertyName !== 'grid-template-columns') return
+  if (!rootEl.value) return
+  // Cible tous les conteneurs à scroll custom imbriqués (TTable, zones internes, etc.)
+  rootEl.value.querySelectorAll<HTMLElement>('.overflow-auto, .ttable__scroll').forEach(forceRepaint)
+}
+
+
 </script>
 
 <template>
-  <div ref="rootEl" :class="rootClass" :style="gridStyle">
+  <div ref="rootEl" :class="rootClass" :style="gridStyle"  @transitionend="onGridTransitionEnd">
     <!-- ================= HEADER ================= -->
     <header
       v-if="zones.header.enabled"
-      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden 
+      bg-neutral-100 
+      border-neutral-200 
+      dark:border-neutral-800 
+      dark:bg-neutral-900
+    
+      shadow-sm"
       :class="{ 'opacity-50': !zones.header.visible }"
       style="grid-row: 1; grid-column: 1 / -1"
     >
@@ -279,7 +301,7 @@ const rootClass = computed(() =>
         </svg>
       </button>
       <div
-        class="h-full overflow-auto transition-opacity duration-200"
+        class="h-full overflow-auto transition-opacity duration-200 "
         :class="[zonePadding, zones.header.visible ? 'opacity-100' : 'opacity-0 pointer-events-none !p-0']"
       >
         <slot name="header" />
@@ -289,7 +311,8 @@ const rootClass = computed(() =>
     <!-- SPLITTER HAUT -->
     <div
       v-if="zones.header.enabled && zones.header.visible && !zones.header.fixed"
-      class="relative z-10  bg-primary-900/50 dark:bg-primary-200/50   transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
+      class="relative z-10  bg-primary-900/50 dark:bg-primary-200/50   
+      transition-colors duration-150 cursor-row-resize hover:bg-primary-500 group"
       :class="{ '!bg-primary-500': activeSplitter === 'top' }"
       style="grid-row: 2; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'top')"
@@ -300,7 +323,9 @@ const rootClass = computed(() =>
     <!-- ================= LEFT ================= -->
     <aside
       v-if="zones.left.enabled"
-      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50 border-r border-neutral-200 dark:border-neutral-800"
+      class="relative overflow-hidden 
+      bg-neutral-100  
+      dark:bg-neutral-900/50  dark:border-neutral-800"
       :class="{ 'opacity-50': !zones.left.visible }"
       style="grid-row: 3; grid-column: 1"
     >
@@ -367,7 +392,7 @@ const rootClass = computed(() =>
     <!-- ================= RIGHT ================= -->
     <aside
       v-if="zones.right.enabled"
-      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50 border-l border-neutral-200 dark:border-neutral-800"
+      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50  dark:border-neutral-800"
       :class="{ 'opacity-50': !zones.right.visible }"
       style="grid-row: 3; grid-column: 5"
     >
@@ -393,7 +418,7 @@ const rootClass = computed(() =>
         </svg>
       </button>
       <div
-        class="h-full overflow-auto transition-opacity duration-200"
+        class="h-full overflow-auto  transition-opacity duration-200"
         :class="[zonePadding, zones.right.visible ? 'opacity-100' : 'opacity-0 pointer-events-none !p-0']"
       >
         <slot name="right" />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
+import Assure from '../assure/assure.vue';
 
 
 const menuModule: Record<string, string> = {
@@ -18,7 +19,7 @@ const menuModule: Record<string, string> = {
 <template>
   <TLayoutModule
     bottomSize="45%"
-    topSize="100px"
+    topSize="55px"
     :show-left="false"
     :show-bottom="false"
     >
@@ -34,6 +35,9 @@ const menuModule: Record<string, string> = {
           </p>
         </div>
       </div-->
+      <div class="p-6 w-full h-1/2">
+       <Assure   />
+        </div>
     </template>
 
   </TLayoutModule>
