@@ -259,7 +259,7 @@ const arrowBgClass = computed(() => {
 
 const arrowPositionClass = computed(() => {
   const map: Record<Position, string> = {
-    top: 'bottom-[-4px] left-1/2 -translate-x-1/2  border-l border-b border-primary',
+    top: 'bottom-[-4px] left-1/2 -translate-x-1/2  border-r border-b border-primary',
     bottom: 'top-[-4px] left-1/2 -translate-x-1/2  border-l border-t border-primary',
     left: 'right-[-4px] top-1/2 -translate-y-1/2 border-r border-b border-primary',
     right: 'left-[-4px] top-1/2 -translate-y-1/2 border-l border-b border-primary',

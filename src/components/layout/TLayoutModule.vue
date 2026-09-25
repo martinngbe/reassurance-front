@@ -15,15 +15,23 @@ const props = withDefaults(
     showTop?: boolean
     showBottom?: boolean
     showLeft?: boolean
+    topFixe?: boolean
+    bottomFixe?: boolean
+    leftFixe?: boolean
   }>(),
   {
     accentColor: '#4f46e5',
     topSize: '15%',
     bottomSize: '15%',
     leftSize: '20%',
+    
     showTop: true,
     showBottom: true,
     showLeft: true,
+    
+    leftFixe: false,
+    topFixe: false,
+    bottomFixe: false,
   },
 )
 console.log("TLayoutModule props:",props)
@@ -35,19 +43,19 @@ const leftVisible = ref(true)
 // Tailles RELATIVES à la zone centrale d'EcranPrincipal (plus au viewport)
 const headerConfig = computed(() =>
   props.showTop
-    ? { size: props.topSize, minSize: '48px', collapsedSize: '28px', fixed: false }
+    ? { size: props.topSize, minSize: '48px', collapsedSize: '28px', fixed: props.topFixe }
     : false,
 )
 
 const footerConfig = computed(() =>
   props.showBottom
-    ? { size: props.bottomSize, minSize: '48px', collapsedSize: '28px', fixed: false }
+    ? { size: props.bottomSize, minSize: '48px', collapsedSize: '28px', fixed: props.bottomFixe }
     : false,
 )
 
 const leftConfig = computed(() =>
   props.showLeft
-    ? { size: props.leftSize, minSize: '96px', collapsedSize: '32px', fixed: false }
+    ? { size: props.leftSize, minSize: '96px', collapsedSize: '32px', fixed: props.leftFixe }
     : false,
 )
 

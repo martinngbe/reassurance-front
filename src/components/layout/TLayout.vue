@@ -329,7 +329,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
       :class="{ 'opacity-50': !zones.left.visible }"
       style="grid-row: 3; grid-column: 1"
     >
-      <button
+      <button v-if="!zones.left.fixed"
         class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-2 right-2"
         :class="{
           '!top-1/2 !-translate-y-1/2 !right-0 w-7 h-12 rounded-r-lg rounded-l-none shadow-lg hover:!scale-105': !zones.left.visible
@@ -337,7 +337,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
         :title="zones.left.visible ? 'Masquer' : 'Afficher'"
         @click="toggle('left')"
       >
-        <svg
+        <svg 
           class="h-3.5 w-3.5 transition-transform duration-300"
           :class="{ 'rotate-180': !zones.left.visible }"
           viewBox="0 0 24 24"

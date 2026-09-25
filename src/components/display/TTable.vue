@@ -110,9 +110,15 @@ function toggleRow(row: T, index: number) {
   if (idx === -1) selectedKeys.value = [...selectedKeys.value, key]
   else selectedKeys.value = selectedKeys.value.filter((k) => k !== key)
 }
-
+// ✨ Sélection exclusive : une seule ligne à la fois (comportement "radio")
+function selectRow(row: T, index: number) {
+  const key = getRowKey(row, index)
+  selectedKeys.value = [key]
+}
 function isSelected(row: T, index: number): boolean {
-  return selectedKeys.value.includes(getRowKey(row, index))
+  const isOk = selectedKeys.value.includes(getRowKey(row, index))
+  console.log("isSelected(row: T, index: number)  isOk:", row ,index ,isOk )
+  return isOk
 }
 
 // ==================== REDIMENSIONNEMENT ====================
@@ -357,7 +363,7 @@ const tableWidth = computed(() => {
         <!-- ✨ MODIFICATION 3 : thead sticky + background OPAQUE (sinon le contenu transparaît) -->
         <thead
           :class="[
-            'bg-neutral-100 dark:bg-neutral-600',
+            'bg-neutral-300 dark:bg-neutral-700',
             isSticky && 'sticky top-0 z-20 shadow-[0_1px_0_0_rgb(0_0_0/0.05)]',
           ]"
         >
@@ -365,7 +371,7 @@ const tableWidth = computed(() => {
             <!-- Colonne sélection -->
             <th
               v-if="selectable"
-              class="w-10 px-3 bg-neutral-50 dark:bg-neutral-800"
+              class="w-10 px-3 bg-neutral-300 dark:bg-neutral-700"
               :class="[densityClasses.head, isSticky && 'sticky left-0 z-30']"
             >
               <input
@@ -450,18 +456,19 @@ const tableWidth = computed(() => {
             v-for="(row, rowIndex) in rows"
             :key="rowIndex"
             :class="[
-              hoverable && 'transition-colors hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
+              hoverable && !isSelected(row, rowIndex) &&'transition-colors hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
               striped && rowIndex % 2 === 1 && 'bg-neutral-800/10 dark:bg-neutral-800/60',
-              isSelected(row, rowIndex) && 'bg-primary-500/10 dark:bg-primary-500/15',
+              isSelected(row, rowIndex) && 'bg-primary-500/20 dark:bg-primary-500/50',
               'cursor-default',
             ]"
-            @click="emit('row-click', row, rowIndex)"
+            @click="selectRow(row, rowIndex); emit('row-click', row, rowIndex)"
           >
             <!-- Checkbox de sélection -->
             <td
               v-if="selectable"
               class="w-10 px-3 bg-white dark:bg-neutral-900"
               :class="[densityClasses.cell, hasFixedColumns && 'sticky left-0 z-10']"
+              
             >
               <input
                 type="checkbox"
@@ -479,7 +486,7 @@ const tableWidth = computed(() => {
                 densityClasses.cell,
                 alignClass(col),
                 // ✨ Background opaque pour les colonnes fixes (sinon le contenu défile derrière)
-                col.fixed === 'left' && 'sticky z-10 bg-white dark:bg-neutral-900',
+                 col.fixed === 'left' && 'sticky z-10 bg-white dark:bg-neutral-900',
               ]"
               :style="{
                 left: col.fixed === 'left' ? getFixedLeft(colIndex, true) : undefined,

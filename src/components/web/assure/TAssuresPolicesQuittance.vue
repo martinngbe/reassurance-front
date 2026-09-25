@@ -2,7 +2,9 @@
 0<script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import { computed, defineAsyncComponent, ref } from 'vue';
-import Assure from '../assure/assure.vue';
+import Police from '../police/police.vue';
+import Quittance from '../quittance/quittance.vue';
+import Assures from './assures.vue';
 
 
 // Chargement dynamique des modules
@@ -23,21 +25,36 @@ function selectMenu(menuId: string) {
 <template>
   <TLayoutModule
     :showBottom=false
-    topSize="1px"
+    :showTop=false
     leftSize="50%"
+    :leftFixe="false"
     >
     <template #left>
       <div class="h-full w-full pb-8">
-         <Assure   />
+         <Assures   />
       </div>
        
     </template>
 
     <template #default>
-      
-        <!--keep-alive>
-            <component :is="currentModule" />
-        </keep-alive-->
+           <TLayoutModule
+                :showTop=false
+                :showLeft=false
+                bottomSize="50%"
+                >
+
+                    <template #default>
+                        <div class="h-full w-full pb-1">
+                          <Police   />
+                        </div>
+                    </template>
+                    <template #footer>
+                        <div class="h-full w-full pb-1">
+                          <Quittance   />
+                        </div>
+                    </template>
+
+            </TLayoutModule>
     </template>
 
  

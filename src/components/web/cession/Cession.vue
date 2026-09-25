@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
-import MenuAcceptation from '../acceptation/MenuAcceptation.vue';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import MenuCession from './MenuCession.vue';
 
@@ -9,7 +8,7 @@ import MenuCession from './MenuCession.vue';
 // Chargement dynamique des modules
 const moduleComponents: Record<string, any> = {
   tableauDeBord: defineAsyncComponent(() => import('@/components/web/acceptation/AcceptationTableauDeBord.vue')),
-  facultative: defineAsyncComponent(() => import('@/components/web/facultative/Facultative.vue')),
+  facultative: defineAsyncComponent(() => import('@/components/web/facultative/CessionFacultative.vue')),
   traite: defineAsyncComponent(() => import('@/components/web/traite/Traite.vue')),
 
 }

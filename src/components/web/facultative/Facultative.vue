@@ -1,32 +1,53 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
-import TTitreSousModule from '@/components/utilitaire/TTitreSousModule.vue';
-import FacultativeFooter from './FacultativeFooter.vue';
-import FacultativeMain from './FacultativeMain.vue';
-
+import { ref } from 'vue';
+import TTab from '@/components/tab/TTab.vue';
+import TTabItem from '@/components/tab/TTabItem.vue';
+import TTabPanel from '@/components/tab/TTabPanel.vue';
+import TAssuresPolicesQuittance from '../assure/TAssuresPolicesQuittance.vue';
+import TCedantesPolicesQuittance from '../cedante/TCedantesPolicesQuittance.vue';
+const active = ref('assures')
 
 
 </script>
 
 <template>
   <TLayoutModule
-    bottomSize="50%"
-    :show-left="false"
+    :show-bottom="false"
     :show-top="false"
+    :show-left="false"
     >
    
 
     <template #default>
-          <div class="flex-col m-2 h-full w-full">
-             <TTitreSousModule libelle="Facultative"/>
-             <FacultativeMain /> 
-          </div>
+          <TTab v-model="active" variant="underline" size="md">
+                <TTabItem value="assures"  label="Assurés"  />
+                <TTabItem value="cedantes" label="Cédantes"     />
+                <TTabItem value="polices"  label="Polices"      />
+                <TTabItem value="quittances"  label="Quittances"      />
 
+                <template #panels>
+                  <TTabPanel value="assures">                   
+                    <TAssuresPolicesQuittance/>
+                  </TTabPanel>
+                  <TTabPanel value="cedantes">
+                    <TCedantesPolicesQuittance/>
+                  </TTabPanel>
+                  <TTabPanel value="polices">
+                    <p class="text-gray-600 dark:text-gray-300">
+                      Formulaire de paramètres.
+                    </p>
+                  </TTabPanel>
+                  <TTabPanel value="quittances">
+                    <p class="text-gray-600 dark:text-gray-300">
+                      Formulaire de paramètres.
+                    </p>
+                  </TTabPanel>
+
+                </template>
+          </TTab>
     </template>
 
-    <template #footer>
-      <FacultativeFooter/>
-    </template>
 
   </TLayoutModule>
 </template>
