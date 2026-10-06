@@ -272,6 +272,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
       class="relative overflow-hidden 
       bg-neutral-100 
       border-neutral-200 
+      
       dark:border-neutral-800 
       dark:bg-neutral-900
     
@@ -279,8 +280,11 @@ function onGridTransitionEnd(e: TransitionEvent) {
       :class="{ 'opacity-50': !zones.header.visible }"
       style="grid-row: 1; grid-column: 1 / -1"
     >
-      <button
-        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 bottom-1.5 right-3"
+      <button  v-if="!zones.header.fixed"
+        class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full 
+          bg-neutral-500 text-white shadow-md transition-all duration-200 
+          cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 
+          active:scale-90 bottom-1.5 right-3"
         :class="{
           '!bottom-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-b-lg shadow-lg hover:!scale-105': !zones.header.visible
         }"
@@ -317,8 +321,13 @@ function onGridTransitionEnd(e: TransitionEvent) {
       style="grid-row: 2; grid-column: 1 / -1"
       @mousedown="startDrag($event, 'top')"
     >
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-0.5 bg-primary-600/60 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 
+      -translate-y-1/2 w-6 h-0.5 bg-primary-600/60 rounded 
+      opacity-0 group-hover:opacity-100 transition-opacity" />
     </div>
+    
+
+     
 
     <!-- ================= LEFT ================= -->
     <aside
@@ -396,7 +405,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
       :class="{ 'opacity-50': !zones.right.visible }"
       style="grid-row: 3; grid-column: 5"
     >
-      <button
+      <button   v-if="!zones.right.fixed"
         class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-2 left-2"
         :class="{
           '!top-1/2 !-translate-y-1/2 !left-0 w-7 h-12 rounded-l-lg rounded-r-none shadow-lg hover:!scale-105': !zones.right.visible
@@ -443,7 +452,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
       :class="{ 'opacity-50': !zones.footer.visible }"
       style="grid-row: 5; grid-column: 1 / -1"
     >
-      <button
+      <button  v-if="!zones.footer.fixed"
         class="absolute z-20 flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white shadow-md transition-all duration-200 cursor-pointer border-0 hover:bg-neutral-600 hover:scale-110 active:scale-90 top-1.5 right-3"
         :class="{
           '!top-0 !right-1/2 !translate-x-1/2 w-12 h-6 rounded-t-lg shadow-lg hover:!scale-105': !zones.footer.visible

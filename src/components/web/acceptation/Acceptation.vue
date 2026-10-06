@@ -25,6 +25,7 @@ function selectMenu(menuId: string) {
   <TLayoutModule
     topSize="55px"
     leftSize="250px"
+    :topFixe="true"
     :showBottom=false
     >
    <template #header>

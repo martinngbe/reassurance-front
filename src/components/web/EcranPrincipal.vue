@@ -99,9 +99,10 @@ function selectMenu(menuId: string) {
           topSize= '75px'
           leftSize= '250px'
           bottomSize= '50px'
+          :top-fixe=true
         >
             <template #header>
-                  <AppHeader
+                  <AppHeader  class="border-b-1 border-primary-200 "
                     :theme="props.theme"
                     :palettes="props.palettes"
                     :accent-color="props.accentColor"
