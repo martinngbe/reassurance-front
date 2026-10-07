@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import Login from './components/Login.vue'
 import EcranPrincipal from './components/web/EcranPrincipal.vue'
+import type {  LoginPayload } from './auth/types.ts'
+import { authService } from './auth/auth.service.ts'
 
 type Theme = 'light' | 'dark'
 
@@ -30,13 +32,17 @@ watch(
   },
   { immediate: true }
 )
-
-function handleLogin() {
-  authenticated.value = true
+ authenticated.value = !!authService.getToken()
+async function handleLogin(payalod:LoginPayload) {
+  console.log("LoginPayload:",payalod)  
+  const response = await  authService.login(payalod)
+  console.log("response:",response)
+  authenticated.value = !!authService.getToken()
 }
 
 function handleLogout() {
   authenticated.value = false
+  authService.logout()
 }
 </script>
 

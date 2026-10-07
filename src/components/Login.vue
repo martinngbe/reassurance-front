@@ -132,7 +132,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+          class="flex items-center justify-center gap-2 cursor-pointer rounded-lg py-3 text-sm font-semibold text-white transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
           :style="{ backgroundColor: 'var(--accent)' }"
         >
           <span v-if="loading" class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
@@ -141,13 +141,14 @@
       </form>
 
       <!-- Séparateur -->
-      <div class="my-6 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+      <!-- <div class="my-6 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
         <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         <span>{{ labels.or }}</span>
         <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-      </div>
+      </div> -->
 
       <!-- Connexions sociales -->
+<!--        
       <div class="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
         <button
           v-for="provider in socialProviders"
@@ -160,10 +161,10 @@
           <span v-html="provider.icon" />
           <span>{{ provider.name }}</span>
         </button>
-      </div>
+      </div> -->
 
       <!-- Pied de page -->
-      <p class="mt-7 text-center text-sm text-slate-500 dark:text-slate-400">
+      <!-- <p class="mt-7 text-center text-sm text-slate-500 dark:text-slate-400">
         {{ labels.noAccount }}
         <a
           href="#"
@@ -172,12 +173,13 @@
         >
           {{ labels.register }}
         </a>
-      </p>
+      </p> -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { LoginPayload } from '@/auth'
 import { computed, reactive, ref } from 'vue'
 
 /* ------------------------------------------------------------------ */
@@ -233,7 +235,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'submit', payload: { email: string; password: string; remember: boolean }): void
+  (e: 'submit', payload: LoginPayload): void
   (e: 'social-login', provider: string): void
   (e: 'forgot-password'): void
   (e: 'register'): void
