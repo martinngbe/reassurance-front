@@ -4,7 +4,8 @@ import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import { computed, defineAsyncComponent, ref } from 'vue';
 import Police from '../police/police.vue';
 import Quittance from '../quittance/quittance.vue';
-import Assures from './assures.vue';
+import Assures from './Assures.vue';
+//import Assures from './assures.vue';
 
 
 // Chargement dynamique des modules

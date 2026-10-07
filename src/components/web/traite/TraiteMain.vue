@@ -2,7 +2,7 @@
 0<script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import { computed, defineAsyncComponent, ref } from 'vue';
-import Assure from '../assure/Assures.vue/index.js';
+//import Assure from '../assure/Assures.vue/index.js';
 import Police from '../police/police.vue';
 import Quittance from '../quittance/quittance.vue';
 

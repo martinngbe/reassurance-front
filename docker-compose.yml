@@ -1,0 +1,16 @@
+services:
+  reassurance-front:
+    image: reassurance-front:0.0.1
+    container_name: reassurance-front
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    networks:
+      - mariadb_network
+
+networks:
+  mariadb_network:
+    external: true
+    name: mariadb_network

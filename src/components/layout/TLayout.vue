@@ -205,7 +205,8 @@ function toggle(dir: SplitterDir) {
     footer: 'update:footerVisible',
   } as const
   localVisible.value[zoneKey] = !z.visible
-  emit(eventMap[zoneKey], !z.visible)
+  emit(eventMap[zoneKey] as any, !z.visible)
+
 }
 
 // ==================== GRID DYNAMIQUE ====================

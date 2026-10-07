@@ -108,8 +108,8 @@ const handleKeydown = (e: KeyboardEvent) => {
   const nextKey = keys[next]
   if (nextKey === undefined) return
 
-  select(keys[next])
-  tabs.value.get(keys[next])?.focus()
+  select(keys[next]!)
+  tabs.value.get(keys[next]!)?.focus()
 }
 
 let ro: ResizeObserver | null = null

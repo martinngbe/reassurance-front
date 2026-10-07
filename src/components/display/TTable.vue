@@ -164,7 +164,8 @@ function toNumber(v: string | number | undefined): number {
 // (0 si absent), donc `toNumber(col.width) ?? 120` ne se déclenchait jamais — on
 // teste explicitement la présence d'une largeur avant d'appliquer le fallback.
 function resolveColWidth(col: TableColumn): number {
-  if (columnWidths.value[col.key]) return columnWidths.value[col.key]
+  if (columnWidths.value[col.key]) return columnWidths.value[col.key]?? 120
+
   if (col.width !== undefined && col.width !== null && col.width !== '') return toNumber(col.width)
   return 120
 }

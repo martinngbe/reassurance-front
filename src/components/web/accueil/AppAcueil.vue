@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
-import Assures from '@/components/web/assure/assures.vue';
+//import Assures from '@/components/web/assure/assures.vue';
 
 
 const menuModule: Record<string, string> = {
