@@ -39,17 +39,28 @@ export type CheckboxModel = boolean | OptionValue[]
 // }
 export type TableRow = Record<string, unknown>
 // forms/common.ts
+// export interface TableColumn {
+//   key: string
+//   label: string
+//   width?: string | number
+//   minWidth?: string | number
+//   align?: 'left' | 'center' | 'right'
+//   sortable?: boolean // ✨ Nouveau
+//   resizable?: boolean // ✨ Nouveau
+//   fixed?: 'left' | 'right' // ✨ Nouveau (pour colonnes figées)
+// }
 export interface TableColumn {
   key: string
   label: string
+  // ✨ Élargir pour accepter '50%', '200px', ou 200
   width?: string | number
   minWidth?: string | number
+  sortable?: boolean
+  resizable?: boolean
   align?: 'left' | 'center' | 'right'
-  sortable?: boolean // ✨ Nouveau
-  resizable?: boolean // ✨ Nouveau
-  fixed?: 'left' | 'right' // ✨ Nouveau (pour colonnes figées)
+  fixed?: 'left' | 'right'
+  // ... autres propriétés
 }
-
 //export type TableRow = Record<string, any>
 
 export type SortDirection = 'asc' | 'desc' | null

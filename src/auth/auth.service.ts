@@ -22,11 +22,7 @@ export interface AuthResponse {
 const STORAGE_KEY = 'auth_token'
 
 export const authService = {
-  // async login(payload: LoginPayload): Promise<AuthResponse> {
-  //   const { data } = await apiClient.post<AuthResponse>('/auth/login', payload)
-  //   this.saveToken(data.accessToken, payload.remember)
-  //   return data
-  // },
+ 
   async login(payload: LoginPayload): Promise<any> {
     const loginPayload:LoginDto ={email: payload.email , password:payload.password}
     const { data } = await apiClient.post<any>('/auth/login', loginPayload)

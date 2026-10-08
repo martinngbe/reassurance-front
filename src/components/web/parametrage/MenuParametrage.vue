@@ -5,7 +5,7 @@ const { theme, toggleMode } = useTheme()
 
 
 /** mode réellement appliqué ('system' déjà résolu) */
-const isDark = computed<boolean>(() => theme.resolvedMode === 'dark')
+//const isDark = computed<boolean>(() => theme.resolvedMode === 'dark')
 const emit = defineEmits<{
   (e: 'select', menuId: string): void
 }>()
@@ -15,14 +15,19 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref('exercice')
+const activeMenu = ref('campagne')
 
 
 const menus: MenuItem[] = [
   {
-    id: 'exercice',
-    label: 'Exercice',
+    id: 'campagne',
+    label: 'Campagne',
     icon: 'pi pi-calendar',
+  },
+  {
+    id: 'profil',
+    label: 'Profil',
+    icon: 'pi pi-user',
   },
   {
     id: 'utilisateur',

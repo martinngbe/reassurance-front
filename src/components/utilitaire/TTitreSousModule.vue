@@ -6,7 +6,7 @@ defineProps<{
 
 </script>   
  <template>     
-        <span class="uppercase font-bold text-md text-primary-600 dark:text-primary-400">{{ libelle }}</span>    
+        <span class="uppercase p-2 font-bold text-md text-primary-600 dark:text-primary-400">{{ libelle }}</span>    
  </template>     
       
      

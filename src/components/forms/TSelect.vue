@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TFieldWrapper from './TFieldWrapper.vue'
-import { nextUid } from '../../utils/uid'
+import { nextUid } from '../../utilitaire/uid.ts'
 import { normalizeOptions, type OptionsInput } from './common'
 import { controlBase } from './fieldStyles'
 

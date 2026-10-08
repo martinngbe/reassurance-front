@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import TFieldWrapper from './TFieldWrapper.vue'
 import TRadio from './TRadio.vue'
-import { nextUid } from '../../utils/uid'
+import { nextUid } from '../../utilitaire/uid.ts'
 import { normalizeOptions, type OptionValue, type OptionsInput } from './common'
 
 const props = withDefaults(

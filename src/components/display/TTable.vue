@@ -46,6 +46,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: 'sort', state: SortState): void
   (e: 'row-click', row: T, index: number): void
+  (e: 'row-double-click', row: T, index: number): void
 }>()
 
 const selectedKeys = defineModel<(string | number)[]>('selectedKeys', { default: () => [] })
@@ -117,7 +118,7 @@ function selectRow(row: T, index: number) {
 }
 function isSelected(row: T, index: number): boolean {
   const isOk = selectedKeys.value.includes(getRowKey(row, index))
-  console.log("isSelected(row: T, index: number)  isOk:", row ,index ,isOk )
+  //console.log("isSelected(row: T, index: number)  isOk:", row ,index ,isOk )
   return isOk
 }
 
@@ -158,38 +159,84 @@ function toNumber(v: string | number | undefined): number {
   if (!v) return 0
   return parseFloat(v) || 0
 }
+// ✨ Détecte une valeur exprimée en pourcentage (ex: '50%', '33.33%')
+function isPercent(v: string | number | undefined): v is string {
+  return typeof v === 'string' && v.trim().endsWith('%')
+}
 
 // ✨ Résout la largeur effective d'une colonne : redimensionnement manuel > largeur
 // explicite (col.width) > 120px par défaut. `toNumber` renvoie toujours un nombre
 // (0 si absent), donc `toNumber(col.width) ?? 120` ne se déclenchait jamais — on
 // teste explicitement la présence d'une largeur avant d'appliquer le fallback.
-function resolveColWidth(col: TableColumn): number {
-  if (columnWidths.value[col.key]) return columnWidths.value[col.key]?? 120
 
-  if (col.width !== undefined && col.width !== null && col.width !== '') return toNumber(col.width)
-  return 120
+// function resolveColWidth(col: TableColumn): number {
+//   if (columnWidths.value[col.key]) return columnWidths.value[col.key]?? 120
+
+//   if (col.width !== undefined && col.width !== null && col.width !== '') return toNumber(col.width)
+//   return 120
+// }
+// function resolveColWidth(col: TableColumn): number | string {
+//   // 1. Redimensionnement manuel (toujours en px)
+//   if (columnWidths.value[col.key]) return columnWidths.value[col.key] ?? 120
+//   // 2. Pourcentage → on le retourne tel quel
+//   if (isPercent(col.width)) return col.width
+//   // 3. Largeur explicite en px
+//   if ( col.width !== undefined && col.width !== null ) return toNumber(col.width)
+//   // 4. Fallback
+//   return 120
+// }
+
+function resolveColWidth(col: TableColumn): number | string {
+  if (columnWidths.value[col.key]) return columnWidths.value[col.key] ?? 120
+  if (isPercent(col.width)) return col.width!
+  const w = toNumber(col.width)
+  return w > 0 ? w : 120   // ← 0 ou NaN → fallback
 }
-
+// function getColWidth(col: TableColumn): string | undefined {
+//   if (columnWidths.value[col.key]) return `${columnWidths.value[col.key]}px`
+//   if (col.width) return typeof col.width === 'number' ? `${col.width}px` : col.width
+//   return undefined
+// }
 function getColWidth(col: TableColumn): string | undefined {
   if (columnWidths.value[col.key]) return `${columnWidths.value[col.key]}px`
-  if (col.width) return typeof col.width === 'number' ? `${col.width}px` : col.width
+  if (col.width !== undefined && col.width !== null && col.width !== '') {
+    return typeof col.width === 'number' ? `${col.width}px` : col.width // '50%' passe intact
+  }
   return undefined
 }
 
 // ✨ Calcul de la largeur totale minimale du tableau (pour forcer le scroll horizontal)
+// const tableMinWidth = computed(() => {
+//   let total = 0
+//   let hasExplicitWidth = false
+//   for (const col of props.columns) {
+//     const w = columnWidths.value[col.key] ?? toNumber(col.width)
+//     if (w > 0) {
+//       total += w
+//       hasExplicitWidth = true
+//     } else {
+//       total += 120 // largeur par défaut estimée
+//     }
+//   }
+//   if (props.selectable) total += 40 // largeur de la colonne checkbox
+//   return hasExplicitWidth ? `${total}px` : undefined
+// })
+
+
+
 const tableMinWidth = computed(() => {
   let total = 0
   let hasExplicitWidth = false
   for (const col of props.columns) {
-    const w = columnWidths.value[col.key] ?? toNumber(col.width)
+    const w = columnWidths.value[col.key] ?? (isPercent(col.width) ? 0 : toNumber(col.width))
     if (w > 0) {
       total += w
       hasExplicitWidth = true
-    } else {
-      total += 120 // largeur par défaut estimée
+    } else if (!isPercent(col.width)) {
+      total += 120
     }
   }
-  if (props.selectable) total += 40 // largeur de la colonne checkbox
+  if (props.selectable) total += 40
   return hasExplicitWidth ? `${total}px` : undefined
 })
 
@@ -282,38 +329,65 @@ function alignClass(col: TableColumn): string {
   return 'text-left'
 }
 // ✨ Calcul de la position "left" pour les colonnes fixes
+// function getFixedLeft(colIndex: number, isBody = false): string {
+//   let left = 0
+//   const offset = props.selectable ? 40 : 0 // largeur de la colonne checkbox
+  
+//   // Pour les th (header), on commence après la checkbox si selectable
+//   // Pour les td (body), idem
+//   const startIndex = isBody ? 0 : 0
+  
+//   for (let i = 0; i < colIndex; i++) {
+//     const col = props.columns[i]
+//     if (col) {
+//       left += resolveColWidth(col)
+//     }
+//   }
+  
+//   return `${left + (props.selectable ? 40 : 0)}px`
+// }
 function getFixedLeft(colIndex: number, isBody = false): string {
   let left = 0
-  const offset = props.selectable ? 40 : 0 // largeur de la colonne checkbox
-  
-  // Pour les th (header), on commence après la checkbox si selectable
-  // Pour les td (body), idem
-  const startIndex = isBody ? 0 : 0
-  
   for (let i = 0; i < colIndex; i++) {
     const col = props.columns[i]
-    if (col) {
-      left += resolveColWidth(col)
-    }
+    if (!col) continue
+    const w = resolveColWidth(col)
+    if (typeof w === 'number') left += w
+    else return '0px' // cas dégénéré : on ne peut pas cumuler % + fixed
   }
-  
   return `${left + (props.selectable ? 40 : 0)}px`
 }
+
 const hasCaption = computed(() => !!props.title || !!slots.caption || !!slots['caption-extra'])
 
 const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
 
 // ✨ Calcul de la largeur totale du tableau
+// const tableWidth = computed(() => {
+//   let total = 0
+//   for (const col of props.columns) {
+//     total += resolveColWidth(col)
+//   }
+//   if (props.selectable) total += 40 // largeur de la colonne checkbox
+//   console.log('TTable tableWidth:',total)
+//   return `${total}px`
+// })
 const tableWidth = computed(() => {
   let total = 0
+  let hasPercent = false
   for (const col of props.columns) {
-    total += resolveColWidth(col)
+    const w = resolveColWidth(col)
+    if (typeof w === 'string') {        // ← pourcentage
+      hasPercent = true
+    } else {
+      total += w
+    }
   }
-  if (props.selectable) total += 40 // largeur de la colonne checkbox
-  console.log('TTable tableWidth:',total)
+  if (props.selectable) total += 40
+  // Si mixte ou 100% %, on force 100% pour que les % s'appliquent
+  if (hasPercent) return '100%'
   return `${total}px`
 })
-
 </script>
 
 <template>

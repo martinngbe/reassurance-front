@@ -1,6 +1,12 @@
 <script  setup lang="ts">
 import TToolTip from '@/components/display/TToolTip.vue';
 
+defineProps<{
+  nouveauVisible?: boolean
+  modifierVisible?: boolean
+  supprimerVisible?: boolean
+  impressionVisible?: boolean
+}>()
 
 
 </script>
@@ -14,14 +20,17 @@ import TToolTip from '@/components/display/TToolTip.vue';
     </TToolTip>
       
     <TToolTip content="Modifier" position="bottom">
-            <i class="pi pi-pencil  pl-3 pr-3  cursor-pointer" style="color: blue;"></i>
+            <i v-if="modifierVisible" class="pi pi-pencil  pl-3 pr-3  cursor-pointer" style="color: blue;"></i>
+            <i v-else class="pi pi-pencil  pl-3 pr-3 " style="color: gray;"></i>
     </TToolTip>
       <TToolTip content="Suppimer" position="bottom">
-      <i class="pi pi-trash  pl-3 pr-3  cursor-pointer"  style="color: red;"></i>
-    </TToolTip>
+          <i v-if="supprimerVisible" class="pi pi-trash  pl-3 pr-3  cursor-pointer "  style="color: red ;"></i>
+          <i v-else class="pi pi-trash  pl-3 pr-3 "  style="color: gray;"></i>
+      </TToolTip>
       <TToolTip content="Imprimer" position="bottom">
-      <i class="pi pi-print  pl-3 pr-3  cursor-pointer"  style="color:  #708090;"></i>
-    </TToolTip>  
+        <i  v-if="impressionVisible" class="pi pi-print  pl-3 pr-3  cursor-pointer"  ></i>
+        <i v-else class="pi pi-print  pl-3 pr-3  "  style="color: gray;"></i>
+      </TToolTip>  
    
   </div>
 </template>
