@@ -26,9 +26,9 @@ export const authService = {
   async login(payload: LoginPayload): Promise<any> {
     const loginPayload:LoginDto ={email: payload.email , password:payload.password}
     const { data } = await apiClient.post<any>('/auth/login', loginPayload)
-    console.log("data:",data)
-    if(data.success){
-      this.saveToken(data.data.accessToken, payload.remember)
+    console.log("AuthService.login data:",data)
+    if(data.accessToken){
+      this.saveToken(data.accessToken, payload.remember)
     }else{
       this.clearToken()
     }

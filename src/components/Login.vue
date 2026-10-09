@@ -1,3 +1,152 @@
+<script setup lang="ts">
+import type { LoginPayload } from '@/auth'
+import { computed, reactive, ref } from 'vue'
+
+/* ------------------------------------------------------------------ */
+/* Types                                                               */
+/* ------------------------------------------------------------------ */
+
+type Theme = 'light' | 'dark'
+
+interface SocialProvider {
+  name: string
+  icon: string
+}
+
+/* ------------------------------------------------------------------ */
+/* Props                                                               */
+/* ------------------------------------------------------------------ */
+
+interface Props {
+  /** Thème du template. Pose la classe `dark` (stratégie class de Tailwind). */
+  theme?: Theme
+  /**
+   * Couleur d'accent issue de la palette du template.
+   * Injectée via des variables CSS (--accent, --accent-hover, --accent-soft,
+   * --accent-ring) consommées par les classes arbitraires Tailwind
+   * (bg-[var(--accent)], text-[var(--accent-hover)]…).
+   * Aucune classe Tailwind n'est générée dynamiquement : purge-safe.
+   */
+  accentColor?: string
+  title?: string
+  subtitle?: string
+  loading?: boolean
+  serverError?: string
+  socialProviders?: SocialProvider[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  theme: 'dark',
+  accentColor: '#6C5CE7',
+  title: 'Bon retour !',
+  subtitle: 'Connectez-vous pour accéder à votre espace.',
+  loading: false,
+  serverError: '',
+  socialProviders: () => [
+    {
+      name: 'Google',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.57-5.15 3.57-8.81Z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.29v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.29 14.29A7.2 7.2 0 0 1 4.9 12c0-.8.14-1.57.39-2.29v-3.1H1.29a12 12 0 0 0 0 10.78l4-3.1Z"/><path fill="#EA4335" d="M12 4.76c1.76 0 3.34.6 4.58 1.8l3.44-3.44A11.97 11.97 0 0 0 12 0 12 12 0 0 0 1.29 6.61l4 3.1C6.23 6.87 8.88 4.76 12 4.76Z"/></svg>',
+    },
+    {
+      name: 'GitHub',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6.01 0c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.92.43.38.82 1.11.82 2.24v3.32c0 .32.21.7.82.58A12 12 0 0 0 12 .3Z"/></svg>',
+    },
+  ],
+})
+
+const emit = defineEmits<{
+  (e: 'submit', payload: LoginPayload): void
+  (e: 'social-login', provider: string): void
+  (e: 'forgot-password'): void
+  (e: 'register'): void
+}>()
+
+/* ------------------------------------------------------------------ */
+/* Labels                                                              */
+/* ------------------------------------------------------------------ */
+
+const labels = {
+  email: 'Adresse e-mail',
+  password: 'Mot de passe',
+  remember: 'Se souvenir de moi',
+  forgot: 'Mot de passe oublié ?',
+  submit: 'Se connecter',
+  submitting: 'Connexion…',
+  or: 'ou continuer avec',
+  noAccount: 'Pas encore de compte ?',
+  register: 'Créer un compte',
+}
+
+const placeholders = {
+  email: 'vous@exemple.com',
+  password: '••••••••',
+}
+
+/* ------------------------------------------------------------------ */
+/* État + validation                                                   */
+/* ------------------------------------------------------------------ */
+
+const form = reactive({ email: '', password: '', remember: false })
+const errors = reactive({ email: '', password: '' })
+const showPassword = ref(false)
+
+function validateEmail(): boolean {
+  if (!form.email) {
+    errors.email = 'L’adresse e-mail est requise.'
+    return false
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errors.email = 'Adresse e-mail invalide.'
+    return false
+  }
+  errors.email = ''
+  return true
+}
+
+function validatePassword(): boolean {
+  if (!form.password) {
+    errors.password = 'Le mot de passe est requis.'
+    return false
+  }
+  if (form.password.length < 8) {
+    errors.password = '8 caractères minimum.'
+    return false
+  }
+  errors.password = ''
+  return true
+}
+
+function handleSubmit(): void {
+  const ok = [validateEmail(), validatePassword()].every(Boolean)
+  if (!ok || props.loading) return
+  emit('submit', { ...form })
+}
+
+/* ------------------------------------------------------------------ */
+/* Couleurs dynamiques (palette du template)                           */
+/* ------------------------------------------------------------------ */
+
+/** Assombrit ou éclaircit une couleur hex (pour hover, focus, fonds). */
+function shift(hex: string, amount: number): string {
+  const n = hex.replace('#', '')
+  const full = n.length === 3 ? n.split('').map((c) => c + c).join('') : n
+  const num = parseInt(full, 16)
+  const clamp = (v: number) => Math.max(0, Math.min(255, v))
+  const r = clamp((num >> 16) + amount)
+  const g = clamp(((num >> 8) & 0xff) + amount)
+  const b = clamp((num & 0xff) + amount)
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`
+}
+
+const accentVars = computed(() => ({
+  '--accent': props.accentColor,
+  '--accent-hover': shift(props.accentColor, -18),
+  '--accent-soft': shift(props.accentColor, 140),
+  '--accent-ring': `${props.accentColor}33`,
+}))
+</script>
+
+
 <template>
   <div
     class="flex min-h-screen items-center justify-center bg-slate-100 p-6 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100"
@@ -178,153 +327,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { LoginPayload } from '@/auth'
-import { computed, reactive, ref } from 'vue'
-
-/* ------------------------------------------------------------------ */
-/* Types                                                               */
-/* ------------------------------------------------------------------ */
-
-type Theme = 'light' | 'dark'
-
-interface SocialProvider {
-  name: string
-  icon: string
-}
-
-/* ------------------------------------------------------------------ */
-/* Props                                                               */
-/* ------------------------------------------------------------------ */
-
-interface Props {
-  /** Thème du template. Pose la classe `dark` (stratégie class de Tailwind). */
-  theme?: Theme
-  /**
-   * Couleur d'accent issue de la palette du template.
-   * Injectée via des variables CSS (--accent, --accent-hover, --accent-soft,
-   * --accent-ring) consommées par les classes arbitraires Tailwind
-   * (bg-[var(--accent)], text-[var(--accent-hover)]…).
-   * Aucune classe Tailwind n'est générée dynamiquement : purge-safe.
-   */
-  accentColor?: string
-  title?: string
-  subtitle?: string
-  loading?: boolean
-  serverError?: string
-  socialProviders?: SocialProvider[]
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  theme: 'dark',
-  accentColor: '#6C5CE7',
-  title: 'Bon retour !',
-  subtitle: 'Connectez-vous pour accéder à votre espace.',
-  loading: false,
-  serverError: '',
-  socialProviders: () => [
-    {
-      name: 'Google',
-      icon: '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.57-5.15 3.57-8.81Z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.29v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.29 14.29A7.2 7.2 0 0 1 4.9 12c0-.8.14-1.57.39-2.29v-3.1H1.29a12 12 0 0 0 0 10.78l4-3.1Z"/><path fill="#EA4335" d="M12 4.76c1.76 0 3.34.6 4.58 1.8l3.44-3.44A11.97 11.97 0 0 0 12 0 12 12 0 0 0 1.29 6.61l4 3.1C6.23 6.87 8.88 4.76 12 4.76Z"/></svg>',
-    },
-    {
-      name: 'GitHub',
-      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6.01 0c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.92.43.38.82 1.11.82 2.24v3.32c0 .32.21.7.82.58A12 12 0 0 0 12 .3Z"/></svg>',
-    },
-  ],
-})
-
-const emit = defineEmits<{
-  (e: 'submit', payload: LoginPayload): void
-  (e: 'social-login', provider: string): void
-  (e: 'forgot-password'): void
-  (e: 'register'): void
-}>()
-
-/* ------------------------------------------------------------------ */
-/* Labels                                                              */
-/* ------------------------------------------------------------------ */
-
-const labels = {
-  email: 'Adresse e-mail',
-  password: 'Mot de passe',
-  remember: 'Se souvenir de moi',
-  forgot: 'Mot de passe oublié ?',
-  submit: 'Se connecter',
-  submitting: 'Connexion…',
-  or: 'ou continuer avec',
-  noAccount: 'Pas encore de compte ?',
-  register: 'Créer un compte',
-}
-
-const placeholders = {
-  email: 'vous@exemple.com',
-  password: '••••••••',
-}
-
-/* ------------------------------------------------------------------ */
-/* État + validation                                                   */
-/* ------------------------------------------------------------------ */
-
-const form = reactive({ email: '', password: '', remember: false })
-const errors = reactive({ email: '', password: '' })
-const showPassword = ref(false)
-
-function validateEmail(): boolean {
-  if (!form.email) {
-    errors.email = 'L’adresse e-mail est requise.'
-    return false
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Adresse e-mail invalide.'
-    return false
-  }
-  errors.email = ''
-  return true
-}
-
-function validatePassword(): boolean {
-  if (!form.password) {
-    errors.password = 'Le mot de passe est requis.'
-    return false
-  }
-  if (form.password.length < 8) {
-    errors.password = '8 caractères minimum.'
-    return false
-  }
-  errors.password = ''
-  return true
-}
-
-function handleSubmit(): void {
-  const ok = [validateEmail(), validatePassword()].every(Boolean)
-  if (!ok || props.loading) return
-  emit('submit', { ...form })
-}
-
-/* ------------------------------------------------------------------ */
-/* Couleurs dynamiques (palette du template)                           */
-/* ------------------------------------------------------------------ */
-
-/** Assombrit ou éclaircit une couleur hex (pour hover, focus, fonds). */
-function shift(hex: string, amount: number): string {
-  const n = hex.replace('#', '')
-  const full = n.length === 3 ? n.split('').map((c) => c + c).join('') : n
-  const num = parseInt(full, 16)
-  const clamp = (v: number) => Math.max(0, Math.min(255, v))
-  const r = clamp((num >> 16) + amount)
-  const g = clamp(((num >> 8) & 0xff) + amount)
-  const b = clamp((num & 0xff) + amount)
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`
-}
-
-const accentVars = computed(() => ({
-  '--accent': props.accentColor,
-  '--accent-hover': shift(props.accentColor, -18),
-  '--accent-soft': shift(props.accentColor, 140),
-  '--accent-ring': `${props.accentColor}33`,
-}))
-</script>
 
 <style scoped>
 /* La classe `dark` doit activer les variantes dark: de Tailwind.

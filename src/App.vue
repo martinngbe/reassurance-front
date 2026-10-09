@@ -36,8 +36,11 @@ watch(
 async function handleLogin(payalod:LoginPayload) {
   console.log("LoginPayload:",payalod)  
   const response = await  authService.login(payalod)
-  console.log("response:",response)
-  authenticated.value = !!authService.getToken()
+  console.log(" App.handleLogin response:",response)
+  const token = authService.getToken()
+  authenticated.value = !!token
+  console.log(" App.handleLogin token:",token)
+  console.log(" App.handleLogin authenticated.value:",authenticated.value)
 }
 
 function handleLogout() {

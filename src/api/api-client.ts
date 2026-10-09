@@ -7,7 +7,15 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token =
     localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  console.log("apiClient.interceptors.request token:",token)  
+  if (token) {
+    //config.headers.Authorization = `Bearer ${token}`
+     // ✅ Utiliser .set() au lieu de l'assignation directe
+    config.headers.set('Authorization', `Bearer ${token}`)
+    console.log("config:",config)
+    console.log("config.headers:",config.headers)
+    console.log("config.headers.Authorization:",config.headers.Authorization)
+  }
   return config
 })
 
