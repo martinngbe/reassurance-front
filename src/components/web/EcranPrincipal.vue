@@ -26,7 +26,7 @@ const footerVisible = ref(true)
 // Configuration EcranPrincipal (zones principales de l'écran)
 const headerConfig = { size: '64px', minSize: '56px', collapsedSize: '36px', fixed: false }
 const leftConfig = { size: '270px', minSize: '180px', collapsedSize: '40px', fixed: false }
-const rightConfig = { size: '280px', minSize: '200px', collapsedSize: '40px', fixed: false }
+const rightConfig = { size: '10px', minSize: '20px', collapsedSize: '40px', fixed: true }
 const footerConfig = { size: '40px', minSize: '32px', collapsedSize: '0px', fixed: false }
 
 function shift(hex: string, amount: number): string {
@@ -55,14 +55,14 @@ const accentVars = computed(() => ({
 const moduleComponents: Record<string, any> = {
   accueil: defineAsyncComponent(() => import('./accueil/AppAcueil.vue')),
   acceptation: defineAsyncComponent(() => import('./acceptation/Acceptation.vue')),
-  cession: defineAsyncComponent(() => import('./cession/Cession.vue')),
+  cession: defineAsyncComponent(() => import('./module/cession/Cession.vue')),
   sinistre: defineAsyncComponent(() => import('./sinistre/Sinistre.vue')),
   reglement: defineAsyncComponent(() => import('./reglement/Reglement.vue')),
   acteur: defineAsyncComponent(() => import('@/components/web/assure/Assures.vue')),
-  compte: defineAsyncComponent(() => import('./compte/Compte.vue')),
-  comptabilisation: defineAsyncComponent(() => import('./comptabilisation/Comptabilisation.vue')),
-  consultation: defineAsyncComponent(() => import('./consultation/Consultation.vue')),
-  parametrage: defineAsyncComponent(() => import('./parametrage/Parametrage.vue')),
+  compte: defineAsyncComponent(() => import('@/components/web/module/compte/Compte.vue')),
+  comptabilisation: defineAsyncComponent(() => import('./module/comptabilisation/Comptabilisation.vue')),
+  consultation: defineAsyncComponent(() => import('./module/consultation/Consultation.vue')),
+  parametrage: defineAsyncComponent(() => import('./module/parametrage/Parametrage.vue')),
 }
 
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
@@ -82,7 +82,7 @@ function selectMenu(menuId: string) {
 <template>
     <div :style="accentVars" class="h-screen w-screen  ">
       
-          <!--TLayout
+          <TLayout
             :header="headerConfig"
             :left="leftConfig"
             :right="rightConfig"
@@ -93,16 +93,17 @@ function selectMenu(menuId: string) {
             v-model:header-visible="headerVisible"
             v-model:left-visible="leftVisible"
             v-model:right-visible="rightVisible"
-            v-model:footer-visible="footerVisible"
-    -->
-       <TLayoutModule
+            v-model:footer-visible="footerVisible">
+   
+       <!-- <TLayoutModule
           topSize= '75px'
           leftSize= '250px'
+          
           bottomSize= '50px'
           :top-fixe=true
-        >
+        > -->
             <template #header>
-                  <AppHeader  class="border-b-1 border-primary-200 "
+                  <AppHeader  
                     :theme="props.theme"
                     :palettes="props.palettes"
                     :accent-color="props.accentColor"
@@ -121,13 +122,15 @@ function selectMenu(menuId: string) {
             </template>
 
             <!-- CONTENU PRINCIPAL : ModuleLayout remplit exactement la zone centrale -->
-            <template #default>        
-              <keep-alive>
-                  <component :is="currentModule" :accent-color="props.accentColor" />
-              </keep-alive>
+            <template #default>
+               <div class="w-full h-full border-r-1 dark:border-neutral-600 border-neutral-400">       
+                  <keep-alive>
+                      <component :is="currentModule" :accent-color="props.accentColor"  />
+                  </keep-alive>
+                </div>  
             </template>
 
-            <template #right>
+            <!-- <template #right>
               <div class="flex h-full flex-col p-3 bg-neutral-50 dark:bg-neutral-900/50  dark:border-neutral-800">
                 <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Informations
@@ -140,7 +143,7 @@ function selectMenu(menuId: string) {
                   </div>
                 </div>
               </div>
-            </template>
+            </template> -->
 
             <template #footer>
               <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
@@ -150,7 +153,7 @@ function selectMenu(menuId: string) {
                 </span>
               </div>
             </template>
-    </TLayoutModule>        
-          <!--/TLayout-->
+    <!-- </TLayoutModule>         -->
+          </TLayout>
     </div>
 </template>

@@ -114,14 +114,13 @@ const selection = ( row:any, index:number)=>{
 
     <template #caption="{ selectedCount, total }">
       <div class="flex items-center gap-2">
-        <TAction 
+        <!-- <TAction 
         :modifier-visible="isSelectionLigne" 
         :supprimer-visible="isSelectionLigne"
         :impression-visible="totalItems>0"
-        />
-        <!-- <TBadge v-if="selectedCount" color="primary" variant="soft">
-          {{ selectedCount }} / {{ total }}
-        </TBadge> -->
+        /> -->
+        <TTitreModule libelle="données système"/> 
+       
       </div>
     </template>
 

@@ -10,6 +10,7 @@ const props = withDefaults(
     loading?: boolean
     disabled?: boolean
     block?: boolean
+    width?: string // ✨ Nouvelle propriété pour fixer la largeur
   }>(),
   {
     variant: 'solid',
@@ -26,6 +27,7 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-10 px-4 text-sm gap-2 rounded-lg',
   lg: 'h-12 px-6 text-base gap-2 rounded-xl',
 }
+
 const variants: Record<ButtonVariant, string> = {
   solid:
     'bg-primary-500 text-primary-contrast shadow-sm hover:bg-primary-600 active:bg-primary-700 focus-visible:outline-primary-500',
@@ -43,7 +45,8 @@ const classes = computed<Array<string | false>>(() => [
   'disabled:pointer-events-none disabled:opacity-50',
   props.variant === 'link' ? 'h-auto p-0' : sizes[props.size],
   variants[props.variant],
-  props.block && 'w-full',
+  // ✨ Application de la largeur (avec gestion du conflit potentiel avec la prop `block`)
+  props.block ? 'w-full' : (props.width || false), 
 ])
 </script>
 

@@ -411,9 +411,9 @@ const tableWidth = computed(() => {
       <div class="flex min-w-0 items-center gap-3">
         <h3
           v-if="title"
-          class="truncate text-sm font-semibold text-neutral-800 dark:text-neutral-100"
+          class="truncate uppercase text-xl font-semibold text-neutral-800 dark:text-neutral-100"
         >
-          {{ title }}
+          {{ title }} 
         </h3>
         <slot name="caption-extra" :selected-count="selectedKeys.length" :total="rows.length" />
       </div>
@@ -462,7 +462,7 @@ const tableWidth = computed(() => {
               v-for="(col, colIndex) in columns"
               :key="col.key"
               scope="col"
-              class="relative select-none text-neutral-500 dark:text-neutral-400"
+              class="relative select-none text-neutral-500 dark:text-neutral-100"
               :class="[
                 densityClasses.head,
                 'font-semibold uppercase tracking-wide',

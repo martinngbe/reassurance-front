@@ -18,7 +18,7 @@ withDefaults(
       :for="htmlFor"
       class="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
     >
-      {{ label }} <span v-if="required" class="text-primary-500">*</span>
+      {{ label }} <span v-if="required" class="text-primary-500 text-xl">*</span>
     </label>
     <slot />
     <p

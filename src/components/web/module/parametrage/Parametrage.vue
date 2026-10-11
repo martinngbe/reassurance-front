@@ -3,6 +3,8 @@ import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
 import MenuParametrage from './MenuParametrage.vue';
 import { defineAsyncComponent, computed, ref } from 'vue';
+import TLigneHorizontale from '@/components/utilitaire/TLigneHorizontale.vue';
+import TLigneVerticale from '@/components/utilitaire/TLigneVerticale.vue';
 
 
 const activeMenu = ref('campagne')
@@ -10,6 +12,7 @@ const activeMenu = ref('campagne')
 const moduleComponents: Record<string, any> = {
   campagne: defineAsyncComponent(() => import('@/components/web/referentiel/campagne/TCampagne.vue')),
   profil: defineAsyncComponent(() => import('@/components/web/referentiel/role/TRole.vue')),
+  utilisateur: defineAsyncComponent(() => import('@/components/web/referentiel/utilisateur/TUtilisateur.vue')),
   
 }
 
@@ -23,24 +26,28 @@ function selectMenu(menuId: string) {
 <template>
   <TLayoutModule
     topSize="55px"
+    :topFixe="true"
     leftSize="300px"
     :showBottom=false
     >
    <template #header>
-        <TTitreModule libelle="Paramétrage"/>     
+        <TTitreModule libelle="Paramétrage"/>
+        <TLigneHorizontale/>     
     </template>
 
    <template #left>
       <MenuParametrage @select="selectMenu"/>
     </template>
-
+    <!-- <template #right>
+      <TLigneVerticale/>
+    </template> -->
     <template #default>
+      
               <keep-alive>
                   <component :is="currentModule"  />
-              </keep-alive>     
+              </keep-alive> 
+     
     </template>
-
- 
 
   </TLayoutModule>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
-import CompteFooter from '@/components/web/compte/CompteFooter.vue';
+import CompteFooter from '@/components/web/module/compte/CompteFooter.vue';
 
 
 
