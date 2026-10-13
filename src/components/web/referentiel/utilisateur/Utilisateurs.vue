@@ -7,7 +7,6 @@ import { useUtilisateurs } from '@/referentiel/utilisateur/useUtilisateur'
 import TBadge from '@/components/display/TBadge.vue'
 import TAction from '@/components/utilitaire/TAction.vue'
 import TModal from '@/components/display/TModal.vue'
-//import UtilisateurForm from ' ./UtilisateurForm.vue'
 import type { Utilisateur } from '@/referentiel/utilisateur/utilisateur'
 import TUtilisateurForm from './TUtilisateurForm.vue'
 
@@ -22,8 +21,10 @@ const sortState = ref<SortState>({ key: null, direction: null })
 const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
 
 // ==================== SÉLECTION ====================
+// la liste des utilisateurs séléctionnés
+// cette variable se charge dynamiquementpar v-model:selected-keys="selectedUtilisateurs"   
 const selectedUtilisateurs = ref<(string | number)[]>([])
-const isSelectionLigne = ref(false)
+//const isSelectionLigne = ref(false)
 
 // ==================== API ====================
 const params = computed(() => ({
@@ -38,10 +39,10 @@ const { utilisateurs, deleteUtilisateur } = useUtilisateurs(params)
 
 // ==================== COLONNES TABLE ====================
 const utilisateurColumns: TableColumn[] = [
-  { key: 'nom', label: 'Nom', width: '15%', minWidth: 150, sortable: true },
+  { key: 'nom',     label: 'Nom',     width: '15%', minWidth: 150, sortable: true },
   { key: 'prenoms', label: 'Prénoms', width: '25%', minWidth: 150, sortable: true },
-  { key: 'email', label: 'Email', width: '15%', minWidth: 150, sortable: true },
-  { key: 'isActive', label: 'Actif', width: '5%', minWidth: 15, sortable: true },
+  { key: 'email',   label: 'Email',   width: '15%', minWidth: 150, sortable: true },
+  { key: 'isActive',label: 'Actif',   width: '5%',   minWidth: 15, sortable: true },
 ]
 
 // ==================== DONNÉES TABLE ====================
@@ -50,6 +51,7 @@ const totalPages = ref(0)
 
 const utilisateurRows = computed<UtilisateurRow[]>(() => {
   const resultat = utilisateurs.data.value
+  console.log("utilisateurs.data.value:",resultat)
   if (!resultat?.success) return []
 
   const pageInfo = resultat.pageInfo
@@ -69,6 +71,12 @@ const tableLoading = computed(
 const showModal = ref(false)
 const titleModal = ref('')
 const utilisateurToEdit = ref<Utilisateur | null>(null)
+// const emit = defineEmits<{
+//   'select-row': [value: boolean]
+// }>()
+const emit = defineEmits<{
+  (e: 'select-row', row: Utilisateur): void
+}>()
 
 const openCreate = () => {
   utilisateurToEdit.value = null
@@ -92,20 +100,26 @@ const onFormSuccess = (message: string) => {
   // Optionnel : afficher un toast de succès
   console.log(message)
 }
-
+const isLigneSelectionnee = computed(()=> selectedUtilisateurs.value.length>0)
 // ==================== ACTIONS TAction ====================
+const onSelectRow =(row: UtilisateurRow, index: number)=>{
+  emit("select-row", row)
+}
 const handleNouveau = () => openCreate()
-
 const handleModifier = () => {
+  console.warn("----------handleModifier---------------------")
+  console.info("selectedUtilisateurs.value:",selectedUtilisateurs.value)
   if (selectedUtilisateurs.value.length === 0) {
     alert('Veuillez sélectionner un utilisateur')
     return
   }
   const userId = selectedUtilisateurs.value[0]
+  console.info("userId:",userId)
   const user = utilisateurRows.value.find((u) => u.id === userId)
+  console.info("user:",user)
+  console.warn("----------handleModifier---------------------")
   if (user) openEdit(user)
 }
-
 const handleSupprimer = async () => {
   if (selectedUtilisateurs.value.length === 0) {
     alert('Veuillez sélectionner un utilisateur')
@@ -131,7 +145,6 @@ const handleSupprimer = async () => {
     )
   }
 }
-
 const handleImprimer = () => {
   console.log('--- handleImprimer')
 }
@@ -142,9 +155,7 @@ function onSort(state: SortState): void {
   page.value = 1
 }
 
-const selection = (row: any, _index: number) => {
-  isSelectionLigne.value = row !== null && row !== undefined
-}
+
 
 // Reset page à la recherche (debounce)
 let searchTimeout: number | undefined
@@ -170,7 +181,8 @@ watch(tableSearch, () => {
     row-key="id"
     striped
     @sort="onSort"
-    @row-click="selection"
+    @row-click="onSelectRow"  
+    
   >
     <template #caption-extra>
       <div class="flex justify-between" v-if="totalItems > PAGE_SIZE">
@@ -186,8 +198,8 @@ watch(tableSearch, () => {
     <template #caption>
       <div class="flex items-center gap-2">
         <TAction
-          :modifier-visible="isSelectionLigne"
-          :supprimer-visible="isSelectionLigne"
+          :modifier-visible="isLigneSelectionnee"
+          :supprimer-visible="isLigneSelectionnee"
           :impression-visible="totalItems > 0"
           @nouveau="handleNouveau"
           @modifier="handleModifier"

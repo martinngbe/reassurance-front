@@ -1,3 +1,4 @@
+// useRole.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { roleApi } from '@/referentiel/role/role.api';
@@ -9,7 +10,6 @@ const KEY = 'roles';
 export function useRoles(params: MaybeRefOrGetter<PaginationParams> = {}) {
   const qc = useQueryClient();
 
-  // ─── Queries ───────────────────────────────────────────────
   const roles = useQuery({
     queryKey: computed(() => [KEY, toValue(params)]),
     queryFn: () => roleApi.getAll(toValue(params)),
@@ -22,7 +22,22 @@ export function useRoles(params: MaybeRefOrGetter<PaginationParams> = {}) {
       enabled: !!id,
     });
 
-  // ─── Mutations ─────────────────────────────────────────────
+  // ✅ Query : rôles d'un utilisateur avec marquage
+  const rolesForUser = (
+    userId: MaybeRefOrGetter<number>,
+    params: MaybeRefOrGetter<PaginationParams> = {},
+  ) =>
+    useQuery({
+      queryKey: computed(() => [
+        KEY,
+        'user',
+        toValue(userId),
+        toValue(params),
+      ]),
+      queryFn: () => roleApi.getForUser(toValue(userId), toValue(params)),
+      enabled: computed(() => !!toValue(userId)),
+    });
+
   const createRole = useMutation({
     mutationFn: (data: CreateRoleDto) => roleApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
@@ -42,11 +57,23 @@ export function useRoles(params: MaybeRefOrGetter<PaginationParams> = {}) {
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 
+  // ✅ Mutation : mise à jour des rôles d'un utilisateur
+  const updateUserRoles = useMutation({
+    mutationFn: ({ userId, roleIds }: { userId: number; roleIds: number[] }) =>
+      roleApi.updateUserRoles(userId, roleIds),
+    onSuccess: (_, { userId }) => {
+      qc.invalidateQueries({ queryKey: [KEY, 'user', userId] });
+      qc.invalidateQueries({ queryKey: ['utilisateurs', userId] });
+    },
+  });
+
   return {
     roles,
     roleById,
+    rolesForUser,
     createRole,
     updateRole,
     deleteRole,
+    updateUserRoles,
   };
 }

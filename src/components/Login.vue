@@ -90,6 +90,7 @@ const form = reactive({ email: '', password: '', remember: false })
 const errors = reactive({ email: '', password: '' })
 const showPassword = ref(false)
 
+
 function validateEmail(): boolean {
   if (!form.email) {
     errors.email = 'L’adresse e-mail est requise.'
@@ -288,41 +289,7 @@ const accentVars = computed(() => ({
           <span>{{ loading ? labels.submitting : labels.submit }}</span>
         </button>
       </form>
-
-      <!-- Séparateur -->
-      <!-- <div class="my-6 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-        <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-        <span>{{ labels.or }}</span>
-        <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-      </div> -->
-
-      <!-- Connexions sociales -->
-<!--        
-      <div class="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
-        <button
-          v-for="provider in socialProviders"
-          :key="provider.name"
-          type="button"
-          class="flex items-center justify-center gap-2 rounded-lg border-[1.5px] border-slate-300 py-2.5 text-sm font-semibold transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-ring)] dark:border-slate-600"
-          :aria-label="`Se connecter avec ${provider.name}`"
-          @click="$emit('social-login', provider.name)"
-        >
-          <span v-html="provider.icon" />
-          <span>{{ provider.name }}</span>
-        </button>
-      </div> -->
-
-      <!-- Pied de page -->
-      <!-- <p class="mt-7 text-center text-sm text-slate-500 dark:text-slate-400">
-        {{ labels.noAccount }}
-        <a
-          href="#"
-          class="ml-1 font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
-          @click.prevent="$emit('register')"
-        >
-          {{ labels.register }}
-        </a>
-      </p> -->
+      
     </div>
   </div>
 </template>

@@ -4,6 +4,7 @@ import type { FieldConfig } from './types-form';
 import TInput from '../TInput.vue';
 import TLigneHorizontale from '@/components/utilitaire/TLigneHorizontale.vue';
 import TButton from '../TButton.vue';
+import TToggle from '../TToggle.vue';
 
 const props = withDefaults(defineProps<{
   modelValue: Record<string, any>;
@@ -134,7 +135,7 @@ const inputClasses = computed(() => [
               </select>
 
               <!-- Checkbox -->
-              <label
+              <!-- <label
                 v-else-if="field.type === 'checkbox'"
                 class="inline-flex items-center gap-2 cursor-pointer select-none"
               >
@@ -148,8 +149,18 @@ const inputClasses = computed(() => [
                   @change="onCheckboxChange(field.key, $event)"
                 />
                 <span class="text-sm text-gray-600">{{ field.placeholder }}</span>
-              </label>
-
+              </label> -->
+              <TToggle
+                v-else-if="field.type === 'checkbox'"
+                :id="field.key"
+                :model-value="!!modelValue[field.key]"
+                :label="field.placeholder || field.label"
+                :disabled="isDisabled(field)"
+                variant="switch"
+                size="md"
+                color="primary"
+                @update:model-value="(v) => updateField(field.key, v)"
+              />
               <!-- Help text -->
               <p
                 v-if="field.helpText"

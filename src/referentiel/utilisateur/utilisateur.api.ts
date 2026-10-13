@@ -21,4 +21,13 @@ export const utilisateurApi = {
 
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),
+
+
+   // ✅ Nouvelle méthode : récupère tous les rôles avec marquage
+  getRolesWithAssignment: (id: number) =>
+    apiClient.get<IResponse>(`${BASE}/${id}/roles`).then((r) => r.data),
+
+  // ✅ Optionnel : met à jour les rôles d'un utilisateur
+  updateRoles: (id: number, roleIds: number[]) =>
+    apiClient.patch<IResponse>(`${BASE}/${id}/roles`, { roleIds }).then((r) => r.data),
 };

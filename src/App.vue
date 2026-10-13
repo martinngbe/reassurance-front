@@ -32,15 +32,23 @@ watch(
   },
   { immediate: true }
 )
- authenticated.value = !!authService.getToken()
+const  serverError =  ref("")
+authenticated.value = !!authService.getToken()
+
 async function handleLogin(payalod:LoginPayload) {
+  console.log("---------------- handleLogin -----------------") 
   console.log("LoginPayload:",payalod)  
   const response = await  authService.login(payalod)
   console.log(" App.handleLogin response:",response)
+  if(!response.success){
+    console.log(" >> response.messag:",response.message)
+    serverError.value=response.message
+  }
   const token = authService.getToken()
   authenticated.value = !!token
   console.log(" App.handleLogin token:",token)
   console.log(" App.handleLogin authenticated.value:",authenticated.value)
+  console.log("---------------------------------") 
 }
 
 function handleLogout() {
@@ -56,6 +64,7 @@ function handleLogout() {
       v-if="!authenticated"
       :theme="theme"
       :accent-color="accentColor"
+      :server-error="serverError"
       @submit="handleLogin"
     />
     <EcranPrincipal

@@ -21,4 +21,18 @@ export const roleApi = {
 
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),
+
+
+  
+  // ✅ Rôles d'un utilisateur avec marquage paginé
+  getForUser: (userId: number, params: PaginationParams = {}) =>
+    apiClient
+      .get<IResponse>(`${BASE}/user/${userId}`, { params })
+      .then((r) => r.data),
+
+  // ✅ Mettre à jour les rôles d'un utilisateur
+  updateUserRoles: (userId: number, roleIds: number[]) =>
+    apiClient
+      .patch<IResponse>(`/utilisateur/${userId}/roles`, { roleIds })
+      .then((r) => r.data),
 };

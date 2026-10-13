@@ -22,7 +22,19 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    console.log("<<<<<<< error.response:",error.response)
+    console.log("<<<<<<< error.response.config:",error.response.config)
+    console.log("<<<<<<< error.response.config.url:",error.response.config.url)
+    console.log("<<<<<<< error.response.data:",error.response.data)
+    const url = error.response?.config.url
+    console.log("url:",url)
+    const dataResult = error.response?.data
+    const isExisteLoginMessageErreur = url=="/auth/login" && dataResult && !dataResult.succes
+    console.log("isExisteLoginMessageErreur:",isExisteLoginMessageErreur)
+    if(isExisteLoginMessageErreur)
+      return Promise.resolve(error.response)
+
+    if (error.response?.status === 401  ) {
       localStorage.removeItem('auth_token')
       sessionStorage.removeItem('auth_token')
       window.location.href = '/login'

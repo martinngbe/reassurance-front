@@ -4,6 +4,7 @@ import TLayout from '@/components/layout/TLayout.vue'
 import AppHeader from '@/components/web/AppHeader.vue'
 import AppMenu from '@/components/web/AppMenu.vue'
 import TLayoutModule from '../layout/TLayoutModule.vue';
+import AppFooter from './AppFooter.vue';
 
 const props = defineProps<{
   theme: 'light' | 'dark'
@@ -146,14 +147,9 @@ function selectMenu(menuId: string) {
             </template> -->
 
             <template #footer>
-              <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
-                <span>© 2026 A Free K Soft — Tous droits réservés</span>
-                <span class="hidden sm:inline">
-                  Connecté en tant que <strong class="text-slate-700 dark:text-slate-300">Admin Demo</strong>
-                </span>
-              </div>
+              <AppFooter/>
             </template>
-    <!-- </TLayoutModule>         -->
+   
           </TLayout>
     </div>
 </template>

@@ -46,12 +46,12 @@ import { computed } from 'vue';
       <div class="mx-2 h-8 w-px bg-slate-200 dark:bg-slate-700" />
 
       <!-- Sélecteur de palette -->
-      <div class="flex items-center gap-1.5">
+      <!-- <div class="flex items-center gap-1.5">
         
           <TToolTip content="Choisir la couleur primaire" position="bottom">
             <ThemePicker />
           </TToolTip>
-      </div>
+      </div> -->
     </div>
 
     <!-- MILIEU : Raison sociale -->

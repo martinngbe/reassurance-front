@@ -54,33 +54,36 @@ const loading = computed(
 // ==================== HANDLERS ====================
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
+  console.info(" ----- TUtilisateurForm.handleSubmit  data:",data)
   console.info("data:",data)
-  // try {
-  //   if (isEditing.value && props.utilisateur?.id) {
-  //     await updateUtilisateur.mutateAsync({
-  //       id: props.utilisateur.id,
-  //       data: {
-  //         nom: data.nom,
-  //         prenoms: data.prenoms,
-  //         email: data.email,
-  //       },
-  //     })
-  //     emit('success', 'Utilisateur modifié avec succès')
-  //   } else {
-  //     await createUtilisateur.mutateAsync({
-  //       nom: data.nom,
-  //       prenoms: data.prenoms,
-  //       email: data.email,
-  //     })
-  //     emit('success', 'Utilisateur créé avec succès')
-  //   }
-  // } catch (err: any) {
-  //   console.error('Erreur sauvegarde:', err)
-  //   errorMessage.value =
-  //     err?.response?.data?.message ||
-  //     err?.message ||
-  //     'Une erreur est survenue lors de la sauvegarde.'
-  // }
+  try {
+    if (isEditing.value && props.utilisateur?.id) {
+      await updateUtilisateur.mutateAsync({
+        id: props.utilisateur.id,
+        data: {
+          nom: data.nom,
+          prenoms: data.prenoms,
+          email: data.email,
+          isActive: data.isActive
+        },
+      })
+      emit('success', 'Utilisateur modifié avec succès')
+    } else {
+      await createUtilisateur.mutateAsync({
+        nom: data.nom,
+        prenoms: data.prenoms,
+        email: data.email,
+        isActive: data.isActive
+      })
+      emit('success', 'Utilisateur créé avec succès')
+    }
+  } catch (err: any) {
+    console.error('Erreur sauvegarde:', err)
+    errorMessage.value =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Une erreur est survenue lors de la sauvegarde.'
+  }
 }
 
 const handleCancel = () => {

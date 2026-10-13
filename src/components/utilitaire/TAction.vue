@@ -21,7 +21,7 @@ const emit = defineEmits<{
     class="flex flex-wrap gap-4 sm:gap-3 p-3 sm:p-4  transition-colors duration-300"
   >
     <TToolTip content="Nouveau" position="bottom">
-            <i class="pi pi-plus pl-3 pr-3 cursor-pointer  transition-transform duration-200 hover:scale-225" style="color: green;"
+            <i class="pi pi-plus pl-3 pr-3 cursor-pointer  transition-transform duration-200 hover:scale-225" style="color: #02f75c;"
               @click="emit('nouveau')"
             >
 

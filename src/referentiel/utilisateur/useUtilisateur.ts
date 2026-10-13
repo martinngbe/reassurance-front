@@ -42,11 +42,36 @@ export function useUtilisateurs(params: MaybeRefOrGetter<PaginationParams> = {})
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 
+    // ✅ Query : rôles d'un utilisateur avec marquage
+  const rolesForUser = (id: MaybeRefOrGetter<number>) =>
+    useQuery({
+      queryKey: computed(() => [KEY, toValue(id), 'roles']),
+      queryFn: () => utilisateurApi.getRolesWithAssignment(toValue(id)),
+      enabled: computed(() => !!toValue(id)),
+    });
+
+  // ✅ Mutation : mise à jour des rôles
+  const updateRoles = useMutation({
+    mutationFn: ({ id, roleIds }: { id: number; roleIds: number[] }) =>
+      utilisateurApi.updateRoles(id, roleIds),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: [KEY, id, 'roles'] });
+      qc.invalidateQueries({ queryKey: [KEY, id] });
+    },
+  });
+
+
+
+
   return {
     utilisateurs,
     utilisateurById,
+    rolesForUser,
     createUtilisateur,
     updateUtilisateur,
     deleteUtilisateur,
+    updateRoles,
   };
+
+  
 }

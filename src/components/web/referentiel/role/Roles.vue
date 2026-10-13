@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import TBadge from '@/components/display/TBadge.vue'
+
 import TTable from '@/components/display/TTable.vue'
 import type { SortState, TableColumn, TableRow } from '@/components/forms/common'
-import TAction from '@/components/utilitaire/TAction.vue'
+
 import { computed, ref, watch } from 'vue'
 import { useRoles } from '@/referentiel/role/useRole'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
-import type { IPageInfo, IResponse } from '@/type/pagination'
 
 // ==================== PAGINATION ====================
 const page = ref(1)
@@ -44,19 +43,15 @@ const roleRows = computed(() => {
   if(!resultat) return []
   if(!resultat.success) return []
   const pageInfo  = resultat.pageInfo
-  console.log( "resultat:",resultat)
-  console.log( "resultat.success:",resultat.success)
-  console.log( "pageInfo",pageInfo)
   if(pageInfo){
      totalItems.value = pageInfo.total
      totalPages.value = pageInfo.totalPages
-      console.log(new Date(), "totalPageso:",totalPages.value)
-      console.log(new Date(), "totalItems:",totalItems.value)
   }
   return resultat.data;
 })
 // État de chargement exposé au TTable
 const tableLoading = computed(() => roles.isLoading.value || roles.isFetching.value)
+const isAfficheSearch = computed(() => totalItems.value> PAGE_SIZE)
 
 
 // ==================== HANDLERS ====================
@@ -98,7 +93,7 @@ const selection = ( row:any, index:number)=>{
     @row-click="selection"
   >
     <template #caption-extra>
-      <div class="flex justify-between">
+      <div class="flex justify-between" v-if="isAfficheSearch">
         <input
           v-model="tableSearch"
           type="text"

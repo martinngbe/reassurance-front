@@ -25,7 +25,7 @@ const presets: readonly string[] = [
       :key="c"
       type="button"
       :title="c"
-      class="h-7 w-7 rounded-full ring-offset-2 transition hover:scale-110"
+      class="h-5 w-5 rounded-full ring-offset-2 transition hover:scale-110"
       :class="theme.primary.toLowerCase() === c ? 'ring-2 ring-neutral-400' : ''"
       :style="{ backgroundColor: c }"
       @click="setPrimary(c)"
