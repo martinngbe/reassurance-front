@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import Utilisateurs from './Utilisateurs.vue';
-import Roles from '../role/Roles.vue';
-import type { Utilisateur } from '@/referentiel/utilisateur/utilisateur.ts';
+import { ref } from 'vue';
+import UserRolesTable from './UserRolesTable.vue';
 
-type UtilisateurRow = Utilisateur & { [key: string]: any }
-const onSelectRow =(row: UtilisateurRow,)=>{
-  
+const userId = ref<number | null>(null)
+const onSelectRow =(utilisateurId: number,)=>{
+  userId.value = utilisateurId
+}
+const onSaveRole =()=>{
+ 
 }
 </script>
 
@@ -22,7 +25,15 @@ const onSelectRow =(row: UtilisateurRow,)=>{
           <Utilisateurs  @select-row="onSelectRow"/>
     </template>
       <template #footer>
-          <Roles/>
+          <!-- <Roles/> -->
+          <!-- Mode ÉDITION (avec cases à cocher + bouton Enregistrer) -->
+            <UserRolesTable v-if="userId"
+              :user-id="userId"
+              editable
+              title="Gestion des rôles"
+              height="600px"
+              @saved="onSaveRole"
+            />
     </template>
 
   </TLayoutModule>

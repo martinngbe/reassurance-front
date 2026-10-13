@@ -75,7 +75,7 @@ const utilisateurToEdit = ref<Utilisateur | null>(null)
 //   'select-row': [value: boolean]
 // }>()
 const emit = defineEmits<{
-  (e: 'select-row', row: Utilisateur): void
+  (e: 'select-row', utilisateurId: number): void
 }>()
 
 const openCreate = () => {
@@ -103,7 +103,7 @@ const onFormSuccess = (message: string) => {
 const isLigneSelectionnee = computed(()=> selectedUtilisateurs.value.length>0)
 // ==================== ACTIONS TAction ====================
 const onSelectRow =(row: UtilisateurRow, index: number)=>{
-  emit("select-row", row)
+  emit("select-row", row.id)
 }
 const handleNouveau = () => openCreate()
 const handleModifier = () => {
