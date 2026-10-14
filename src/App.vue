@@ -4,6 +4,8 @@ import Login from './components/Login.vue'
 import EcranPrincipal from './components/web/EcranPrincipal.vue'
 import type {  LoginPayload } from './auth/types.ts'
 import { authService } from './auth/auth.service.ts'
+import TToastContainer from './components/toast/TToastContainer.vue'
+import { useNetworkStatus } from './components/toast/useNetworkStatus.ts'
 
 type Theme = 'light' | 'dark'
 
@@ -36,25 +38,27 @@ const  serverError =  ref("")
 authenticated.value = !!authService.getToken()
 
 async function handleLogin(payalod:LoginPayload) {
-  console.log("---------------- handleLogin -----------------") 
-  console.log("LoginPayload:",payalod)  
+  // console.log("---------------- handleLogin -----------------") 
+  // console.log("LoginPayload:",payalod)  
   const response = await  authService.login(payalod)
-  console.log(" App.handleLogin response:",response)
+  //console.log(" App.handleLogin response:",response)
   if(!response.success){
-    console.log(" >> response.messag:",response.message)
+    //console.log(" >> response.messag:",response.message)
     serverError.value=response.message
   }
   const token = authService.getToken()
   authenticated.value = !!token
-  console.log(" App.handleLogin token:",token)
-  console.log(" App.handleLogin authenticated.value:",authenticated.value)
-  console.log("---------------------------------") 
+  // console.log(" App.handleLogin token:",token)
+  // console.log(" App.handleLogin authenticated.value:",authenticated.value)
+  // console.log("---------------------------------") 
 }
 
 function handleLogout() {
   authenticated.value = false
   authService.logout()
 }
+// Active la détection automatique de la connexion
+useNetworkStatus()
 </script>
 
 <template>
@@ -77,6 +81,7 @@ function handleLogout() {
       @update:accent-color="accentColor = $event"
     />
   </div>
+   <TToastContainer position="top-right" :max="5" />
   <!-- ✅ Utiliser la variable, pas import.meta directement -->
   <VueQueryDevtools v-if="isDev" />
 </template>

@@ -6,7 +6,9 @@ import UserRolesTable from './UserRolesTable.vue';
 
 const userId = ref<number | null>(null)
 const onSelectRow =(utilisateurId: number,)=>{
-  userId.value = utilisateurId
+  userId.value = null;
+  setTimeout(()=>userId.value = utilisateurId , 200)
+  
 }
 const onSaveRole =()=>{
  

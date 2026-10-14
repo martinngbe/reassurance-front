@@ -7,14 +7,11 @@ import Campagnes from './Campagnes.vue';
 </script>
 
 <template>
-  <TLayoutModule
-    topSize="35px"
+  <TLayoutModule   
+    :show-bottom="false"
+    :show-top="false"
     :show-left="false"
-    :top-fixe="true"
     >
-    <!-- <template #header>
-      <TTitreSousModule libelle="Campagne"/>
-    </template> -->
 
     <template #default>
           <Campagnes/>

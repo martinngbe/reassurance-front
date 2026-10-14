@@ -19,7 +19,7 @@
     <template #caption-extra>
       <div class="flex flex-wrap items-center gap-3">
         <!-- Recherche -->
-        <div class="relative w-64">
+        <div class="relative w-64" v-if="isAfficheZoneRecherche">
           <input
             v-model="searchQuery"
             type="text"
@@ -188,6 +188,7 @@ const { mutateAsync, isPending: isSaving } = updateUserRoles;
 
 // ─── Données dérivées ─────────────────────────────────────
 const roles = computed(() => data.value?.data ?? []);
+const isAfficheZoneRecherche = computed(()=>roles.value.length> PAGE_SIZE)
 const pageInfo = computed(
   () =>
     data.value?.pageInfo ?? {

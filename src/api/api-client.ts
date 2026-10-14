@@ -1,3 +1,4 @@
+import { useToast } from '@/components/toast/useToast'
 import axios from 'axios'
 
 export const apiClient = axios.create({
@@ -22,19 +23,39 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log("<<<<<<< error.response:",error.response)
-    console.log("<<<<<<< error.response.config:",error.response.config)
-    console.log("<<<<<<< error.response.config.url:",error.response.config.url)
-    console.log("<<<<<<< error.response.data:",error.response.data)
+      const {info, error: showError } = useToast()
+
+    // Détecte une coupure réseau pure (pas de réponse du serveur)
+    if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+      showError(
+        'Impossible de contacter le serveur. Vérifiez votre connexion.',
+        'Erreur réseau',
+        { duration: 0, closable: false } // Persistant
+      )
+    } 
+    // Détecte un timeout (serveur trop lent ou bloqué)
+    else if (error.code === 'ECONNABORTED') {
+      showError('Le serveur a mis trop de temps à répondre.', 'Timeout')
+    }
+    // Détecte une erreur serveur (500, 502, 503...)
+    else if (error.response && error.response.status >= 500) {
+      showError('status=500 : Le serveur rencontre des difficultés. Réessayez plus tard.', 'Erreur serveur')
+    }
+
+
+
+
+
     const url = error.response?.config.url
-    console.log("url:",url)
+    //console.log("url:",url)
     const dataResult = error.response?.data
     const isExisteLoginMessageErreur = url=="/auth/login" && dataResult && !dataResult.succes
-    console.log("isExisteLoginMessageErreur:",isExisteLoginMessageErreur)
+    //console.log("isExisteLoginMessageErreur:",isExisteLoginMessageErreur)
     if(isExisteLoginMessageErreur)
-      return Promise.resolve(error.response)
-
+     return Promise.resolve(error.response)
+   
     if (error.response?.status === 401  ) {
+      info("Connexion réinitialisée", "Information")
       localStorage.removeItem('auth_token')
       sessionStorage.removeItem('auth_token')
       window.location.href = '/login'

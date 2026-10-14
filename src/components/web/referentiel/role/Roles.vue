@@ -3,9 +3,10 @@
 import TTable from '@/components/display/TTable.vue'
 import type { SortState, TableColumn, TableRow } from '@/components/forms/common'
 
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { useRoles } from '@/referentiel/role/useRole'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
+import TTitreModule from '@/components/utilitaire/TTitreModule.vue'
 
 // ==================== PAGINATION ====================
 const page = ref(1)
@@ -14,7 +15,7 @@ const pageSize = ref(PAGE_SIZE)
 // ==================== TTABLE ENRICHI ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
 const tableSearch = ref('')
-const selectedRoles = ref<(string | number)[]>([])
+
 const sortState = ref<SortState>({ key: null, direction: null })
 
 // ==================== API ====================
@@ -52,8 +53,10 @@ const roleRows = computed(() => {
 // État de chargement exposé au TTable
 const tableLoading = computed(() => roles.isLoading.value || roles.isFetching.value)
 const isAfficheSearch = computed(() => totalItems.value> PAGE_SIZE)
-
-
+// ✨ Initialisation avec l'ID de la 1ère ligne
+//const firstLigneSelected = ref<(string | number )>(roleRows.value[0]?.id?? 0  )
+//const selectedRoles = ref<(string | number)[]>([firstLigneSelected.value])
+const selectedRoles = ref<(string | number)[]>([])
 // ==================== HANDLERS ====================
 function onSort(state: SortState): void {
   sortState.value = state
@@ -68,11 +71,6 @@ watch(tableSearch, () => {
     page.value = 1
   }, 300)
 })
-const isSelectionLigne =ref(false)
-const selection = ( row:any, index:number)=>{
-    //console.log("selection de ligne:",row , " index:",index)
-    isSelectionLigne.value = row !== null && row !== undefined
-}
 
 
 </script>
@@ -90,7 +88,7 @@ const selection = ( row:any, index:number)=>{
     row-key="id"
     striped
     @sort="onSort"
-    @row-click="selection"
+    
   >
     <template #caption-extra>
       <div class="flex justify-between" v-if="isAfficheSearch">
@@ -108,14 +106,8 @@ const selection = ( row:any, index:number)=>{
     </template>
 
     <template #caption="{ selectedCount, total }">
-      <div class="flex items-center gap-2">
-        <!-- <TAction 
-        :modifier-visible="isSelectionLigne" 
-        :supprimer-visible="isSelectionLigne"
-        :impression-visible="totalItems>0"
-        /> -->
-        <TTitreModule libelle="données système"/> 
-       
+      <div class="flex items-center gap-2">       
+        <p class="text-sm text-primary-300 "> Données système</p>       
       </div>
     </template>
 

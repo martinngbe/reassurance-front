@@ -34,11 +34,11 @@ const menus: MenuItem[] = [
     label: 'Utilisateur',
     icon: 'pi pi-user',
   },
-  {
-    id: 'correspondant',
-    label: 'Correspondant',
-    icon: 'pi pi-address-book',
-  },
+  // {
+  //   id: 'correspondant',
+  //   label: 'Correspondant',
+  //   icon: 'pi pi-address-book',
+  // },
   {
     id: 'devise',
     label: 'Dévise',
@@ -59,11 +59,11 @@ const menus: MenuItem[] = [
     label: 'Pays',
     icon: 'pi pi-globe',
   },
-  {
-    id: 'comptabilite',
-    label: 'Comptabilité',
-    icon: 'pi pi-book',
-  },
+  // {
+  //   id: 'comptabilite',
+  //   label: 'Comptabilité',
+  //   icon: 'pi pi-book',
+  // },
 ];
 
 // Gestion sélection menu

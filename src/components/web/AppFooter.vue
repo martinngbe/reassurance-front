@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import TToolTip from '../display/TToolTip.vue';
 import ThemePicker from '../theme/ThemePicker.vue';
-
+import { useNetworkStatus } from '../toast/useNetworkStatus.ts';
+import TIndicateurConnexion from '../utilitaire/TIndicateurConnexion.vue';
+  const { isOnline } = useNetworkStatus()
 
 </script>
 
 <template >
-    <div class="flex h-full items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+    <div class="flex h-full  justify-between px-4 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+      <!-- Indicateur de connexion -->
+      <TIndicateurConnexion :isOnline="isOnline" />
       <span>© 2026 A Free K Soft — Tous droits réservés</span>
+      
+    
       <div class="flex items-center gap-2.5">        
           <TToolTip content="Choisir la couleur primaire" position="bottom">
             <ThemePicker />

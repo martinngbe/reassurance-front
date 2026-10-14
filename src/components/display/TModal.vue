@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, watch } from 'vue'
+import { computed, onBeforeUnmount, watch } from 'vue'
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
 
@@ -11,12 +11,28 @@ const props = withDefaults(
     closable?: boolean
     closeOnOverlay?: boolean
     persistent?: boolean
+    /** Largeur personnalisée (ex: '500px', '80%', '60vw'). Prioritaire sur `size`. */
+    width?: string
+    /** Hauteur personnalisée du panneau (ex: '600px', '90vh'). */
+    height?: string
+    /** Hauteur max du corps scrollable (ex: '70vh', '500px'). */
+    bodyMaxHeight?: string
+    /** Permet de définir une hauteur minimale */
+    minHeight?: string
   }>(),
-  { title: '', size: 'md', closable: true, closeOnOverlay: true, persistent: false },
+  {
+    title: '',
+    size: 'md',
+    closable: true,
+    closeOnOverlay: true,
+    persistent: false,
+    bodyMaxHeight: '70vh',
+  },
 )
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
+// Tailwind classes pour les tailles prédéfinies
 const sizes: Record<ModalSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-lg',
@@ -24,14 +40,31 @@ const sizes: Record<ModalSize, string> = {
   xl: 'max-w-4xl',
 }
 
+// Style dynamique pour les dimensions custom
+const panelStyle = computed(() => {
+  const style: Record<string, string> = {}
+  if (props.width) style.width = props.width
+  if (props.height) style.height = props.height
+  if (props.minHeight) style.minHeight = props.minHeight
+  return style
+})
+
+const bodyStyle = computed(() => {
+  const style: Record<string, string> = {}
+  if (props.bodyMaxHeight) style.maxHeight = props.bodyMaxHeight
+  return style
+})
+
 function close(): void {
   if (!props.closable) return
   emit('update:modelValue', false)
 }
+
 function onOverlayClick(): void {
   if (props.persistent || !props.closeOnOverlay) return
   close()
 }
+
 function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && !props.persistent) close()
 }
@@ -72,10 +105,12 @@ onBeforeUnmount(() => {
           aria-modal="true"
           :aria-label="title || 'Boîte de dialogue'"
           class="t-modal-panel relative w-full rounded-2xl border border-primary-400 bg-white shadow-xl ring-1 ring-neutral-200 dark:border-primary-700 dark:bg-neutral-900 dark:ring-neutral-800"
-          :class="sizes[size]"
+          :class="!width ? sizes[size] : ''"
+          :style="panelStyle"
         >
+          <!-- Header fixe -->
           <header
-            class="flex items-center justify-between gap-4 rounded-t-2xl border-b border-primary-800 bg-primary-200 px-5 py-4 dark:border-primary-700 dark:bg-primary-950"
+            class="flex shrink-0 items-center justify-between gap-4 rounded-t-2xl border-b border-primary-800 bg-primary-200 px-5 py-4 dark:border-primary-700 dark:bg-primary-950"
           >
             <slot name="header">
               <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
@@ -96,14 +131,19 @@ onBeforeUnmount(() => {
               </svg>
             </button>
           </header>
+
+          <!-- Corps scrollable -->
           <div
-            class="max-h-[70vh] overflow-y-auto px-5 py-4 text-sm text-neutral-600 dark:text-neutral-300"
+            class="t-modal-body custom-scrollbar flex-1 overflow-y-auto px-5 py-4 text-sm text-neutral-600 dark:text-neutral-300"
+            :style="bodyStyle"
           >
             <slot />
           </div>
+
+          <!-- Footer fixe -->
           <footer
             v-if="$slots.footer"
-            class="flex justify-end gap-3 border-t border-primary-800 px-5 py-4 dark:border-primary-700"
+            class="flex shrink-0 justify-end gap-3 border-t border-primary-800 px-5 py-4 dark:border-primary-700"
           >
             <slot name="footer" />
           </footer>
@@ -128,5 +168,40 @@ onBeforeUnmount(() => {
 .t-modal-enter-from .t-modal-panel,
 .t-modal-leave-to .t-modal-panel {
   transform: translateY(10px) scale(0.97);
+}
+
+/* Scrollbar custom (identique au TTable) */
+.t-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--tw-primary-500)) transparent;
+}
+.t-modal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.t-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+.t-modal-body::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--tw-primary-500));
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s ease;
+}
+.t-modal-body::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--tw-primary-700));
+}
+.t-modal-body::-webkit-scrollbar-corner {
+  background: transparent;
+}
+@supports not (color: rgb(var(--tw-primary-500))) {
+  .t-modal-body::-webkit-scrollbar-thumb {
+    background-color: #6366f1;
+  }
+  .t-modal-body::-webkit-scrollbar-thumb:hover {
+    background-color: #4f46e5;
+  }
 }
 </style>

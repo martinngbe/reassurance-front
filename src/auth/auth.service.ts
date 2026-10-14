@@ -32,7 +32,6 @@ export const authService = {
     }else{
       this.clearToken()
     }
-    //this.saveToken(data.accessToken, payload.remember)
     return data
   },
 

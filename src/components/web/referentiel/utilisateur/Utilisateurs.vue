@@ -10,6 +10,7 @@ import TModal from '@/components/display/TModal.vue'
 import type { Utilisateur } from '@/referentiel/utilisateur/utilisateur'
 import TUtilisateurForm from './TUtilisateurForm.vue'
 
+
 // Type local pour satisfaire TTable (signature d'index)
 type UtilisateurRow = Utilisateur & { [key: string]: any }
 
@@ -20,11 +21,6 @@ const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
 const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
 
-// ==================== SÉLECTION ====================
-// la liste des utilisateurs séléctionnés
-// cette variable se charge dynamiquementpar v-model:selected-keys="selectedUtilisateurs"   
-const selectedUtilisateurs = ref<(string | number)[]>([])
-//const isSelectionLigne = ref(false)
 
 // ==================== API ====================
 const params = computed(() => ({
@@ -34,8 +30,8 @@ const params = computed(() => ({
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction ?? undefined,
 }))
-
 const { utilisateurs, deleteUtilisateur } = useUtilisateurs(params)
+
 
 // ==================== COLONNES TABLE ====================
 const utilisateurColumns: TableColumn[] = [
@@ -48,7 +44,7 @@ const utilisateurColumns: TableColumn[] = [
 // ==================== DONNÉES TABLE ====================
 const totalItems = ref(0)
 const totalPages = ref(0)
-
+// initialisation des données utilisateurRows
 const utilisateurRows = computed<UtilisateurRow[]>(() => {
   const resultat = utilisateurs.data.value
   console.log("utilisateurs.data.value:",resultat)
@@ -62,6 +58,12 @@ const utilisateurRows = computed<UtilisateurRow[]>(() => {
 
   return (resultat.data as UtilisateurRow[]) || []
 })
+// ✨ Initialisation avec l'ID de la 1ère ligne
+const firstLigneSelected = ref<(number | string )>(utilisateurRows.value[0]?.id?? 0  )
+// ==================== SÉLECTION ====================
+// la liste des utilisateurs séléctionnés
+// cette variable se charge dynamiquementpar v-model:selected-keys="selectedUtilisateurs"   
+const selectedUtilisateurs = ref<(number | string)[]>([firstLigneSelected.value])
 
 const tableLoading = computed(
   () => utilisateurs.isLoading.value || utilisateurs.isFetching.value,
@@ -71,9 +73,7 @@ const tableLoading = computed(
 const showModal = ref(false)
 const titleModal = ref('')
 const utilisateurToEdit = ref<Utilisateur | null>(null)
-// const emit = defineEmits<{
-//   'select-row': [value: boolean]
-// }>()
+
 const emit = defineEmits<{
   (e: 'select-row', utilisateurId: number): void
 }>()
@@ -145,9 +145,7 @@ const handleSupprimer = async () => {
     )
   }
 }
-const handleImprimer = () => {
-  console.log('--- handleImprimer')
-}
+
 
 // ==================== HANDLERS TTable ====================
 function onSort(state: SortState): void {
@@ -198,13 +196,14 @@ watch(tableSearch, () => {
     <template #caption>
       <div class="flex items-center gap-2">
         <TAction
-          :modifier-visible="isLigneSelectionnee"
-          :supprimer-visible="isLigneSelectionnee"
-          :impression-visible="totalItems > 0"
+         
+          :active-modifier="isLigneSelectionnee"
+          :active-supprimer="isLigneSelectionnee"         
+          :masque-impression="true"
           @nouveau="handleNouveau"
           @modifier="handleModifier"
           @supprimer="handleSupprimer"
-          @imprimer="handleImprimer"
+
         />
       </div>
     </template>

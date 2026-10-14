@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends TableRow">
 import { computed, ref, useSlots, onBeforeUnmount, onMounted, watch, nextTick } from 'vue'
 import type { TableColumn, SortState, SortDirection, Density, TableRow } from '../forms/common'
+import AucuneDonnees from '../utilitaire/AucuneDonnees.vue';
 
 // =============== ===== PROPS ====================
 const props = withDefaults(
@@ -164,27 +165,6 @@ function isPercent(v: string | number | undefined): v is string {
   return typeof v === 'string' && v.trim().endsWith('%')
 }
 
-// ✨ Résout la largeur effective d'une colonne : redimensionnement manuel > largeur
-// explicite (col.width) > 120px par défaut. `toNumber` renvoie toujours un nombre
-// (0 si absent), donc `toNumber(col.width) ?? 120` ne se déclenchait jamais — on
-// teste explicitement la présence d'une largeur avant d'appliquer le fallback.
-
-// function resolveColWidth(col: TableColumn): number {
-//   if (columnWidths.value[col.key]) return columnWidths.value[col.key]?? 120
-
-//   if (col.width !== undefined && col.width !== null && col.width !== '') return toNumber(col.width)
-//   return 120
-// }
-// function resolveColWidth(col: TableColumn): number | string {
-//   // 1. Redimensionnement manuel (toujours en px)
-//   if (columnWidths.value[col.key]) return columnWidths.value[col.key] ?? 120
-//   // 2. Pourcentage → on le retourne tel quel
-//   if (isPercent(col.width)) return col.width
-//   // 3. Largeur explicite en px
-//   if ( col.width !== undefined && col.width !== null ) return toNumber(col.width)
-//   // 4. Fallback
-//   return 120
-// }
 
 function resolveColWidth(col: TableColumn): number | string {
   if (columnWidths.value[col.key]) return columnWidths.value[col.key] ?? 120
@@ -192,11 +172,6 @@ function resolveColWidth(col: TableColumn): number | string {
   const w = toNumber(col.width)
   return w > 0 ? w : 120   // ← 0 ou NaN → fallback
 }
-// function getColWidth(col: TableColumn): string | undefined {
-//   if (columnWidths.value[col.key]) return `${columnWidths.value[col.key]}px`
-//   if (col.width) return typeof col.width === 'number' ? `${col.width}px` : col.width
-//   return undefined
-// }
 function getColWidth(col: TableColumn): string | undefined {
   if (columnWidths.value[col.key]) return `${columnWidths.value[col.key]}px`
   if (col.width !== undefined && col.width !== null && col.width !== '') {
@@ -204,24 +179,6 @@ function getColWidth(col: TableColumn): string | undefined {
   }
   return undefined
 }
-
-// ✨ Calcul de la largeur totale minimale du tableau (pour forcer le scroll horizontal)
-// const tableMinWidth = computed(() => {
-//   let total = 0
-//   let hasExplicitWidth = false
-//   for (const col of props.columns) {
-//     const w = columnWidths.value[col.key] ?? toNumber(col.width)
-//     if (w > 0) {
-//       total += w
-//       hasExplicitWidth = true
-//     } else {
-//       total += 120 // largeur par défaut estimée
-//     }
-//   }
-//   if (props.selectable) total += 40 // largeur de la colonne checkbox
-//   return hasExplicitWidth ? `${total}px` : undefined
-// })
-
 
 
 const tableMinWidth = computed(() => {
@@ -329,23 +286,6 @@ function alignClass(col: TableColumn): string {
   return 'text-left'
 }
 // ✨ Calcul de la position "left" pour les colonnes fixes
-// function getFixedLeft(colIndex: number, isBody = false): string {
-//   let left = 0
-//   const offset = props.selectable ? 40 : 0 // largeur de la colonne checkbox
-  
-//   // Pour les th (header), on commence après la checkbox si selectable
-//   // Pour les td (body), idem
-//   const startIndex = isBody ? 0 : 0
-  
-//   for (let i = 0; i < colIndex; i++) {
-//     const col = props.columns[i]
-//     if (col) {
-//       left += resolveColWidth(col)
-//     }
-//   }
-  
-//   return `${left + (props.selectable ? 40 : 0)}px`
-// }
 function getFixedLeft(colIndex: number, isBody = false): string {
   let left = 0
   for (let i = 0; i < colIndex; i++) {
@@ -363,15 +303,6 @@ const hasCaption = computed(() => !!props.title || !!slots.caption || !!slots['c
 const hasFixedColumns = computed(() => props.columns.some((c) => c.fixed))
 
 // ✨ Calcul de la largeur totale du tableau
-// const tableWidth = computed(() => {
-//   let total = 0
-//   for (const col of props.columns) {
-//     total += resolveColWidth(col)
-//   }
-//   if (props.selectable) total += 40 // largeur de la colonne checkbox
-//   console.log('TTable tableWidth:',total)
-//   return `${total}px`
-// })
 const tableWidth = computed(() => {
   let total = 0
   let hasPercent = false
@@ -530,20 +461,23 @@ const tableWidth = computed(() => {
           <tr
             v-for="(row, rowIndex) in rows"
             :key="rowIndex"
-            :class="[
-              hoverable && !isSelected(row, rowIndex) &&'transition-colors hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
-              striped && rowIndex % 2 === 1 && 'bg-neutral-800/10 dark:bg-neutral-800/60',
-              isSelected(row, rowIndex) && 'bg-primary-500/20 dark:bg-primary-500/50',
-              'cursor-default',
-            ]"
+             :class="[
+                'cursor-default transition-colors',
+                isSelected(row, rowIndex)
+                  ? 'bg-primary-500/20 dark:bg-primary-300/35'
+                  : striped && rowIndex % 2 === 1
+                    ? 'bg-neutral-800/10 dark:bg-neutral-800/60'
+                    : 'bg-white dark:bg-neutral-900',
+                hoverable && !isSelected(row, rowIndex) &&
+                  'hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
+              ]"
             @click="selectRow(row, rowIndex); emit('row-click', row, rowIndex)"
           >
             <!-- Checkbox de sélection -->
             <td
               v-if="selectable"
-              class="w-10 px-3 bg-white dark:bg-neutral-900"
+              class="w-10 px-3 bg-inherit"
               :class="[densityClasses.cell, hasFixedColumns && 'sticky left-0 z-10']"
-              
             >
               <input
                 type="checkbox"
@@ -561,7 +495,7 @@ const tableWidth = computed(() => {
                 densityClasses.cell,
                 alignClass(col),
                 // ✨ Background opaque pour les colonnes fixes (sinon le contenu défile derrière)
-                 col.fixed === 'left' && 'sticky z-10 bg-white dark:bg-neutral-900',
+                 col.fixed === 'left' && 'sticky z-10  bg-inherit',
               ]"
               :style="{
                 left: col.fixed === 'left' ? getFixedLeft(colIndex, true) : undefined,
@@ -585,7 +519,9 @@ const tableWidth = computed(() => {
               :colspan="columns.length + (selectable ? 1 : 0)"
               class="px-4 py-8 text-center text-neutral-400 dark:text-neutral-500"
             >
-              <slot name="empty">{{ emptyMessage }}</slot>
+              <slot name="empty">
+                    <AucuneDonnees :message="emptyMessage"/>
+              </slot>
             </td>
           </tr>
         </tbody>

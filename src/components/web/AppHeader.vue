@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { useTheme } from '@/theme/useTheme.ts';
 import TToolTip from '../display/TToolTip.vue';
-import ThemePicker from '../theme/ThemePicker.vue';
 import ToggleTheme from '../theme/ToggleTheme.vue';
 import { computed } from 'vue';
-    const { theme, toggleMode } = useTheme()
-
+ const { theme, toggleMode } = useTheme()
+  
       defineProps<{
         theme: 'light' | 'dark'
         accentColor: string
@@ -23,9 +22,11 @@ import { computed } from 'vue';
 </script>
 
 <template>
-  <div class="flex h-full items-center justify-between px-4 ">
+  <div class="flex h-full justify-between px-2 ">
+      
     <!-- GAUCHE : Profil + Toggle -->
     <div class="flex items-center gap-3">
+   
       <!-- Avatar utilisateur -->
       <div class="flex items-center gap-2">
         <div
@@ -45,13 +46,6 @@ import { computed } from 'vue';
       <!-- Séparateur -->
       <div class="mx-2 h-8 w-px bg-slate-200 dark:bg-slate-700" />
 
-      <!-- Sélecteur de palette -->
-      <!-- <div class="flex items-center gap-1.5">
-        
-          <TToolTip content="Choisir la couleur primaire" position="bottom">
-            <ThemePicker />
-          </TToolTip>
-      </div> -->
     </div>
 
     <!-- MILIEU : Raison sociale -->

@@ -2,7 +2,7 @@ import { apiClient } from '@/api/api-client';
 import type { Campagne, CreateCampagneDto, UpdateCampagneDto } from '@/referentiel/campagne/campagne';
 import type { IResponse, PaginationParams } from '@/type/pagination';
 
-const BASE = '/campagnes';
+const BASE = '/campagne';
 
 export const campagneApi = {
   getAll: (params: PaginationParams = {}) =>

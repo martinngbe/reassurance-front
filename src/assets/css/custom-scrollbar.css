@@ -1,0 +1,42 @@
+/* ==========================================
+   SCROLLBAR CUSTOM (partagée)
+   ========================================== */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--tw-primary-500)) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--tw-primary-500));
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--tw-primary-700));
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@supports not (color: rgb(var(--tw-primary-500))) {
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #6366f1;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #4f46e5;
+  }
+}
