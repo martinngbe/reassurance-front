@@ -4,7 +4,7 @@ REM Variables
 set IMAGE_NAME=reassurance-front
 set IMAGE_TAG=0.0.1
 if "%~1"=="" (set IMAGE_TAG=0.0.1) else (set IMAGE_TAG=%~1)
-set DOCKERHUB_USER=ngbemartin
+set DOCKERHUB_USER=martinngbe
 set FULL_IMAGE=%DOCKERHUB_USER%/%IMAGE_NAME%:%IMAGE_TAG%
 set LOCAL_IMAGE=%IMAGE_NAME%:%IMAGE_TAG%
 
@@ -21,9 +21,9 @@ docker build -t %LOCAL_IMAGE% .
  echo "________________________"
  echo Terminee
  echo "________________________"
- echo Arrêt du container
- docker compose down
- echo "________________________"
- echo Demarrage du container
- docker compose up -d --force-recreate
- echo "________________________"
+ REM echo Arrêt du container
+ REM docker compose down
+ REM echo "________________________"
+ REM echo Demarrage du container
+ REM docker compose up -d --force-recreate
+ REM echo "________________________"
