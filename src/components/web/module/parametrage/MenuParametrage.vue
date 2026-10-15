@@ -34,18 +34,9 @@ const menus: MenuItem[] = [
     label: 'Utilisateur',
     icon: 'pi pi-user',
   },
-  // {
-  //   id: 'correspondant',
-  //   label: 'Correspondant',
-  //   icon: 'pi pi-address-book',
-  // },
+ 
   {
-    id: 'devise',
-    label: 'Dévise',
-    icon: 'pi pi-dollar',
-  },
-  {
-    id: 'domaine-activite',
+    id: 'domaineActivite',
     label: 'Domaine activité',
     icon: 'pi pi-briefcase',
   },
@@ -54,16 +45,17 @@ const menus: MenuItem[] = [
     label: 'Branche',
     icon: 'pi pi-sitemap',
   },
+   {
+    id: 'devise',
+    label: 'Dévise',
+    icon: 'pi pi-dollar',
+  },
   {
-    id: 'pays',
+    id: 'region',
     label: 'Pays',
     icon: 'pi pi-globe',
   },
-  // {
-  //   id: 'comptabilite',
-  //   label: 'Comptabilité',
-  //   icon: 'pi pi-book',
-  // },
+ 
 ];
 
 // Gestion sélection menu

@@ -77,6 +77,11 @@ watch(tableSearch, () => {
 <template>
   <TTable
     v-model:selected-keys="selectedRoles"
+
+    :show-index="true"
+    index-label="N°"
+    :index-width="60"
+        
     :columns="roleColumns"
     :rows="roleRows"
     :loading="tableLoading"

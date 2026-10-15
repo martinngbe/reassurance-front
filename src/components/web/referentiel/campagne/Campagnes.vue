@@ -157,6 +157,11 @@ watch(tableSearch, () => {
 <template>
   <TTable
     v-model:selected-keys="selectedCampagnes"
+
+    :show-index="true"
+    index-label="N°"
+    :index-width="60"
+
     :columns="campagneColumns"
     :rows="campagneRows"
     :loading="tableLoading"

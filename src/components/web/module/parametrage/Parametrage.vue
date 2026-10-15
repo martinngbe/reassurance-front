@@ -4,7 +4,6 @@ import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
 import MenuParametrage from './MenuParametrage.vue';
 import { defineAsyncComponent, computed, ref } from 'vue';
 import TLigneHorizontale from '@/components/utilitaire/TLigneHorizontale.vue';
-import TLigneVerticale from '@/components/utilitaire/TLigneVerticale.vue';
 
 
 const activeMenu = ref('campagne')
@@ -13,6 +12,9 @@ const moduleComponents: Record<string, any> = {
   campagne: defineAsyncComponent(() => import('@/components/web/referentiel/campagne/TCampagne.vue')),
   profil: defineAsyncComponent(() => import('@/components/web/referentiel/role/TRole.vue')),
   utilisateur: defineAsyncComponent(() => import('@/components/web/referentiel/utilisateur/TUtilisateur.vue')),
+  branche: defineAsyncComponent(() => import('@/components/web/referentiel/branche/TBranche.vue')),
+  region: defineAsyncComponent(() => import('@/components/web/referentiel/region/TRegion.vue')),
+  domaineActivite: defineAsyncComponent(() => import('@/components/web/referentiel/domaine-activite/TDomaineActivite.vue')),
   
 }
 

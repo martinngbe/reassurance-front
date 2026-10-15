@@ -30,16 +30,16 @@ apiClient.interceptors.response.use(
       showError(
         'Impossible de contacter le serveur. Vérifiez votre connexion.',
         'Erreur réseau',
-        { duration: 0, closable: false } // Persistant
+        { duration: 4000, closable: true } // Persistant = { duration: 0, closable: false }
       )
     } 
     // Détecte un timeout (serveur trop lent ou bloqué)
     else if (error.code === 'ECONNABORTED') {
-      showError('Le serveur a mis trop de temps à répondre.', 'Timeout')
+      showError('Le serveur a mis trop de temps à répondre.', 'Timeout',{ duration: 4000, closable: true })
     }
     // Détecte une erreur serveur (500, 502, 503...)
     else if (error.response && error.response.status >= 500) {
-      showError('status=500 : Le serveur rencontre des difficultés. Réessayez plus tard.', 'Erreur serveur')
+      showError('status=500 : Le serveur rencontre des difficultés. Réessayez plus tard.', 'Erreur serveur',{ duration: 4000, closable: true })
     }
 
 

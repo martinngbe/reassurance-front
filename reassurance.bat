@@ -4,7 +4,7 @@ REM Variables
 set IMAGE_NAME=reassurance-front
 set IMAGE_TAG=0.0.1
 if "%~1"=="" (set IMAGE_TAG=0.0.1) else (set IMAGE_TAG=%~1)
-set DOCKERHUB_USER=martinngbe
+set DOCKERHUB_USER=ngbemartin
 set FULL_IMAGE=%DOCKERHUB_USER%/%IMAGE_NAME%:%IMAGE_TAG%
 set LOCAL_IMAGE=%IMAGE_NAME%:%IMAGE_TAG%
 

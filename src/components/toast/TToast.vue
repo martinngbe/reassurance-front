@@ -32,7 +32,7 @@ const TYPE_CONFIG: Record<ToastType, {
   success: {
     icon: 'M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z',
     color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
+    bg: 'bg-emerald-200 dark:bg-emerald-950',
     border: 'border-emerald-200 dark:border-emerald-800',
     progress: 'bg-emerald-500',
   },
@@ -46,14 +46,14 @@ const TYPE_CONFIG: Record<ToastType, {
   warning: {
     icon: 'M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
     color: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-50 dark:bg-amber-950/40',
+    bg: 'bg-amber-200 dark:bg-amber-950',
     border: 'border-amber-200 dark:border-amber-800',
     progress: 'bg-amber-500',
   },
   info: {
     icon: 'M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5ZM10 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
     color: 'text-primary-600 dark:text-primary-400',
-    bg: 'bg-primary-50 dark:bg-primary-950/40',
+    bg: 'bg-primary-200 dark:bg-primary-950',
     border: 'border-primary-200 dark:border-primary-800',
     progress: 'bg-primary-500',
   },
@@ -112,11 +112,12 @@ const close = () => emit('close', props.toast.id)
 </script>
 
 <template>
-  <div
+   <div
     role="status"
     :aria-live="toast.type === 'error' ? 'assertive' : 'polite'"
-    class="t-toast group relative flex w-full min-w-0 items-start gap-3 rounded-xl border bg-white p-4 shadow-lg ring-1 transition-all dark:bg-neutral-900"
+    class="t-toast group relative flex w-full min-w-0 items-start gap-3 rounded-xl border p-4 shadow-lg ring-1 transition-all"
     :class="[
+      config.bg,
       config.border,
       'ring-neutral-200/60 dark:ring-neutral-800/60',
     ]"
