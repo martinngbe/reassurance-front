@@ -9,10 +9,9 @@ import TAction from '@/components/utilitaire/TAction.vue'
 import TModal from '@/components/display/TModal.vue'
 import TDemandeConfirmation from '@/components/utilitaire/TDemandeConfirmation.vue'
 import { useToast } from '@/components/toast/useToast.ts'
-import TBadge from '@/components/display/TBadge.vue'
-import type { DomaineActivite } from '@/referentiel/domaine-activite/domaine-activite'
-import { useDomaineActivites } from '@/referentiel/domaine-activite/useDomaineActivite'
 import TDomaineActiviteForm from './TDomaineActiviteForm.vue'
+import type { DomaineActivite } from '@/referentiel/domaine-activite/domaine-activite.ts'
+import { useDomaineActivites } from '@/referentiel/domaine-activite/useDomaineActivite.ts'
 
 // ==================== PAGINATION ====================
 const page = ref(1)
@@ -41,11 +40,14 @@ type DomaineActiviteRow = DomaineActivite & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const domaineActiviteColumns: TableColumn[] = [ 
-  { key: 'code',         label: 'Code',       width: '20%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellét', width: '75%',  minWidth: 150 },
+  { key: 'code',       label: 'Code',       width: '10%',  minWidth: 150 },
+  { key: 'libelle',    label: 'Libellé',    width: '30%',  minWidth: 150 },
+  { key: 'description',    label: 'Description',    width: '60%',  minWidth: 150 },
  
 ]
-
+const emit = defineEmits<{ 
+  (e: 'row-click',  domaineActivite: any): void
+}>()
 
 const totalItems = ref(0)
 const totalPages = ref(0)
@@ -80,7 +82,7 @@ const domaineActiviteToEdit = ref<DomaineActivite | null>(null)
 
 const openCreate = () => {
   domaineActiviteToEdit.value = null
-  titleModal.value = 'Nouveau domaine activite'
+  titleModal.value = 'Nouvel domaineActivite'
   showModal.value = true
 }
 
@@ -102,7 +104,7 @@ const onFormSuccess = (message: string) => {
 const handleNouveau = () => openCreate()
 const handleModifier = () => {
   if (selectedDomaineActivites.value.length === 0) {
-    alert('Veuillez sélectionner un domaineActivite')
+    info('Veuillez sélectionner un domaineActivite', 'Info')
     return
   }
   const domaineActiviteId = selectedDomaineActivites.value[0]
@@ -112,7 +114,7 @@ const handleModifier = () => {
 
 const handleSupprimer = async () => {
   if (selectedDomaineActivites.value.length === 0) {
-    alert('Veuillez sélectionner un domaineActivite')
+    warning('Veuillez sélectionner un domaineActivite',"Attention")
     return
   }
   const domaineActiviteId = selectedDomaineActivites.value[0]
@@ -141,7 +143,9 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-
+const onRowClick = ( row: any, index: number)=>{       
+    emit('row-click',row as DomaineActivite)
+}
 // Reset page quand la recherche change (avec debounce idéalement)
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -171,6 +175,8 @@ watch(tableSearch, () => {
     title="DomaineActivites"
     row-key="id"
     striped
+
+    @row-click="onRowClick"
     @sort="onSort"
     
   >
@@ -205,18 +211,17 @@ watch(tableSearch, () => {
     <template #cell-code="{ value }">
       <span class="font-mono  text-xl uppercase">{{ value }}</span>
     </template>
-    <template #cell-label="{ value }">
+    <template #cell-libelle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
-    <template #cell-isActif="{ value }">
-        <TBadge v-if="value" color="success" dot>actif</TBadge>
-        <TBadge v-else color="neutral" dot>inactif</TBadge>
-      </template>
+     <template #cell-description="{ value }">
+      <span class="font-mono text-lg uppercase">{{ value }}</span>
+    </template>  
   
   </TTable>
     <!-- Modale du formulaire -->
-  <TModal v-model="showModal" :title="titleModal" >
-    <TDomaineActiviteForm   
+  <TModal v-model="showModal" height="500px" :title="titleModal" >
+    <TDomaineActiviteForm    
       :domaineActivite="domaineActiviteToEdit"
       @success="onFormSuccess"
       @cancel="closeModal"

@@ -15,6 +15,7 @@ const moduleComponents: Record<string, any> = {
   branche: defineAsyncComponent(() => import('@/components/web/referentiel/branche/TBranche.vue')),
   region: defineAsyncComponent(() => import('@/components/web/referentiel/region/TRegion.vue')),
   domaineActivite: defineAsyncComponent(() => import('@/components/web/referentiel/domaine-activite/TDomaineActivite.vue')),
+  devise: defineAsyncComponent(() => import('@/components/web/referentiel/devise/TDevise.vue')),
   
 }
 

@@ -4,6 +4,7 @@ import type { BaseEntity } from "@/type/base-entity";
 export interface DomaineActivite extends BaseEntity {
   code: string;
   libelle: string;
+  description: string
 }
 
 export type CreateDomaineActiviteDto = Omit<DomaineActivite, keyof BaseEntity>;

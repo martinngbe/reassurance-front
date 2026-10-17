@@ -6,6 +6,7 @@ import TLigneHorizontale from '@/components/utilitaire/TLigneHorizontale.vue'
 import TButton from '../TButton.vue'
 import TToggle from '../TToggle.vue'
 import TDatePicker from '../TDatePicker.vue'
+import TTextarea from '../TTextarea.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -45,12 +46,20 @@ const onInput = (key: string, event: Event) => {
 const isDisabled = (field: FieldConfig) =>
   props.mode === 'view' || field.disabled || props.loading
 
+// const inputClasses = computed(() => [
+//   'w-full rounded-lg border px-3 py-2 text-sm',
+//   'transition-colors duration-150',
+//   'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+//   'disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
+//   'border-gray-300 placeholder-gray-400',
+// ])
 const inputClasses = computed(() => [
-  'w-full rounded-lg border px-3 py-2 text-sm',
+  'w-full rounded-lg px-3 py-2 text-sm',
   'transition-colors duration-150',
-  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+  'focus:outline-none focus:ring-2 focus:ring-blue-500',
   'disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
-  'border-gray-300 placeholder-gray-400',
+  'placeholder-gray-400',
+  'bg-white dark:bg-neutral-900',  // Fond sans bordure
 ])
 </script>
 
@@ -76,14 +85,17 @@ const inputClasses = computed(() => [
       />
 
       <!-- Textarea -->
-      <textarea
+   
+      <TTextarea
         v-else-if="field.type === 'textarea'"
         :id="field.key"
-        :value="modelValue[field.key]"
+        :label="field.label"
+        :modelValue="modelValue[field.key]"
+        
         :placeholder="field.placeholder"
         :required="field.required"
         :disabled="isDisabled(field)"
-        rows="3"
+        
         :class="[...inputClasses, 'resize-y']"
         @input="onInput(field.key, $event)"
       />

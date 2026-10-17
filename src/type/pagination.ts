@@ -1,26 +1,4 @@
-// types/pagination.ts
-export interface PaginationParams {
-  page?: number;   // commence à 1
-  limit?: number;  // nombre d'éléments par page
-  search?: string; // recherche optionnelle
-  sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
-}
-
-// export interface PaginatedResponse<T> {
-//   data: T[];
-//   total: number;
-//   page: number;
-//   limit: number;
-//   totalPages: number;
-// }
-
-// export interface Response {
-//   data: any;
-//   succes: boolean
-//   message: string
-// }
-
+import type { Ref } from "vue";
 
 export interface IPageInfo {
   total: number;
@@ -33,4 +11,29 @@ export interface IResponse {
   message? : string 
   data?: any;
   pageInfo?: IPageInfo;
+}
+
+
+
+export interface PaginationParams {
+  page?: number
+  limit?: number
+  search?: string | undefined
+  sortBy?: string | undefined
+  sortKey?: string | undefined
+  sortOrder?: 'ASC' | 'DESC' | undefined
+}
+
+export interface IPageInfo {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export interface IResponse {
+  success: boolean
+  message?: string
+  data?: any
+  pageInfo?: IPageInfo
 }

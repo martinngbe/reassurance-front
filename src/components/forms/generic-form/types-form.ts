@@ -38,4 +38,24 @@ export interface FieldConfig {
   helpText?: string
   /** Options spécifiques au type 'calendar' */
   calendarOptions?: CalendarFieldOptions
+  textareaOptions?: TextAreaOptions // 🆕
 }
+
+
+
+
+export interface FieldOption {
+  label: string
+  value: string | number | boolean
+}
+
+export interface TextAreaOptions {
+  rows?: number
+  maxlength?: number
+  minlength?: number
+  autoResize?: boolean
+  showCounter?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'soft' | 'outline'
+}
+

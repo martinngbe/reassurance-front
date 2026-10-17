@@ -236,7 +236,8 @@ watch(tableSearch, () => {
     </template>
 
     <template #cell-branche="{ value }">
-      <span class="font-mono  text-xl uppercase" v-if="value ">{{ value.code  }}</span>
+      <span class="font-mono  text-xl uppercase" v-if="value"
+      >{{ (value as Branche).code }}</span>
     </template>
     <template #cell-code="{ value }">
       <span class="font-mono  text-xl uppercase">{{ value }}</span>

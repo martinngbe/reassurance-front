@@ -9,7 +9,6 @@ import TAction from '@/components/utilitaire/TAction.vue'
 import TModal from '@/components/display/TModal.vue'
 import TDemandeConfirmation from '@/components/utilitaire/TDemandeConfirmation.vue'
 import { useToast } from '@/components/toast/useToast.ts'
-import TBadge from '@/components/display/TBadge.vue'
 import { useRegions } from '@/referentiel/region/useRegion.ts'
 import type { Region } from '@/referentiel/region/region.ts'
 import TRegionForm from './TRegionForm.vue'
@@ -44,7 +43,9 @@ const regionColumns: TableColumn[] = [
   { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 },
   { key: 'libelle',    label: 'Libellé',    width: '75%',  minWidth: 150 },
 ]
-
+const emit = defineEmits<{ 
+  (e: 'row-click',  branche: any): void
+}>()
 
 const totalItems = ref(0)
 const totalPages = ref(0)
@@ -111,7 +112,7 @@ const handleModifier = () => {
 
 const handleSupprimer = async () => {
   if (selectedRegions.value.length === 0) {
-    alert('Veuillez sélectionner un region')
+    warning('Veuillez sélectionner un region')
     return
   }
   const regionId = selectedRegions.value[0]
@@ -140,7 +141,9 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-
+const onRowClick = ( row: any, index: number)=>{       
+    emit('row-click',row as Region)
+}
 // Reset page quand la recherche change (avec debounce idéalement)
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -154,8 +157,7 @@ watch(tableSearch, () => {
 </script>
 <template>
   <TTable
-    v-model:selected-keys="selectedRegions"
-    
+    v-model:selected-keys="selectedRegions"    
     :show-index="true"
     index-label="N°"
     :index-width="60"
@@ -170,6 +172,7 @@ watch(tableSearch, () => {
     title="Regions"
     row-key="id"
     striped
+    @row-click="onRowClick"
     @sort="onSort"
     
   >

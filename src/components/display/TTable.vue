@@ -1,4 +1,6 @@
-<script setup lang="ts" generic="T extends TableRow">
+<!-- <script setup lang="ts" generic="T extends TableRow"> -->
+// TTable.vue - Ligne 1
+<script setup lang="ts" generic="T extends Record<string, any>">
 import { computed, ref, useSlots, onBeforeUnmount, onMounted, watch, nextTick } from 'vue'
 import type { TableColumn, SortState, SortDirection, Density, TableRow } from '../forms/common'
 import AucuneDonnees from '../utilitaire/AucuneDonnees.vue'
@@ -24,6 +26,13 @@ const props = withDefaults(
     showIndex?: boolean
     indexLabel?: string
     indexWidth?: number
+    // ✨ NOUVEAU : Infinite Scroll
+    infiniteScroll?: boolean
+    hasMore?: boolean
+    loadingMore?: boolean
+    scrollThreshold?: number
+    endMessage?: string
+    showEndMessage?: boolean
     theme?: {
       primary?: string
       primaryHover?: string
@@ -47,14 +56,23 @@ const props = withDefaults(
     showIndex: false,
     indexLabel: 'N°',
     indexWidth: 60,
+    // ✨ Infinite Scroll defaults
+    infiniteScroll: false,
+    hasMore: true,
+    loadingMore: false,
+    scrollThreshold: 200,
+    endMessage: '— Fin des données —',
+    showEndMessage: true,
   },
 )
 
-// ==================== EMITS  & MODELS ====================
+// ==================== EMITS   & MODELS ====================
 const emit = defineEmits<{
   (e: 'sort', state: SortState): void
   (e: 'row-click', row: T, index: number): void
   (e: 'row-double-click', row: T, index: number): void
+  // ✨ NOUVEAU : Infinite Scroll
+  (e: 'load-more'): void
 }>()
 
 const selectedKeys = defineModel<(string | number)[]>('selectedKeys', { default: () => [] })
@@ -211,13 +229,6 @@ const tableMinWidth = computed(() => {
   return hasExplicitWidth ? `${total}px` : undefined
 })
 
-onBeforeUnmount(() => {
-  document.removeEventListener('mousemove', onResize)
-  document.removeEventListener('mouseup', stopResize)
-  resizeObserver?.disconnect()
-  window.removeEventListener('resize', checkHorizontalOverflow)
-})
-
 // ==================== SCROLL HORIZONTAL ====================
 const scrollEl = ref<HTMLElement | null>(null)
 const hasHorizontalOverflow = ref(false)
@@ -227,6 +238,72 @@ function checkHorizontalOverflow() {
   const el = scrollEl.value
   if (!el) return
   hasHorizontalOverflow.value = el.scrollWidth > el.clientWidth + 1
+}
+
+// ==================== ✨ INFINITE SCROLL ====================
+const sentinelEl = ref<HTMLElement | null>(null)
+let intersectionObserver: IntersectionObserver | null = null
+
+/**
+ * Déclenche le chargement de plus de données.
+ * Protégé contre les appels multiples pendant un chargement en cours.
+ */
+function triggerLoadMore() {
+  console.log(" -- --------------------------------- --")
+  console.warn(" -- TTable.triggerLoadMore -- ")
+  console.log(" -- --------------------------------- --")
+  console.log(" props:",props)
+  //console.log(" -- --------------------------------- --")
+  if (!props.infiniteScroll) return
+  if (props.loadingMore) return
+  if (!props.hasMore) return
+  if (props.loading) return // éviter conflit avec le loader principal
+  emit('load-more')
+}
+
+/**
+ * Initialise l'IntersectionObserver sur le sentinel.
+ * rootMargin négatif = déclenche avant d'atteindre le bas (anticipation).
+ */
+function setupInfiniteObserver() {
+  console.log(" -- --------------------------------- --")
+  console.warn(" -- TTable.setupInfiniteObserver -- ")
+  console.log(" -- --------------------------------- --")
+  console.log(" props:",props)
+  console.log(" sentinelEl.value:",sentinelEl.value)
+  console.log(" scrollEl.value:",scrollEl.value)
+  //console.log(" -- --------------------------------- --")
+  teardownInfiniteObserver()
+  if (!props.infiniteScroll || !sentinelEl.value || !scrollEl.value) return
+  if (typeof IntersectionObserver === 'undefined') return
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          triggerLoadMore()
+        }
+      }
+    },
+    {
+      root: scrollEl.value,
+      rootMargin: `0px 0px ${props.scrollThreshold}px 0px`,
+      threshold: 0,
+    },
+  )
+  intersectionObserver.observe(sentinelEl.value)
+}
+
+function teardownInfiniteObserver() {
+  console.log(" -- --------------------------------- --")
+  console.warn(" -- TTable.teardownInfiniteObserver -- ")
+  console.log(" -- --------------------------------- --")
+  console.log(" intersectionObserver:",intersectionObserver)
+  //console.log(" -- --------------------------------- --")
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+    intersectionObserver = null
+  }
 }
 
 onMounted(() => {
@@ -243,7 +320,27 @@ onMounted(() => {
     }
   }
   window.addEventListener('resize', checkHorizontalOverflow)
+
+  // ✨ Active l'observer d'infinite scroll
+  setupInfiniteObserver()
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousemove', onResize)
+  document.removeEventListener('mouseup', stopResize)
+  resizeObserver?.disconnect()
+  window.removeEventListener('resize', checkHorizontalOverflow)
+  // ✨ Cleanup infinite scroll
+  teardownInfiniteObserver()
+})
+
+// ✨ Réactive l'observer si les props clés changent
+// watch(
+//   () => [props.infiniteScroll, props.scrollThreshold, scrollEl.value],
+//   () => {
+//     nextTick(() => setupInfiniteObserver())
+//   },
+// )
 
 watch(
   [() => props.columns, columnWidths, () => props.rows.length],
@@ -320,6 +417,28 @@ const tableWidth = computed(() => {
 const totalColspan = computed(
   () => props.columns.length + (props.selectable ? 1 : 0) + (props.showIndex ? 1 : 0),
 )
+
+// ✨ Indique s'il faut afficher le sentinel (zone d'observation)
+const showInfiniteSentinel = computed(
+  () => props.infiniteScroll && props.rows.length > 0 && props.hasMore,
+)
+
+// ✨ Indique s'il faut afficher le message de fin
+const showInfiniteEnd = computed(
+  () =>
+    props.infiniteScroll &&
+    props.showEndMessage &&
+    !props.hasMore &&
+    props.rows.length > 0 &&
+    !props.loading,
+)
+// ✅ NOUVEAU : Réactive l'observer quand le sentinel apparaît/disparaît
+watch(
+  () => [props.infiniteScroll, props.scrollThreshold, scrollEl.value, showInfiniteSentinel.value],
+  () => {
+    nextTick(() => setupInfiniteObserver())
+  },
+)
 </script>
 
 <template>
@@ -381,7 +500,6 @@ const totalColspan = computed(
             >
               {{ indexLabel }}
             </th>
-
             <!-- Colonne sélection -->
             <th
               v-if="selectable"
@@ -403,7 +521,6 @@ const totalColspan = computed(
                 @change="allSelected = ($event.target as HTMLInputElement).checked"
               />
             </th>
-
             <!-- Colonnes -->
             <th
               v-for="(col, colIndex) in columns"
@@ -503,7 +620,6 @@ const totalColspan = computed(
             >
               {{ rowIndex + 1 }}
             </td>
-
             <!-- Checkbox de sélection -->
             <td
               v-if="selectable"
@@ -524,7 +640,6 @@ const totalColspan = computed(
                 @change="toggleRow(row, rowIndex)"
               />
             </td>
-
             <td
               v-for="(col, colIndex) in columns"
               :key="col.key"
@@ -551,7 +666,58 @@ const totalColspan = computed(
               </slot>
             </td>
           </tr>
-          <tr v-if="rows.length === 0">
+
+          <!-- ✨ ✨ ✨ INFINITE SCROLL : Ligne de chargement (loader) ✨ ✨ ✨ -->
+          <tr v-if="infiniteScroll && loadingMore">
+            <td :colspan="totalColspan" class="px-4 py-6">
+              <slot name="infinite-loader" :loading="loadingMore">
+                <div class="flex items-center justify-center gap-3 text-neutral-500">
+                  <svg
+                    class="h-5 w-5 animate-spin text-primary-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-opacity="0.25"
+                    />
+                    <path
+                      d="M12 2a10 10 0 0 1 10 10"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <span class="text-sm">Chargement…</span>
+                </div>
+              </slot>
+            </td>
+          </tr>
+
+          <!-- ✨ ✨ ✨ INFINITE SCROLL : Message de fin ✨ ✨ ✨ -->
+          <tr v-if="showInfiniteEnd">
+            <td :colspan="totalColspan" class="px-4 py-5 text-center">
+              <slot name="infinite-end">
+                <span class="text-xs uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  {{ endMessage }}
+                </span>
+              </slot>
+            </td>
+          </tr>
+
+          <!-- ✨ ✨ ✨ INFINITE SCROLL : Sentinel (zone invisible observée) ✨ ✨ ✨ -->
+          <tr v-if="showInfiniteSentinel">
+            <td :colspan="totalColspan" class="p-0">
+              <div ref="sentinelEl" class="h-px w-full" aria-hidden="true" />
+            </td>
+          </tr>
+
+          <!-- Ligne vide (aucune donnée) -->
+          <tr v-if="rows.length === 0 && !loading">
             <td
               :colspan="totalColspan"
               class="px-4 py-8 text-center text-neutral-400 dark:text-neutral-500"

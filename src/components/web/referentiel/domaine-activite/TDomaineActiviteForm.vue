@@ -7,7 +7,7 @@ import { useDomaineActivites } from '@/referentiel/domaine-activite/useDomaineAc
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps<{
-  branche?: DomaineActivite | null
+  domaineActivite?: DomaineActivite | null
 }>()
 
 const emit = defineEmits<{
@@ -16,20 +16,21 @@ const emit = defineEmits<{
 }>()
 
 // ==================== SCHÉMA DU FORMULAIRE ====================
-const brancheFields: FieldConfig[] = [
+const domaineActiviteFields: FieldConfig[] = [
   { key: 'code',      label: 'Code',        type: 'text', required: true, placeholder: 'saisissez le code' },
   { key: 'libelle',   label: 'Libellé',     type: 'text', required: true, placeholder: 'saisissez le libellé' },
+  { key: 'description',   label: 'Description',     type: 'textarea', required: false, placeholder: 'saisissez une description' },
 ]
 
 // ==================== ÉTAT ====================
-const isEditing = computed(() => !!props.branche?.id)
+const isEditing = computed(() => !!props.domaineActivite?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 const formData = ref<Record<string, any>>(
-  props.branche
-    ? { ...props.branche }
+  props.domaineActivite
+    ? { ...props.domaineActivite }
     : Object.fromEntries(
-        brancheFields.map((f) => [f.key, f.type === 'checkbox' ? true : '']),
+        domaineActiviteFields.map((f) => [f.key, f.type === 'checkbox' ? true : '']),
       ),
 )
 
@@ -49,12 +50,13 @@ const handleSubmit = async (data: Record<string, any>) => {
   console.info(" ----- TDomaineActiviteForm.handleSubmit  data:",data)
   console.info("data:",data)
   try {
-    if (isEditing.value && props.branche?.id) {
+    if (isEditing.value && props.domaineActivite?.id) {
       await updateDomaineActivite.mutateAsync({
-        id: props.branche.id,
+        id: props.domaineActivite.id,
         data: {
           code: data.code,
           libelle: data.libelle,
+          description: data.description
         },
       })
       emit('success', 'DomaineActivite modifié avec succès')
@@ -62,6 +64,7 @@ const handleSubmit = async (data: Record<string, any>) => {
       await createDomaineActivite.mutateAsync({
         code: data.code,
         libelle: data.libelle,
+        description: data.description
       })
       emit('success', 'DomaineActivite créé avec succès')
     }
@@ -92,7 +95,7 @@ const handleCancel = () => {
 
     <GenericCrudForm
       v-model="formData"
-      :fields="brancheFields"
+      :fields="domaineActiviteFields"
       :mode="formMode"
       :show-delete="false"
       :loading="loading"

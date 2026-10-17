@@ -44,10 +44,8 @@ const brancheColumns: TableColumn[] = [
   { key: 'libelle',    label: 'Libellé',    width: '75%',  minWidth: 150 },
  
 ]
-const emit = defineEmits<{
- 
+const emit = defineEmits<{ 
   (e: 'row-click',  branche: any): void
-
 }>()
 
 const totalItems = ref(0)
@@ -115,7 +113,7 @@ const handleModifier = () => {
 
 const handleSupprimer = async () => {
   if (selectedBranches.value.length === 0) {
-    alert('Veuillez sélectionner un branche')
+    warning('Veuillez sélectionner un branche',"Attention")
     return
   }
   const brancheId = selectedBranches.value[0]
@@ -144,10 +142,8 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-const onRowClick = ( row: any, index: number)=>{
-       
+const onRowClick = ( row: any, index: number)=>{       
     emit('row-click',row as Branche)
-
 }
 // Reset page quand la recherche change (avec debounce idéalement)
 let searchTimeout: number | undefined
