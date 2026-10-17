@@ -249,10 +249,10 @@ let intersectionObserver: IntersectionObserver | null = null
  * Protégé contre les appels multiples pendant un chargement en cours.
  */
 function triggerLoadMore() {
-  console.log(" -- --------------------------------- --")
-  console.warn(" -- TTable.triggerLoadMore -- ")
-  console.log(" -- --------------------------------- --")
-  console.log(" props:",props)
+  // console.log(" -- --------------------------------- --")
+  // console.warn(" -- TTable.triggerLoadMore -- ")
+  // console.log(" -- --------------------------------- --")
+  // console.log(" props:",props)
   //console.log(" -- --------------------------------- --")
   if (!props.infiniteScroll) return
   if (props.loadingMore) return
@@ -266,13 +266,13 @@ function triggerLoadMore() {
  * rootMargin négatif = déclenche avant d'atteindre le bas (anticipation).
  */
 function setupInfiniteObserver() {
-  console.log(" -- --------------------------------- --")
-  console.warn(" -- TTable.setupInfiniteObserver -- ")
-  console.log(" -- --------------------------------- --")
-  console.log(" props:",props)
-  console.log(" sentinelEl.value:",sentinelEl.value)
-  console.log(" scrollEl.value:",scrollEl.value)
-  //console.log(" -- --------------------------------- --")
+  // console.log(" -- --------------------------------- --")
+  // console.warn(" -- TTable.setupInfiniteObserver -- ")
+  // console.log(" -- --------------------------------- --")
+  // console.log(" props:",props)
+  // console.log(" sentinelEl.value:",sentinelEl.value)
+  // console.log(" scrollEl.value:",scrollEl.value)
+  // //console.log(" -- --------------------------------- --")
   teardownInfiniteObserver()
   if (!props.infiniteScroll || !sentinelEl.value || !scrollEl.value) return
   if (typeof IntersectionObserver === 'undefined') return
@@ -295,10 +295,10 @@ function setupInfiniteObserver() {
 }
 
 function teardownInfiniteObserver() {
-  console.log(" -- --------------------------------- --")
-  console.warn(" -- TTable.teardownInfiniteObserver -- ")
-  console.log(" -- --------------------------------- --")
-  console.log(" intersectionObserver:",intersectionObserver)
+  // console.log(" -- --------------------------------- --")
+  // console.warn(" -- TTable.teardownInfiniteObserver -- ")
+  // console.log(" -- --------------------------------- --")
+  // console.log(" intersectionObserver:",intersectionObserver)
   //console.log(" -- --------------------------------- --")
   if (intersectionObserver) {
     intersectionObserver.disconnect()

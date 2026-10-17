@@ -25,36 +25,51 @@ const menus: MenuItem[] = [
     icon: 'pi pi-calendar',
   },
   {
-    id: 'profil',
-    label: 'Profil',
-    icon: 'pi pi-user',
-  },
-  {
-    id: 'utilisateur',
-    label: 'Utilisateur',
-    icon: 'pi pi-user',
-  },
- 
-  {
-    id: 'domaineActivite',
-    label: 'Domaine activité',
-    icon: 'pi pi-briefcase',
-  },
-  {
     id: 'branche',
     label: 'Branche',
     icon: 'pi pi-sitemap',
-  },
-   {
-    id: 'devise',
-    label: 'Dévise',
-    icon: 'pi pi-dollar',
   },
   {
     id: 'region',
     label: 'Pays',
     icon: 'pi pi-globe',
   },
+  {
+    id: 'domaineActivite',
+    label: 'Domaine activité',
+    icon: 'pi pi-briefcase',
+  },
+
+  {
+    id: 'acteur',
+    label: 'Acteur',
+    icon: 'pi pi-briefcase',
+  },  
+
+  {
+    id: 'assure',
+    label: 'Assuré',
+    icon: 'pi pi-briefcase',
+  }, 
+  // {
+  //   id: 'profil',
+  //   label: 'Profil',
+  //   icon: 'pi pi-user',
+  // },
+  {
+    id: 'utilisateur',
+    label: 'Utilisateur',
+    icon: 'pi pi-user',
+  },
+ 
+
+
+   {
+    id: 'devise',
+    label: 'Dévise',
+    icon: 'pi pi-dollar',
+  },
+ 
  
 ];
 

@@ -4,7 +4,6 @@ import { ref } from 'vue';
 import TTab from '@/components/tab/TTab.vue';
 import TTabItem from '@/components/tab/TTabItem.vue';
 import TTabPanel from '@/components/tab/TTabPanel.vue';
-import TAssuresPolicesQuittance from '@/components/web/assure/TAssuresPolicesQuittance.vue';
 import TCedantesPolicesQuittance from '@/components/web/cedante/TCedantesPolicesQuittance.vue';
 const active = ref('assures')
 

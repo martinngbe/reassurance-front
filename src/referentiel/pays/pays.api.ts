@@ -6,9 +6,7 @@ const BASE = '/pays';
 
 export const paysApi = {
   getAll: (params: PaginationParams = {}) =>
-    apiClient
-      .get<IResponse>(BASE, { params })
-      .then((r) => r.data),
+    apiClient.get<IResponse>(BASE, { params }).then((r) => r.data),
 
   getById: (id: number) =>
     apiClient.get<Pays>(`${BASE}/${id}`).then((r) => r.data),

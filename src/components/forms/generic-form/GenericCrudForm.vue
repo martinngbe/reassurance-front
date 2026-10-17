@@ -7,6 +7,7 @@ import TButton from '../TButton.vue'
 import TToggle from '../TToggle.vue'
 import TDatePicker from '../TDatePicker.vue'
 import TTextarea from '../TTextarea.vue'
+import TAsyncSelect from '../TAsyncSelect.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -46,13 +47,7 @@ const onInput = (key: string, event: Event) => {
 const isDisabled = (field: FieldConfig) =>
   props.mode === 'view' || field.disabled || props.loading
 
-// const inputClasses = computed(() => [
-//   'w-full rounded-lg border px-3 py-2 text-sm',
-//   'transition-colors duration-150',
-//   'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-//   'disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
-//   'border-gray-300 placeholder-gray-400',
-// ])
+
 const inputClasses = computed(() => [
   'w-full rounded-lg px-3 py-2 text-sm',
   'transition-colors duration-150',
@@ -61,6 +56,7 @@ const inputClasses = computed(() => [
   'placeholder-gray-400',
   'bg-white dark:bg-neutral-900',  // Fond sans bordure
 ])
+
 </script>
 
 <template>
@@ -121,6 +117,37 @@ const inputClasses = computed(() => [
           {{ opt.label }}
         </option>
       </select>
+        
+        <!-- 🆕 Async Select (Scroll infini) -->
+        <!--  Async Select (Scroll infini pour grandes listes) -->
+      <!-- <TAsyncSelect
+        v-else-if="field.type === 'async-select'"
+        :id="field.key"
+        :model-value="modelValue[field.key]"
+        :label="field.label"
+        :placeholder="field.placeholder"
+        :required="field.required"
+        :disabled="isDisabled(field)"
+        :hint="field.helpText"
+        :resolve="field.resolve"
+        :track-by="field.asyncOptions?.trackBy || 'id'"
+        :label-by="field.asyncOptions?.labelBy || 'libelle'"
+        @update:model-value="(v) => updateField(field.key, v)"
+      /> -->
+      <TAsyncSelect
+  v-else-if="field.type === 'async-select'"
+  :id="field.key"
+  :model-value="modelValue[field.key]"
+  :label="field.label"
+  :placeholder="field.placeholder"
+  :required="field.required"
+  :disabled="isDisabled(field)"
+  :hint="field.helpText"
+  :load-options="field.loadOptions"
+  :track-by="field.asyncOptions?.trackBy || 'id'"
+  :label-by="field.asyncOptions?.labelBy || 'label'"
+  @update:model-value="(v) => updateField(field.key, v)"
+/>
 
       <!-- Toggle (checkbox moderne) -->
       <TToggle

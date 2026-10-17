@@ -16,6 +16,9 @@ const moduleComponents: Record<string, any> = {
   region: defineAsyncComponent(() => import('@/components/web/referentiel/region/TRegion.vue')),
   domaineActivite: defineAsyncComponent(() => import('@/components/web/referentiel/domaine-activite/TDomaineActivite.vue')),
   devise: defineAsyncComponent(() => import('@/components/web/referentiel/devise/TDevise.vue')),
+
+  acteur: defineAsyncComponent(() => import('@/components/web/acteurs/acteur/TActeur.vue')),
+  assure: defineAsyncComponent(() => import('@/components/web/acteurs/assure/TAssure.vue')),
   
 }
 

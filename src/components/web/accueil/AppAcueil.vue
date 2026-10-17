@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/components/layout/TLayoutModule.vue'
 import TTitreModule from '@/components/utilitaire/TTitreModule.vue';
-import Assures from '../assure/Assures.vue';
+import EnConstruction from '../EnConstruction.vue';
 
 
 const menuModule: Record<string, string> = {
@@ -36,7 +36,7 @@ const menuModule: Record<string, string> = {
         </div>
       </div-->
       <div class="p-6 w-full h-full">
-       <Assures   />
+       <EnConstruction   />
         </div>
     </template>
 

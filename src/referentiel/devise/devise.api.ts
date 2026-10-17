@@ -1,6 +1,5 @@
 // /referentiel/devise/devise.api.ts
 import { apiClient } from '@/api/api-client'
-import { toValue } from 'vue'
 import type { IResponse, PaginationParams } from '@/type/pagination'
 import type { Devise, CreateDeviseDto, UpdateDeviseDto } from './devise'
 
@@ -8,8 +7,6 @@ const BASE = '/devise'
 
 export const deviseApi = {
   getAll: (params: PaginationParams = {}) => {
-   
-    console.log(" -- deviseApi.getAll  params:",params)
     return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
   },
   getById: (id: number) =>

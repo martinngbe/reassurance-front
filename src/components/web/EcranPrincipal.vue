@@ -59,10 +59,10 @@ const moduleComponents: Record<string, any> = {
   cession: defineAsyncComponent(() => import('./module/cession/Cession.vue')),
   sinistre: defineAsyncComponent(() => import('./sinistre/Sinistre.vue')),
   reglement: defineAsyncComponent(() => import('./reglement/Reglement.vue')),
-  acteur: defineAsyncComponent(() => import('@/components/web/assure/Assures.vue')),
-  compte: defineAsyncComponent(() => import('@/components/web/module/compte/Compte.vue')),
-  comptabilisation: defineAsyncComponent(() => import('./module/comptabilisation/Comptabilisation.vue')),
-  consultation: defineAsyncComponent(() => import('./module/consultation/Consultation.vue')),
+  acteur: defineAsyncComponent(() => import('@/components/web/acteurs/acteur/Acteurs.vue')),
+  compte: defineAsyncComponent(() => import('@/components/web/EnConstruction.vue')),
+  comptabilisation: defineAsyncComponent(() => import('@/components/web/EnConstruction.vue')),
+  consultation: defineAsyncComponent(() => import('@/components/web/EnConstruction.vue')),
   parametrage: defineAsyncComponent(() => import('./module/parametrage/Parametrage.vue')),
 }
 
