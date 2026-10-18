@@ -1,4 +1,4 @@
 /* src/style.css */
 @tailwind base;
-@tailwind components;
+@tailwind composants;
 @tailwind utilities;

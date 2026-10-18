@@ -2,12 +2,9 @@
 # Étape 1 : Build de l'application Vue 3
 # ============================================
 FROM node:24-alpine AS builder
-
 WORKDIR /app
-
 # Copie des fichiers de dépendances en premier (optimisation du cache Docker)
 COPY package*.json ./
-
 # Installation des dépendances (utilise npm ci si package-lock.json existe)
 RUN npm ci
 

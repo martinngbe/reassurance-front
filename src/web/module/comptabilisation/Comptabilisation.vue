@@ -1,0 +1,31 @@
+<script setup lang="ts">
+import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
+import TTitreModule from '@/composants/utilitaire/TTitreModule.vue';
+import MenuComptabilisation from './MenuComptabilisation.vue';
+
+
+
+</script>
+
+<template>
+  <TLayoutModule
+    topSize="55px"
+    leftSize="300px"
+    :showBottom=false
+    >
+   <template #header>
+        <TTitreModule libelle="Comptabilisation"/>     
+    </template>
+
+   <template #left>
+      <MenuComptabilisation />
+    </template>
+
+    <template #default>
+     
+    </template>
+
+ 
+
+  </TLayoutModule>
+</template>

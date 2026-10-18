@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import Login from './components/Login.vue'
-import EcranPrincipal from './components/web/EcranPrincipal.vue'
+import Login from './composants/Login.vue'
+import EcranPrincipal from './web/EcranPrincipal.vue'
 import type {  LoginPayload } from './auth/types.ts'
 import { authService } from './auth/auth.service.ts'
-import TToastContainer from './components/toast/TToastContainer.vue'
-import { useNetworkStatus } from './components/toast/useNetworkStatus.ts'
+import TToastContainer from './composants/toast/TToastContainer.vue'
+import { useNetworkStatus } from './composants/toast/useNetworkStatus.ts'
 
 type Theme = 'light' | 'dark'
 

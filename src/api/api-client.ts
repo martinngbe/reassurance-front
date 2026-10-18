@@ -1,4 +1,4 @@
-import { useToast } from '@/components/toast/useToast'
+import { useToast } from '@/composants/toast/useToast'
 import axios from 'axios'
 
 export const apiClient = axios.create({
