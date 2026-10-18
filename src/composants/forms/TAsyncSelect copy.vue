@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import Multiselect from '@vueform/multiselect'
 import TFieldWrapper from './TFieldWrapper.vue'
 import { nextUid } from '../../utilitaire/uid.ts'
@@ -14,9 +15,8 @@ const props = withDefaults(defineProps<{
   error?: string
   required?: boolean
   disabled?: boolean
-  // La fonction asynchrone qui charge les données
-  resolve?: (query: string, currentOptions: any[]) => Promise<{ options: any[], hasMore: boolean }>
-  // Clés pour mapper vos objets API (ex: id et name)
+  // Fonction qui retourne { options: any[], hasMore: boolean }
+  loadOptions?: (query: string, page: number) => Promise<{ options: any[], hasMore: boolean }>
   trackBy?: string
   labelBy?: string
 }>(), {
@@ -35,11 +35,14 @@ const emit = defineEmits<{
 }>()
 
 const fieldId = props.id ?? nextUid('t-async-select')
+const options = ref<any[]>([])
+const loading = ref(false)
+const hasMore = ref(false)
+const currentPage = ref(1)
+const searchQuery = ref('')
 
-// Style de base pour correspondre à votre TSelect
 const controlClass = computed<string[]>(() => [...controlBase(props.error !== ''), 'h-10', 'px-3'])
 
-// Configuration des classes Tailwind pour le dropdown (Mode sombre basé sur votre capture)
 const classes = {
   container: 'relative',
   singleLabel: 'flex items-center h-full text-sm text-neutral-900 dark:text-white',
@@ -49,20 +52,61 @@ const classes = {
   caret: 'w-4 h-4 text-neutral-400 ml-2',
   clear: 'text-neutral-400 hover:text-neutral-600 mr-2',
   clearIcon: 'w-4 h-4',
-  // Le dropdown lui-même
   dropdown: 'absolute z-50 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-lg overflow-hidden',
   dropdownTop: 'rounded-t-lg',
   dropdownBottom: 'rounded-b-lg',
-  // Les options
   option: 'px-3 py-2 text-sm text-neutral-900 dark:text-white hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer',
   optionSelected: 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400',
   optionDisabled: 'text-neutral-400 cursor-not-allowed',
   optionGroup: 'px-3 py-2 text-xs font-bold text-neutral-500 uppercase',
-  // États vides et chargement
   noOptions: 'px-3 py-2 text-sm text-neutral-500 text-center',
   noResults: 'px-3 py-2 text-sm text-neutral-500 text-center',
   spinner: 'w-4 h-4 text-primary-500',
   footer: 'px-3 py-2 text-center border-t border-neutral-200 dark:border-neutral-700',
+}
+
+async function loadMoreOptions(reset = false) {
+  if (!props.loadOptions || loading.value) return
+  
+  loading.value = true
+  
+  if (reset) {
+    currentPage.value = 1
+    options.value = []
+    hasMore.value = false
+  }
+
+  try {
+    const result = await props.loadOptions(searchQuery.value, currentPage.value)
+    options.value = reset ? result.options : [...options.value, ...result.options]
+    hasMore.value = result.hasMore
+    currentPage.value++
+  } catch (error) {
+    console.error('Erreur de chargement:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearch(query: string) {
+  searchQuery.value = query
+  loadMoreOptions(true)
+}
+
+function onScrollBottom() {
+  if (hasMore.value && !loading.value) {
+    loadMoreOptions(false)
+  }
+}
+
+function onOpen() {
+  if (options.value.length === 0) {
+    loadMoreOptions(true)
+  }
+}
+
+function onChange(value: any) {
+  emit('update:modelValue', value)
 }
 </script>
 
@@ -75,24 +119,24 @@ const classes = {
     :html-for="fieldId"
   >
     <div class="relative">
-      <!-- 
-        :resolve gère TOUT : la recherche, le debounce, le scroll infini et le chargement.
-        Plus besoin de slots compliqués !
-      -->
       <Multiselect
         :id="fieldId"
         :model-value="modelValue"
+        :options="options"
         :placeholder="placeholder"
         :disabled="disabled"
+        :loading="loading"
         :classes="classes"
         :track-by="trackBy"
         :label="labelBy"
         :searchable="true"
-        :resolve="resolve"
-        @update:modelValue="emit('update:modelValue', $event)"
+        @search="onSearch"
+        @open="onOpen"
+        @scroll-bottom="onScrollBottom"
+        @update:model-value="onChange"
       />
       
-      <!-- Flèche personnalisée pour matcher votre TSelect -->
+      <!-- Flèche personnalisée -->
       <svg
         class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
         viewBox="0 0 20 20"
@@ -108,5 +152,4 @@ const classes = {
   </TFieldWrapper>
 </template>
 
-<!-- Import du style de base de la librairie -->
 <style src="@vueform/multiselect/themes/default.css"></style>

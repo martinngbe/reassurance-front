@@ -119,8 +119,8 @@ const inputClasses = computed(() => [
       </select>
         
         <!-- 🆕 Async Select (Scroll infini) -->
-        <!--  Async Select (Scroll infini pour grandes listes) -->
-      <!-- <TAsyncSelect
+       
+      <TAsyncSelect
         v-else-if="field.type === 'async-select'"
         :id="field.key"
         :model-value="modelValue[field.key]"
@@ -129,25 +129,12 @@ const inputClasses = computed(() => [
         :required="field.required"
         :disabled="isDisabled(field)"
         :hint="field.helpText"
-        :resolve="field.resolve"
+        :load-options="field.loadOptions"
+        :auto-select-first="field.autoSelectFirst"  
         :track-by="field.asyncOptions?.trackBy || 'id'"
-        :label-by="field.asyncOptions?.labelBy || 'libelle'"
+        :label-by="field.asyncOptions?.labelBy || 'label'"
         @update:model-value="(v) => updateField(field.key, v)"
-      /> -->
-      <TAsyncSelect
-  v-else-if="field.type === 'async-select'"
-  :id="field.key"
-  :model-value="modelValue[field.key]"
-  :label="field.label"
-  :placeholder="field.placeholder"
-  :required="field.required"
-  :disabled="isDisabled(field)"
-  :hint="field.helpText"
-  :load-options="field.loadOptions"
-  :track-by="field.asyncOptions?.trackBy || 'id'"
-  :label-by="field.asyncOptions?.labelBy || 'label'"
-  @update:model-value="(v) => updateField(field.key, v)"
-/>
+      />
 
       <!-- Toggle (checkbox moderne) -->
       <TToggle

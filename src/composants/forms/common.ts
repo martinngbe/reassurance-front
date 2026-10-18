@@ -30,25 +30,8 @@ export function normalizeOptions<V extends OptionValue>(
 /* ----- Checkbox (booléen seul OU groupe de valeurs) ----- */
 export type CheckboxModel = boolean | OptionValue[]
 
-/* ----- Table ----- */
-// export interface TableColumn {
-//   key: string
-//   label: string
-//   align?: 'left' | 'center' | 'right'
-//   width?: string | number
-// }
 export type TableRow = Record<string, unknown>
-// forms/common.ts
-// export interface TableColumn {
-//   key: string
-//   label: string
-//   width?: string | number
-//   minWidth?: string | number
-//   align?: 'left' | 'center' | 'right'
-//   sortable?: boolean // ✨ Nouveau
-//   resizable?: boolean // ✨ Nouveau
-//   fixed?: 'left' | 'right' // ✨ Nouveau (pour colonnes figées)
-// }
+
 export interface TableColumn {
   key: string
   label: string

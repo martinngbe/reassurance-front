@@ -27,29 +27,6 @@ export interface CalendarFieldOptions {
   clearable?: boolean
 }
 
-// export interface FieldConfig {
-//   key: string
-//   label: string
-//   type: FieldType
-//   required?: boolean
-//   placeholder?: string
-//   options?: FieldOption[]
-//   disabled?: boolean
-//   helpText?: string
-//   /** Options spécifiques au type 'calendar' */
-//   calendarOptions?: CalendarFieldOptions
-//   textareaOptions?: TextAreaOptions // 🆕
-
-//     // Nouvelles propriétés pour le scroll infini
-//   resolve?: (query: string, currentOptions: any[]) => Promise<{ options: any[], hasMore: boolean }>
-//   asyncOptions?: {
-//     trackBy?: string // ex: 'id'
-//     labelBy?: string // ex: 'name'
-//   }
-// }
-
-// /composants/forms/generic-form/types-form.ts
-
 export interface FieldConfig {
   key: string
   label: string
@@ -73,7 +50,7 @@ export interface FieldConfig {
     trackBy?: string  // Clé de l'ID dans l'objet API (ex: 'id')
     labelBy?: string  // Clé du texte affiché (ex: 'libelle', 'name')
   }
-  
+  autoSelectFirst?: boolean  // ✅ Ajout
   // Pour le calendar
   calendarOptions?:CalendarFieldOptions
 }

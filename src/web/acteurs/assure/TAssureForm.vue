@@ -78,6 +78,7 @@ const assureFields: FieldConfig[] = [
     required: true,
     placeholder: 'Sélectionner le pays ...',
     loadOptions: fetchPays, // 👈 Fonction de chargement
+    autoSelectFirst: true,  // ✅ Ajout
     asyncOptions: {
       trackBy: 'id',    // 👈 Clé de l'ID dans votre objet API
       labelBy: 'libelle' // 👈 Clé du texte affiché (adaptez selon votre API : 'name', 'libelle', etc.)
@@ -90,6 +91,7 @@ const assureFields: FieldConfig[] = [
     required: true,
     placeholder: "Sélectionner le domaine d'activité ...",
     loadOptions: fetchDomaineActivite,
+    autoSelectFirst: true,  // ✅ Ajout
     asyncOptions: {
       trackBy: 'id',
       labelBy: 'libelle' // Adaptez selon votre API
