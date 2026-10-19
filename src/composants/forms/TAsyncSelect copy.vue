@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import Multiselect from '@vueform/multiselect'
+import { ref, onMounted, watch } from 'vue'
 import TFieldWrapper from './TFieldWrapper.vue'
 import { nextUid } from '../../utilitaire/uid.ts'
-import { controlBase } from './fieldStyles'
-import { computed } from 'vue'
+import TButton from './TButton.vue';
+import TModal from '../display/TModal.vue';
 
 const props = withDefaults(defineProps<{
   modelValue?: any
@@ -15,10 +14,10 @@ const props = withDefaults(defineProps<{
   error?: string
   required?: boolean
   disabled?: boolean
-  // Fonction qui retourne { options: any[], hasMore: boolean }
   loadOptions?: (query: string, page: number) => Promise<{ options: any[], hasMore: boolean }>
   trackBy?: string
   labelBy?: string
+  autoSelectFirst?: boolean
 }>(), {
   modelValue: null,
   placeholder: 'Sélectionner…',
@@ -26,8 +25,9 @@ const props = withDefaults(defineProps<{
   label: '',
   hint: '',
   error: '',
-  trackBy: 'value',
+  trackBy: 'id',
   labelBy: 'label',
+  autoSelectFirst: false,
 })
 
 const emit = defineEmits<{
@@ -40,36 +40,17 @@ const loading = ref(false)
 const hasMore = ref(false)
 const currentPage = ref(1)
 const searchQuery = ref('')
+const hasLoaded = ref(false)
+const isModalOpen = ref(false)
+const selectedOption = ref<any>(props.modelValue)
+const modalLoading = ref(false)
 
-const controlClass = computed<string[]>(() => [...controlBase(props.error !== ''), 'h-10', 'px-3'])
+// Charger les données
+async function loadOptions(reset = false) {
+  if (!props.loadOptions || modalLoading.value) return
 
-const classes = {
-  container: 'relative',
-  singleLabel: 'flex items-center h-full text-sm text-neutral-900 dark:text-white',
-  multipleLabel: 'flex items-center h-full text-sm text-neutral-900 dark:text-white',
-  search: 'h-full px-3 text-sm bg-transparent text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none',
-  placeholder: 'text-neutral-500 dark:text-neutral-400 text-sm h-full px-3 flex items-center',
-  caret: 'w-4 h-4 text-neutral-400 ml-2',
-  clear: 'text-neutral-400 hover:text-neutral-600 mr-2',
-  clearIcon: 'w-4 h-4',
-  dropdown: 'absolute z-50 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-lg overflow-hidden',
-  dropdownTop: 'rounded-t-lg',
-  dropdownBottom: 'rounded-b-lg',
-  option: 'px-3 py-2 text-sm text-neutral-900 dark:text-white hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer',
-  optionSelected: 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400',
-  optionDisabled: 'text-neutral-400 cursor-not-allowed',
-  optionGroup: 'px-3 py-2 text-xs font-bold text-neutral-500 uppercase',
-  noOptions: 'px-3 py-2 text-sm text-neutral-500 text-center',
-  noResults: 'px-3 py-2 text-sm text-neutral-500 text-center',
-  spinner: 'w-4 h-4 text-primary-500',
-  footer: 'px-3 py-2 text-center border-t border-neutral-200 dark:border-neutral-700',
-}
+  modalLoading.value = true
 
-async function loadMoreOptions(reset = false) {
-  if (!props.loadOptions || loading.value) return
-  
-  loading.value = true
-  
   if (reset) {
     currentPage.value = 1
     options.value = []
@@ -84,30 +65,73 @@ async function loadMoreOptions(reset = false) {
   } catch (error) {
     console.error('Erreur de chargement:', error)
   } finally {
-    loading.value = false
+    modalLoading.value = false
   }
 }
 
-function onSearch(query: string) {
-  searchQuery.value = query
-  loadMoreOptions(true)
+// Ouvrir le modal
+function openModal() {
+  if (props.disabled) return
+  isModalOpen.value = true
+  searchQuery.value = ''
+  loadOptions(true)
 }
 
-function onScrollBottom() {
-  if (hasMore.value && !loading.value) {
-    loadMoreOptions(false)
+// Fermer le modal
+function closeModal() {
+  isModalOpen.value = false
+}
+
+// Sélectionner une option
+function selectOption(option: any) {
+  selectedOption.value = option
+  emit('update:modelValue', option)
+  closeModal()
+}
+
+// Charger plus d'options au scroll
+function onScroll(event: Event) {
+  const target = event.target as HTMLElement
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+    if (hasMore.value && !modalLoading.value) {
+      loadOptions(false)
+    }
   }
 }
 
-function onOpen() {
-  if (options.value.length === 0) {
-    loadMoreOptions(true)
-  }
+// Recherche
+function onSearch(event: Event) {
+  const target = event.target as HTMLInputElement
+  searchQuery.value = target.value
+  loadOptions(true)
 }
 
-function onChange(value: any) {
-  emit('update:modelValue', value)
+// Obtenir le libellé de la valeur sélectionnée
+function getSelectedLabel(): string {
+  if (!props.modelValue) return ''
+  if (typeof props.modelValue === 'object' && props.modelValue[props.labelBy]) {
+    return props.modelValue[props.labelBy]
+  }
+  return ''
 }
+
+// Chargement initial si autoSelectFirst
+onMounted(async () => {
+  if (props.autoSelectFirst && props.loadOptions && !hasLoaded.value) {
+    loading.value = true
+    try {
+      const result = await props.loadOptions('', 1)
+      if (result.options.length > 0 && !props.modelValue) {
+        emit('update:modelValue', result.options[0])
+      }
+      hasLoaded.value = true
+    } catch (error) {
+      console.error('Erreur de chargement initial:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+})
 </script>
 
 <template>
@@ -118,38 +142,80 @@ function onChange(value: any) {
     :required="required"
     :html-for="fieldId"
   >
-    <div class="relative">
-      <Multiselect
-        :id="fieldId"
-        :model-value="modelValue"
-        :options="options"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :loading="loading"
-        :classes="classes"
-        :track-by="trackBy"
-        :label="labelBy"
-        :searchable="true"
-        @search="onSearch"
-        @open="onOpen"
-        @scroll-bottom="onScrollBottom"
-        @update:model-value="onChange"
-      />
-      
-      <!-- Flèche personnalisée -->
-      <svg
-        class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.39a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z"
-          clip-rule="evenodd"
-        />
+    <!-- Bouton qui ouvre le modal -->
+    <button
+      :id="fieldId"
+      type="button"
+      @click="openModal"
+      :disabled="disabled"
+      class="w-full flex items-center justify-between px-4 py-2.5 text-sm bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <span :class="getSelectedLabel() ? 'text-neutral-900 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'">
+        {{ getSelectedLabel() || placeholder }}
+      </span>
+      <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
-    </div>
+    </button>
+
+    <!-- Modal de sélection -->
+    <TModal
+      :model-value="isModalOpen"
+      @update:model-value="isModalOpen = $event"
+      :title="`Sélectionner ${label}`"
+      size="md"
+    >
+      <!-- Recherche -->
+      <div class="mb-4">
+        <input
+          type="text"
+          :placeholder="`Rechercher ${label.toLowerCase()}...`"
+          @input="onSearch"
+          class="w-full px-4 py-2 text-sm bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+      </div>
+
+      <!-- Liste avec scroll infini -->
+      <div
+        class="max-h-80 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-lg"
+        @scroll="onScroll"
+      >
+        <div v-if="modalLoading && options.length === 0" class="p-4 text-center text-neutral-500">
+          Chargement...
+        </div>
+
+        <div v-else-if="options.length === 0" class="p-4 text-center text-neutral-500">
+          Aucun résultat trouvé
+        </div>
+
+        <div
+          v-for="option in options"
+          :key="option[trackBy]"
+          @click="selectOption(option)"
+          class="px-4 py-3 cursor-pointer hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
+          :class="{
+            'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400': modelValue && modelValue[trackBy] === option[trackBy]
+          }"
+        >
+          {{ option[labelBy] }}
+        </div>
+
+        <!-- Indicateur de chargement en bas -->
+        <div v-if="modalLoading && options.length > 0" class="p-3 text-center text-sm text-neutral-500">
+          Chargement de plus d'éléments...
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 mt-4">
+        <TButton
+          type="button"
+          variant="soft"
+          @click="closeModal"
+        >
+          Annuler
+        </TButton>
+      </div>
+    </TModal>
   </TFieldWrapper>
 </template>
-
-<style src="@vueform/multiselect/themes/default.css"></style>

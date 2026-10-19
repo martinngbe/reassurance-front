@@ -2,8 +2,8 @@
 import { ref, onMounted, watch } from 'vue'
 import TFieldWrapper from './TFieldWrapper.vue'
 import { nextUid } from '../../utilitaire/uid.ts'
-import TButton from './TButton.vue';
 import TModal from '../display/TModal.vue';
+import TButton from './TButton.vue';
 
 const props = withDefaults(defineProps<{
   modelValue?: any
@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<{
   hint: '',
   error: '',
   trackBy: 'id',
-  labelBy: 'label',
+  labelBy: 'libelle',
   autoSelectFirst: false,
 })
 
@@ -131,6 +131,11 @@ onMounted(async () => {
       loading.value = false
     }
   }
+})
+
+// Watcher pour mettre à jour selectedOption quand modelValue change
+watch(() => props.modelValue, (newVal) => {
+  selectedOption.value = newVal
 })
 </script>
 

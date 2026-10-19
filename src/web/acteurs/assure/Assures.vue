@@ -42,8 +42,9 @@ type AssureRow = Assure & { [key: string]: any }
 const assureColumns: TableColumn[] = [
   { key: 'pays',          label: 'Pays',     width: '5%', minWidth: 150 }, 
   { key: 'numero',        label: 'Numéro',  width: '10%', minWidth: 150 },
-  { key: 'sigle',         label: 'Sigle',   width: '10%', minWidth: 150 },
-  { key: 'raisonSociale', label: 'Raison sociale', width: '65%', minWidth: 150 },
+  { key: 'sigle',         label: 'Sigle',   width: '15%', minWidth: 150 },
+  { key: 'raisonSociale', label: 'Raison sociale', width: '50%', minWidth: 150 },
+  { key: 'domaineActivite', label: 'Domaine activité', width: '20%', minWidth: 150 },
 ]
 
 // ==================== DONNÉES TABLE ====================
@@ -199,24 +200,21 @@ watch(tableSearch, () => {
       />
     </template>
 
-    <template #cell-isReassureur="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
-    </template>
-    <template #cell-isCourtier="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
-    </template>
-    <template #cell-isCompagnieAssurance="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
-    </template>
+    
 
     <template #cell-numero="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
-
+    <template #cell-pays="{ value }">
+      <span class="font-mono text-xl uppercase">{{ value.code }}</span>
+    </template>
+    <template #cell-domaineActivite="{ value }">
+      <span class="font-mono text-md uppercase">{{ value.libelle }}</span>
+    </template>
     <template #cell-sigle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
-    <template #cell-rasonSociale="{ value }">
+    <template #cell-raisonSociale="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
 
