@@ -137,6 +137,12 @@ const handleSubmit = async (data: Record<string, any>) => {
           sigle: data.sigle,
           raisonSociale: data.raisonSociale,
           email: data.email,
+          adresse: data.email,
+          localite: data.localite,
+          quartier: data.quartier,
+          rue: data.rue,
+          description: data.description,
+          telephone: data.telephone, 
         },
       })
       emit('success', 'Assuré modifié avec succès')
@@ -147,6 +153,12 @@ const handleSubmit = async (data: Record<string, any>) => {
         sigle: data.sigle,
         raisonSociale: data.raisonSociale,
         email: data.email,
+        adresse: data.email,
+        localite: data.localite,
+        quartier: data.quartier,
+        rue: data.rue,
+        description: data.description,
+        telephone: data.telephone,         
       } as Assure)
       emit('success', 'Assuré créé avec succès')
     }

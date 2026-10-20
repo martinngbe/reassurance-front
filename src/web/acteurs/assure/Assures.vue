@@ -40,13 +40,23 @@ type AssureRow = Assure & { [key: string]: any }
 
 // ==================== COLONNES ====================
 const assureColumns: TableColumn[] = [
-  { key: 'pays',          label: 'Pays',     width: '5%', minWidth: 150 }, 
-  { key: 'numero',        label: 'Numéro',  width: '10%', minWidth: 150 },
-  { key: 'sigle',         label: 'Sigle',   width: '15%', minWidth: 150 },
-  { key: 'raisonSociale', label: 'Raison sociale', width: '50%', minWidth: 150 },
-  { key: 'domaineActivite', label: 'Domaine activité', width: '20%', minWidth: 150 },
+  { key: 'pays',            label: 'Pays',            width: 80, minWidth: 80 }, 
+  { key: 'numero',          label: 'Numéro',          width: 250, minWidth: 150 },
+  { key: 'sigle',           label: 'Sigle',           width: 200, minWidth: 150 },
+  { key: 'raisonSociale',   label: 'Raison sociale',  width: 450, minWidth: 150 },
+  { key: 'domaineActivite', label: 'Domaine activité',width: 350, minWidth: 150 },
+
+  { key: 'adresse',         label: 'Adresse',         width: 350, minWidth: 150 },
+  { key: 'localite',        label: 'Localité',        width: 250, minWidth: 150 },
+  { key: 'quartier',        label: 'Quartier',        width: 250, minWidth: 150 },
+  { key: 'rue',             label: 'Rue',             width: 350, minWidth: 150 },
+  { key: 'description',     label: 'Description',     width: 350, minWidth: 150 },
+  { key: 'telephone',       label: 'Téléphone',       width: 250, minWidth: 150 },
+
 ]
 
+
+// Total : 80+80+100+80+120+180+280+250+150+200 = 1520px
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.assures
 const assureRows = computed(() => store.assures.items.value)
@@ -206,10 +216,10 @@ watch(tableSearch, () => {
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
     <template #cell-pays="{ value }">
-      <span class="font-mono text-xl uppercase">{{ value.code }}</span>
+      <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
     </template>
     <template #cell-domaineActivite="{ value }">
-      <span class="font-mono text-md uppercase">{{ value.libelle }}</span>
+      <span class="font-mono text-md uppercase" v-if="value">{{ value.libelle }}</span>
     </template>
     <template #cell-sigle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>

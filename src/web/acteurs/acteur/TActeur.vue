@@ -7,13 +7,16 @@ import Acteurs from './Acteurs.vue';
 
 <template>
   <TLayoutModule   
-    :show-bottom="false"
+    bottom-size="50%"
     :show-top="false"
     :show-left="false"
     >
 
     <template #default>
           <Acteurs/>
+    </template>
+    <template #footer>
+          <p>Liste des contes pour acteur</p>
     </template>
     
   </TLayoutModule>

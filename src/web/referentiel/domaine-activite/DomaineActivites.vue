@@ -40,9 +40,9 @@ type DomaineActiviteRow = DomaineActivite & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const domaineActiviteColumns: TableColumn[] = [ 
-  { key: 'code',       label: 'Code',       width: '10%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '30%',  minWidth: 150 },
-  { key: 'description',    label: 'Description',    width: '60%',  minWidth: 150 },
+  { key: 'code',       label: 'Code',       width: '5%',  minWidth: 150 },
+  { key: 'libelle',    label: 'Libellé',    width: '55%',  minWidth: 150 },
+  { key: 'description',    label: 'Description',    width: '40%',  minWidth: 150 },
  
 ]
 const emit = defineEmits<{ 
@@ -215,7 +215,7 @@ watch(tableSearch, () => {
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
      <template #cell-description="{ value }">
-      <span class="font-mono text-lg uppercase">{{ value }}</span>
+      <span class="font-mono text-md uppercase">{{ value }}</span>
     </template>  
   
   </TTable>

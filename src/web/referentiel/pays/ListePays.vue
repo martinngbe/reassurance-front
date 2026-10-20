@@ -50,10 +50,10 @@ type PaysRow = Pays & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const paysColumns: TableColumn[] = [ 
-  { key: 'region',     label: 'Region',      width: '15',  minWidth: 150 },
-  { key: 'indicatif',  label: 'Indicatif',  width: '20%',  minWidth: 150 },
-  { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '65%',  minWidth: 150 }, 
+  { key: 'code',       label: 'Code',       width: '10%',  minWidth: 150 },
+  { key: 'libelle',    label: 'Libellé',    width: '70%',  minWidth: 150 }, 
+  { key: 'region',     label: 'Region',      width: '20%',  minWidth: 150 },
+ 
 ]
 
 
@@ -240,7 +240,7 @@ watch(tableSearch, () => {
 
     <template #cell-region="{ value }">
       <span class="font-mono  text-xl uppercase" v-if="value"
-      >{{ (value as Region).code }}</span>
+      >{{ (value as Region).libelle }}</span>
     </template>
     <template #cell-code="{ value }">
       <span class="font-mono  text-xl uppercase">{{ value }}</span>

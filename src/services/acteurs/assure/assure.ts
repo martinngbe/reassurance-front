@@ -3,10 +3,16 @@ import type { Pays } from "@/services/referentiel/pays/pays";
 import type { BaseEntity } from "@/type/base-entity";
 
 export interface Assure extends BaseEntity {
-  numero: string;
+  numero?: string;
   sigle: string;
   raisonSociale: string;   // ✅ Corrigé : était number
   email?: string;          // ✅ Corrigé : était number
+  adresse?: string; 
+  localite?: string;
+  quartier?: string; 
+  rue?: string; 
+  description?: string; 
+  telephone?: string; 
 
   // Relations
   pays?: Pays;

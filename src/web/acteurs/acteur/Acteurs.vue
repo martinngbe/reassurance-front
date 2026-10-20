@@ -12,9 +12,11 @@ import TActeurForm from './TActeurForm.vue'
 import { useActeurs } from '@/services/acteurs/acteur/useActeur.ts'
 import { useToast } from '@/composants/toast/useToast.ts'
 import type { Acteur } from '@/services/acteurs/acteur/acteur.ts'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import IconeValider from '@/composants/icone/IconeValider.vue'
 
 // ==================== ÉTAT LOCAL ====================
-const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
+const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
 
@@ -39,16 +41,34 @@ console.warn(" -- Acteurs.vue acteurs:",acteurs)
 type ActeurRow = Acteur & { [key: string]: any }
 
 // ==================== COLONNES ====================
-const acteurColumns: TableColumn[] = [
-  { key: 'pays',                    label: 'Pays',     width: '5%', minWidth: 150 },
-  { key: 'isReassureur',            label: 'Réass',    width: '5%', minWidth: 150 },
-  { key: 'isCourtier',              label: 'Courtier', width: '5%', minWidth: 150 },
-  { key: 'isCompagnieAssurance',    label: 'Cie',      width: '5%', minWidth: 150 }, 
-  { key: 'numero',        label: 'Numéro',  width: '10%', minWidth: 150 },
-  { key: 'sigle',         label: 'Sigle',   width: '10%', minWidth: 150 },
-  { key: 'raisonSociale', label: 'Raison sociale', width: '65%', minWidth: 150 },
-]
+/*const acteurColumns: TableColumn[] = [
+  { key: 'pays',                    label: 'Pays',     width: "5%", minWidth: 5 },
+  { key: 'isReassureur',            label: 'Réass',    width: "5%", minWidth: 5 , align:'center'},
+  { key: 'isCourtier',              label: 'Courtier', width: "5%", minWidth: 150 , align:'center'},
+  { key: 'isCompagnieAssurance',    label: 'Cie',      width: "5%", minWidth: 150 , align:'center'}, 
+  { key: 'numero',        label: 'Numéro',  width: "10%", minWidth: 150 },
+  { key: 'sigle',         label: 'Sigle',   width: "350", minWidth: 150 },
+  { key: 'raisonSociale', label: 'Raison sociale', width: "350", minWidth: 150 },
 
+
+  { key: 'adresse',       label: 'Adresse', width: "350px", minWidth: 150 },
+  { key: 'telephone',     label: 'Téléphone', width: "350px", minWidth: 150 },
+  { key: 'siteweb',       label: 'Site Web', width: "350px", minWidth: 150 },
+
+]
+*/
+const acteurColumns: TableColumn[] = [
+  { key: 'pays',                 label: 'Pays',       width: 80,   minWidth: 80 },
+  { key: 'isReassureur',         label: 'Réass',      width: 80,   minWidth: 80,  align: 'center' },
+  { key: 'isCourtier',           label: 'Courtier',   width: 100,  minWidth: 100, align: 'center' },
+  { key: 'isCompagnieAssurance', label: 'Cie',        width: 80,   minWidth: 80,  align: 'center' },
+  { key: 'numero',               label: 'Numéro',     width: 120,  minWidth: 120 },
+  { key: 'sigle',                label: 'Sigle',      width: 250,  minWidth: 150 },
+  { key: 'raisonSociale',        label: 'Raison sociale', width: 400, minWidth: 200 },
+  { key: 'adresse',              label: 'Adresse',    width: 550,  minWidth: 150 },
+  { key: 'telephone',            label: 'Téléphone',  width: 350,  minWidth: 120 },
+  { key: 'siteweb',              label: 'Site Web',   width: 200,  minWidth: 150 },
+]
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.acteurs
 const acteurRows = computed(() => store.acteurs.items.value)
@@ -201,15 +221,20 @@ watch(tableSearch, () => {
         @supprimer="handleSupprimer"
       />
     </template>
-
+   <template #cell-pays="{ value }">
+      <span class="font-mono text-xl" v-if="value">{{ value.code }}</span>
+    </template>
     <template #cell-isReassureur="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
+        <IconeValider v-if="value==true"/>
+        <IconeNonValider v-else />
     </template>
     <template #cell-isCourtier="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
+        <IconeValider v-if="value==true"/>
+        <IconeNonValider v-else />
     </template>
     <template #cell-isCompagnieAssurance="{ value }">
-      <span class="font-mono text-xl">{{ value }}</span>
+        <IconeValider v-if="value==true"/>
+        <IconeNonValider v-else />
     </template>
 
     <template #cell-numero="{ value }">
@@ -219,9 +244,20 @@ watch(tableSearch, () => {
     <template #cell-sigle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
-    <template #cell-rasonSociale="{ value }">
+    <template #cell-raisonSociale="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
+   <template #cell-adresse="{ value }">
+      <span class="font-mono text-md uppercase">{{ value }}</span>
+    </template>
+ 
+       <template #cell-telephone="{ value }">
+      <span class="font-mono text-md uppercase">{{ value }}</span>
+    </template>
+       <template #cell-siteweb="{ value }">
+      <span class="font-mono text-md uppercase">{{ value }}</span>
+    </template>
+  
 
   </TTable>
 
