@@ -21,7 +21,7 @@ export interface PaginationParams {
   search?: string | undefined
   sortBy?: string | undefined
   sortKey?: string | undefined
-  sortOrder?: 'ASC' | 'DESC' | undefined
+  sortDirection?: 'ASC' | 'DESC' | undefined
 }
 
 export interface IPageInfo {

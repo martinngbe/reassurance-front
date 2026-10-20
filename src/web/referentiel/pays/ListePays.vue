@@ -37,7 +37,7 @@ const params = computed(() => ({
   limit: pageSize.value,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction ?? undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
   regionId : props.region?  props.region.id : null
 }))
 console.log(">>>>>> ListePays params.value:",params.value)
@@ -50,8 +50,8 @@ type PaysRow = Pays & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const paysColumns: TableColumn[] = [ 
-  { key: 'code',       label: 'Code',       width: '10%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '70%',  minWidth: 150 }, 
+  { key: 'code',       label: 'Code',       width: '10%',  minWidth: 150 , sortable: true},
+  { key: 'libelle',    label: 'Libellé',    width: '70%',  minWidth: 150 , sortable: true}, 
   { key: 'region',     label: 'Region',      width: '20%',  minWidth: 150 },
  
 ]

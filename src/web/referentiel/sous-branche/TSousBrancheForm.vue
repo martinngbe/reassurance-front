@@ -2,13 +2,13 @@
 import { computed, ref } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import { useBranches } from '@/services/referentiel/branche/useBranche'
 import type { Branche } from '@/services/referentiel/branche/branche'
 import { useSousBranches } from '@/services/referentiel/sous-branche/useSousBranche'
+import type { SousBranche } from '@/services/referentiel/sous-branche/sous-branche'
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps<{
-  sousBranche?: Branche | null
+  sousBranche?: SousBranche | null
 }>()
 
 const emit = defineEmits<{

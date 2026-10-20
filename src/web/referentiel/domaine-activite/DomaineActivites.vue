@@ -29,7 +29,7 @@ const params = computed(() => ({
   limit: pageSize.value,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction ?? undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 
 const { domaineActivites ,deleteDomaineActivite } = useDomaineActivites(params)
@@ -40,8 +40,8 @@ type DomaineActiviteRow = DomaineActivite & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const domaineActiviteColumns: TableColumn[] = [ 
-  { key: 'code',       label: 'Code',       width: '5%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '55%',  minWidth: 150 },
+  { key: 'code',       label: 'Code',       width: '5%',  minWidth: 150 , sortable: true},
+  { key: 'libelle',    label: 'Libellé',    width: '55%',  minWidth: 150 , sortable: true},
   { key: 'description',    label: 'Description',    width: '40%',  minWidth: 150 },
  
 ]

@@ -28,7 +28,7 @@ const params = computed(() => ({
   limit: pageSize.value,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction ?? undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 const { utilisateurs, deleteUtilisateur } = useUtilisateurs(params)
 

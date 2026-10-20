@@ -14,7 +14,7 @@ export function useAssures(params: ComputedRef<PaginationParams>) {
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
-    sortOrder: params.value.sortOrder,
+    sortDirection: params.value.sortDirection,
   }))
   //////////////////////////////
   const assures = useInfiniteList<Assure>({

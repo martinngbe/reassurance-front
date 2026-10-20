@@ -14,7 +14,7 @@ import type { Assure } from '@/services/acteurs/assure/assure'
 import TAssureForm from './TAssureForm.vue'
 
 // ==================== ÉTAT LOCAL ====================
-const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
+const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
 
@@ -25,7 +25,7 @@ const params = computed<PaginationParams>(() => ({
   limit: PAGE_SIZE,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortOrder: sortState.value.direction as 'ASC' | 'DESC' | undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer assures
@@ -40,11 +40,11 @@ type AssureRow = Assure & { [key: string]: any }
 
 // ==================== COLONNES ====================
 const assureColumns: TableColumn[] = [
-  { key: 'pays',            label: 'Pays',            width: 80, minWidth: 80 }, 
-  { key: 'numero',          label: 'Numéro',          width: 250, minWidth: 150 },
-  { key: 'sigle',           label: 'Sigle',           width: 200, minWidth: 150 },
-  { key: 'raisonSociale',   label: 'Raison sociale',  width: 450, minWidth: 150 },
-  { key: 'domaineActivite', label: 'Domaine activité',width: 350, minWidth: 150 },
+  { key: 'pays',            label: 'Pays',            width: 80, minWidth: 80 , sortable: true}, 
+  { key: 'numero',          label: 'Numéro',          width: 250, minWidth: 150 , sortable: true},
+  { key: 'sigle',           label: 'Sigle',           width: 200, minWidth: 150 , sortable: true},
+  { key: 'raisonSociale',   label: 'Raison sociale',  width: 450, minWidth: 150 , sortable: true},
+  { key: 'domaineActivite', label: 'Domaine activité',width: 350, minWidth: 150 , sortable: true},
 
   { key: 'adresse',         label: 'Adresse',         width: 350, minWidth: 150 },
   { key: 'localite',        label: 'Localité',        width: 250, minWidth: 150 },

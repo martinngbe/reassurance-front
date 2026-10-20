@@ -23,7 +23,7 @@ const sortState = ref<SortState>({ key: null, direction: null })
 //   limit: PAGE_SIZE  ,
 //   search: computed(() => tableSearch.value.trim() || undefined).value,
 //   sortKey: computed(() => sortState.value.key ?? undefined).value,
-//   sortOrder: computed(() => sortState.value.direction as 'ASC' | 'DESC' | undefined).value,
+//   sortDirection: computed(() => sortState.value.direction as 'ASC' | 'DESC' | undefined).value,
 // }
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -31,7 +31,7 @@ const params = computed<PaginationParams>(() => ({
   limit: PAGE_SIZE,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortOrder: sortState.value.direction as 'ASC' | 'DESC' | undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer devises
@@ -46,8 +46,8 @@ type DeviseRow = Devise & { [key: string]: any }
 
 // ==================== COLONNES ====================
 const deviseColumns: TableColumn[] = [
-  { key: 'code',    label: 'Code',    width: '15%', minWidth: 150 },
-  { key: 'libelle', label: 'Libellé', width: '65%', minWidth: 150 },
+  { key: 'code',    label: 'Code',    width: '15%', minWidth: 150 , sortable: true},
+  { key: 'libelle', label: 'Libellé', width: '65%', minWidth: 150 , sortable: true},
   { key: 'cours',   label: 'Cours',   width: '15%', minWidth: 150, align: 'right' },
 ]
 
@@ -58,13 +58,9 @@ const tableLoading = computed(() => store.devises.isLoading.value)
 const loadingMore = computed(() => store.devises.loadingMore.value)
 const hasMore = computed(() => store.devises.hasMore.value)
 // ✅ Correction ici : on utilise .value?.total
-const totalItems = computed(() => devises.pageInfo.value?.total ?? 0)
+//const totalItems = computed(() => devises.pageInfo.value?.total ?? 0)
 
-// const deviseRows = computed(() => devises.items.value)
-// const tableLoading = computed(() => devises.isLoading.value)
-// const loadingMore = computed(() => devises.loadingMore.value)
-// const hasMore = computed(() => devises.hasMore.value)
-// const totalItems = computed(() => devises.totalItems.value ?? 0)
+const totalItems = computed(() => devises.totalItems.value ?? 0)
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
 const isLigneSelectionnee = computed(() => selectedDevises.value.length > 0)
@@ -77,9 +73,7 @@ function onSort(state: SortState): void {
 
 // ==================== INFINITE SCROLL ====================
 async function handleLoadMore() {
-  console.warn(" -- Devise.handleLoadMore -- ")
-  console.log(" loadingMore.value:",loadingMore.value)
-  console.log(" hasMore.value:",hasMore.value)
+  
   if (loadingMore.value || !hasMore.value) return
   await devises.loadMore()
 }

@@ -29,7 +29,7 @@ const params = computed(() => ({
   limit: pageSize.value,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction ?? undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 
 const { regions ,deleteRegion } = useRegions(params)
@@ -40,8 +40,8 @@ type RegionRow = Region & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const regionColumns: TableColumn[] = [ 
-  { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '75%',  minWidth: 150 },
+  { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 , sortable: true},
+  { key: 'libelle',    label: 'Libellé',    width: '75%',  minWidth: 150 , sortable: true},
 ]
 const emit = defineEmits<{ 
   (e: 'row-click',  branche: any): void

@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
+import Contacts from './Contacts.vue';
+
+
+</script>
+
+<template>
+  <TLayoutModule   
+    :show-bottom="false"
+    :show-top="false"
+    :show-left="false"
+    >
+
+    <template #default>
+          <Contacts/>
+    </template>
+    
+  </TLayoutModule>
+</template>

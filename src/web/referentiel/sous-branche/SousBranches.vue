@@ -37,7 +37,7 @@ const params = computed(() => ({
   limit: pageSize.value,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction ?? undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
   brancheId : props.branche?  props.branche.id : null
 }))
 const titreTableau = computed(()=> props.branche? `Sous branche : ${props.branche.libelle}` : `Sous branche`  )

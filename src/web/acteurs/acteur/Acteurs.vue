@@ -19,6 +19,9 @@ import IconeValider from '@/composants/icone/IconeValider.vue'
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
+const emit = defineEmits<{ 
+  (e: 'row-click',  acteur: any): void
+}>()
 
 
 // ✅ Corrigé
@@ -27,13 +30,12 @@ const params = computed<PaginationParams>(() => ({
   limit: PAGE_SIZE,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
-  sortOrder: sortState.value.direction as 'ASC' | 'DESC' | undefined,
+  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer acteurs
 const store = useActeurs(params)
 const { acteurs, createActeur, updateActeur, deleteActeur } = store
-//const { acteurs, createActeur, updateActeur, deleteActeur } = useActeurs(params)
 const { success, error, warning, info } = useToast()
 
 console.warn(" -- Acteurs.vue acteurs:",acteurs)
@@ -41,33 +43,17 @@ console.warn(" -- Acteurs.vue acteurs:",acteurs)
 type ActeurRow = Acteur & { [key: string]: any }
 
 // ==================== COLONNES ====================
-/*const acteurColumns: TableColumn[] = [
-  { key: 'pays',                    label: 'Pays',     width: "5%", minWidth: 5 },
-  { key: 'isReassureur',            label: 'Réass',    width: "5%", minWidth: 5 , align:'center'},
-  { key: 'isCourtier',              label: 'Courtier', width: "5%", minWidth: 150 , align:'center'},
-  { key: 'isCompagnieAssurance',    label: 'Cie',      width: "5%", minWidth: 150 , align:'center'}, 
-  { key: 'numero',        label: 'Numéro',  width: "10%", minWidth: 150 },
-  { key: 'sigle',         label: 'Sigle',   width: "350", minWidth: 150 },
-  { key: 'raisonSociale', label: 'Raison sociale', width: "350", minWidth: 150 },
-
-
-  { key: 'adresse',       label: 'Adresse', width: "350px", minWidth: 150 },
-  { key: 'telephone',     label: 'Téléphone', width: "350px", minWidth: 150 },
-  { key: 'siteweb',       label: 'Site Web', width: "350px", minWidth: 150 },
-
-]
-*/
 const acteurColumns: TableColumn[] = [
-  { key: 'pays',                 label: 'Pays',       width: 80,   minWidth: 80 },
-  { key: 'isReassureur',         label: 'Réass',      width: 80,   minWidth: 80,  align: 'center' },
-  { key: 'isCourtier',           label: 'Courtier',   width: 100,  minWidth: 100, align: 'center' },
-  { key: 'isCompagnieAssurance', label: 'Cie',        width: 80,   minWidth: 80,  align: 'center' },
-  { key: 'numero',               label: 'Numéro',     width: 120,  minWidth: 120 },
-  { key: 'sigle',                label: 'Sigle',      width: 250,  minWidth: 150 },
-  { key: 'raisonSociale',        label: 'Raison sociale', width: 400, minWidth: 200 },
+  { key: 'pays',                 label: 'Pays',       width: 80,   minWidth: 80 , sortable: true},
+  { key: 'isReassureur',         label: 'Réass',      width: 80,   minWidth: 80,  align: 'center' , sortable: true},
+  { key: 'isCourtier',           label: 'Courtier',   width: 100,  minWidth: 100, align: 'center' , sortable: true},
+  { key: 'isCompagnieAssurance', label: 'Cie',        width: 80,   minWidth: 80,  align: 'center' , sortable: true},
+  { key: 'numero',               label: 'Numéro',     width: 120,  minWidth: 120 , sortable: true},
+  { key: 'sigle',                label: 'Sigle',      width: 250,  minWidth: 150 , sortable: true},
+  { key: 'raisonSociale',        label: 'Raison sociale', width: 400, minWidth: 200 , sortable: true},
   { key: 'adresse',              label: 'Adresse',    width: 550,  minWidth: 150 },
   { key: 'telephone',            label: 'Téléphone',  width: 350,  minWidth: 120 },
-  { key: 'siteweb',              label: 'Site Web',   width: 200,  minWidth: 150 },
+  { key: 'siteweb',              label: 'Site Web',   width: 400,  minWidth: 400 },
 ]
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.acteurs
@@ -90,9 +76,7 @@ function onSort(state: SortState): void {
 
 // ==================== INFINITE SCROLL ====================
 async function handleLoadMore() {
-  console.warn(" -- Acteur.handleLoadMore -- ")
-  console.log(" loadingMore.value:",loadingMore.value)
-  console.log(" hasMore.value:",hasMore.value)
+ 
   if (loadingMore.value || !hasMore.value) return
   await acteurs.loadMore()
 }
@@ -165,6 +149,9 @@ const handleConfirmeSuppression = async () => {
   }
 }
 
+const onRowClick = ( row: any, index: number)=>{       
+    emit('row-click',row as Acteur)
+}
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -191,13 +178,16 @@ watch(tableSearch, () => {
     row-key="id"
     striped
     !selectable
-    @sort="onSort"
+    
     :infinite-scroll="true"
     :has-more="hasMore"
     :loading-more="loadingMore"
     :scroll-threshold="200"
     end-message="— Fin des données —"
     :show-end-message="true"
+    
+    @sort="onSort"
+    @row-click="onRowClick"
     @load-more="handleLoadMore"
   >
     <template #caption-extra>
@@ -254,8 +244,8 @@ watch(tableSearch, () => {
        <template #cell-telephone="{ value }">
       <span class="font-mono text-md uppercase">{{ value }}</span>
     </template>
-       <template #cell-siteweb="{ value }">
-      <span class="font-mono text-md uppercase">{{ value }}</span>
+    <template #cell-siteweb="{ value }">
+      <span class="font-mono text-md lowercase" v-if="value">{{ value }}</span>
     </template>
   
 
