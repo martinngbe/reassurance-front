@@ -6,11 +6,12 @@ import { assureApi } from './assure.api'
 import type { PaginationParams } from '@/type/pagination'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
+import { useAssureStore } from './assure.store'
 
 const KEY = 'assures';
 export function useAssures(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
-
+  const assureStore = useAssureStore()
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
@@ -21,7 +22,7 @@ export function useAssures(params: ComputedRef<PaginationParams>) {
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      console.warn(" -- useAssure assures = useInfiniteList<Assure> ")
+     // console.warn(" -- useAssure assures = useInfiniteList<Assure> ")
       // const response = await assureApi.getAll(params.value)
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
         const response = await assureApi.getAll({
@@ -30,7 +31,7 @@ export function useAssures(params: ComputedRef<PaginationParams>) {
           limit,     // ← limit dynamique
         })
       // ✅ Retourner l'objet IResponse complet, pas response.data
-      console.log(" -- useAssure response:",response)
+      //console.log(" -- useAssure response:",response)
       return response as PaginatedResponse<Assure>
     },
   })
@@ -53,6 +54,10 @@ export function useAssures(params: ComputedRef<PaginationParams>) {
       const index = assures.items.value.findIndex((d) => d.id === id)
       if (index !== -1) {
         assures.items.value[index] = { ...assures.items.value[index], ...data } as Assure
+      }
+      // ⭐ Synchroniser le store si c'est l'assure sélectionné
+      if (assureStore.currentAssureId === id) {
+        assureStore.updateCurrentAssure(data)
       }
       return { previousItems, index }
     },

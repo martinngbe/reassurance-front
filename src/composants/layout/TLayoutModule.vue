@@ -34,7 +34,7 @@ const props = withDefaults(
     bottomFixe: false,
   },
 )
-console.log("TLayoutModule props:",props)
+//console.log("TLayoutModule props:",props)
 // Visibilité pilotée localement (les splitters/boutons de repli restent fonctionnels)
 const topVisible = ref(true)
 const bottomVisible = ref(true)

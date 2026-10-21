@@ -48,10 +48,18 @@ const classes = computed<Array<string | false>>(() => [
   // ✨ Application de la largeur (avec gestion du conflit potentiel avec la prop `block`)
   props.block ? 'w-full' : (props.width || false), 
 ])
+const emit = defineEmits<{ 
+  (e: 'click'): void
+}>()
+const onClick = ()=>{
+  console.log(" TButton Click")
+  emit('click')
+}
 </script>
 
 <template>
-  <button :type="type" :disabled="disabled || loading" :class="classes">
+  <button @click="onClick"
+  :type="type" :disabled="disabled || loading" :class="classes">
     <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />

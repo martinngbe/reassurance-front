@@ -3,7 +3,6 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import TLayout from '@/composants/layout/TLayout.vue'
 import AppHeader from '@//web/AppHeader.vue'
 import AppMenu from '@//web/AppMenu.vue'
-import TLayoutModule from '@/composants/layout/TLayoutModule.vue';
 import AppFooter from './AppFooter.vue';
 
 const props = defineProps<{
@@ -55,8 +54,8 @@ const accentVars = computed(() => ({
 // Chargement dynamique des modules
 const moduleComponents: Record<string, any> = {
   accueil: defineAsyncComponent(() => import('./accueil/AppAcueil.vue')),
-  acceptation: defineAsyncComponent(() => import('./acceptation/Acceptation.vue')),
-  cession: defineAsyncComponent(() => import('./module/cession/Cession.vue')),
+  acceptation: defineAsyncComponent(() => import('./module/acceptation/AcceptationModule.vue')),
+  cession: defineAsyncComponent(() => import('./module/cession/CessionModule.vue')),
   sinistre: defineAsyncComponent(() => import('./sinistre/Sinistre.vue')),
   reglement: defineAsyncComponent(() => import('./reglement/Reglement.vue')),
   acteur: defineAsyncComponent(() => import('@//web/acteurs/acteur/Acteurs.vue')),

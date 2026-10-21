@@ -6,14 +6,14 @@ import './assets/css/custom-scrollbar.css'
 import { useTheme } from './theme/useTheme'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
+import { createPinia } from 'pinia';
 
 useTheme() // applique la thème sauvegardée au démarrage
 // createApp(App).mount('#app')
 const app = createApp(App)
-
-// Enregistre le plugin globalement
-//app.use(VueQueryPlugin)
-
+const pinia = createPinia() // ← 2. Créer l'instance Pinia
+// ← 3. ENREGISTRER PINIA AVANT LE MOUNT (ordre important !)
+app.use(pinia)
 
 // Enregistrer le plugin Vue Query
 app.use(VueQueryPlugin, {
@@ -31,4 +31,5 @@ app.use(VueQueryPlugin, {
 if (import.meta.env.DEV) {
   app.component('VueQueryDevtools', VueQueryDevtools)
 }
+
 app.mount('#app')

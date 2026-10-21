@@ -13,21 +13,21 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref('tableauDeBord')
+const activeMenu = ref('ecranTableauDeBord')
 
 const menus: MenuItem[] = [
   {
-    id: 'tableauDeBord',
+    id: 'ecranTableauDeBord',
     label: 'Tableau de bord',
     icon: 'pi pi-home', // ou 'pi pi-th-large'
   },
   {
-    id: 'facultative',
+    id: 'ecranFacultative',
     label: 'Facultative',
     icon: 'pi pi-file', // ou 'pi pi-clipboard' pour l'analyse de dossier
   },
   {
-    id: 'traite',
+    id: 'ecranTraite',
     label: 'Traité',
     icon: 'pi pi-shield', // ou 'pi pi-sync' pour le côté automatique, ou 'pi pi-arrows-h'
   },
@@ -36,7 +36,7 @@ const menus: MenuItem[] = [
 
 // Gestion sélection menu
 function selectMenu(menuId: string) {
-  console.log("AppMenu selectMenu("+menuId+")")
+  //console.log("AppMenu selectMenu("+menuId+")")
   activeMenu.value = menuId
   emit('select', menuId)
 }

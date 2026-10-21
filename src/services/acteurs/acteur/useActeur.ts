@@ -6,11 +6,12 @@ import { acteurApi } from './acteur.api'
 import type { PaginationParams } from '@/type/pagination'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
+import { useActeurStore } from './acteur.store'
 
 const KEY = 'acteurs';
 export function useActeurs(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
-
+  const acteurStore = useActeurStore() // ⭐ 
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
@@ -54,6 +55,10 @@ export function useActeurs(params: ComputedRef<PaginationParams>) {
       if (index !== -1) {
         acteurs.items.value[index] = { ...acteurs.items.value[index], ...data } as Acteur
       }
+      // ⭐ Synchroniser le store si c'est l'acteur sélectionné
+      if (acteurStore.currentActeurId === id) {
+        acteurStore.updateCurrentActeur(data)
+      }
       return { previousItems, index }
     },
     onError: (_err, _vars, context) => {
@@ -73,6 +78,8 @@ export function useActeurs(params: ComputedRef<PaginationParams>) {
     onMutate: async (id) => {
       const previousItems = [...acteurs.items.value]
       acteurs.items.value = acteurs.items.value.filter((d) => d.id !== id)
+      // ⭐ Effacer la sélection si c'est l'acteur supprimé
+      acteurStore.removeIfCurrent(id)
       return { previousItems }
     },
     onError: (_err, _id, context) => {

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import TTable from '@/composants/display/TTable.vue'
 import type { SortState, TableColumn } from '@/composants/forms/common'
-import { computed, ref, watch } from 'vue'
+import { computed,  ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TModal from '@/composants/display/TModal.vue'
-import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
 
 import type { PaginationParams } from '@/type/pagination.ts'
 import { useAssures } from '@/services/acteurs/assure/useAssure'
 import { useToast } from '@/composants/toast/useToast'
 import type { Assure } from '@/services/acteurs/assure/assure'
 import TAssureForm from './TAssureForm.vue'
+import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -30,11 +30,9 @@ const params = computed<PaginationParams>(() => ({
 // ==================== API + CRUD ====================
 // Ne pas destructurer assures
 const store = useAssures(params)
-const { assures, createAssure, updateAssure, deleteAssure } = store
-//const { assures, createAssure, updateAssure, deleteAssure } = useAssures(params)
-const { success, error, warning, info } = useToast()
-
-console.warn(" -- Assures.vue assures:",assures)
+const assureStore = useAssureStore()
+const { assures, createAssure, updateAssure } = store
+const { success,  info } = useToast()
 
 type AssureRow = Assure & { [key: string]: any }
 
@@ -44,19 +42,18 @@ const assureColumns: TableColumn[] = [
   { key: 'numero',          label: 'Numéro',          width: 250, minWidth: 150 , sortable: true},
   { key: 'sigle',           label: 'Sigle',           width: 200, minWidth: 150 , sortable: true},
   { key: 'raisonSociale',   label: 'Raison sociale',  width: 450, minWidth: 150 , sortable: true},
-  { key: 'domaineActivite', label: 'Domaine activité',width: 350, minWidth: 150 , sortable: true},
-
-  { key: 'adresse',         label: 'Adresse',         width: 350, minWidth: 150 },
-  { key: 'localite',        label: 'Localité',        width: 250, minWidth: 150 },
-  { key: 'quartier',        label: 'Quartier',        width: 250, minWidth: 150 },
-  { key: 'rue',             label: 'Rue',             width: 350, minWidth: 150 },
-  { key: 'description',     label: 'Description',     width: 350, minWidth: 150 },
   { key: 'telephone',       label: 'Téléphone',       width: 250, minWidth: 150 },
 
+  { key: 'adresse',         label: 'Adresse',         width: 500, minWidth: 150 },
+  { key: 'localite',        label: 'Localité',        width: 250, minWidth: 150 },
+  { key: 'quartier',        label: 'Quartier',        width: 250, minWidth: 150 },
+  { key: 'rue',             label: 'Rue',             width: 700, minWidth: 150 },
+  { key: 'domaineActivite', label: 'Domaine activité',width: 350, minWidth: 150 , sortable: true},  
+  { key: 'description',     label: 'Description',     width: 950, minWidth: 150 },
+  
 ]
 
 
-// Total : 80+80+100+80+120+180+280+250+150+200 = 1520px
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.assures
 const assureRows = computed(() => store.assures.items.value)
@@ -68,8 +65,17 @@ const totalItems = computed(() => assures.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-const isLigneSelectionnee = computed(() => selectedAssures.value.length > 0)
-const selectedAssures = ref<(string | number)[]>([])
+//const isLigneSelectionnee = computed(() => selectedAssures.value.length > 0)
+//const selectedAssures = ref<(string | number)[]>([])
+// ✅ REMPLACER le ref local par un computed lié au store
+const selectedAssures = computed({
+  get: () => assureStore.selectedAssures,
+  set: (value) => assureStore.setSelectedAssures(value)
+})
+
+// ✅ Utiliser le getter du store pour l'état du bouton
+const isLigneSelectionnee = computed(() => assureStore.hasSelectedAssures)
+
 
 // ==================== TRI ====================
 function onSort(state: SortState): void {
@@ -77,17 +83,14 @@ function onSort(state: SortState): void {
 }
 
 // ==================== INFINITE SCROLL ====================
-async function handleLoadMore() {
-  console.warn(" -- Assure.handleLoadMore -- ")
-  console.log(" loadingMore.value:",loadingMore.value)
-  console.log(" hasMore.value:",hasMore.value)
+async function handleLoadMore() { 
   if (loadingMore.value || !hasMore.value) return
   await assures.loadMore()
 }
 
 // ==================== MODALES ====================
 const showModal = ref(false)
-const showModalConfirmation = ref(false)
+//const showModalConfirmation = ref(false)
 const titleModal = ref('')
 const assureToEdit = ref<Assure | null>(null)
 
@@ -127,31 +130,12 @@ const handleModifier = () => {
   if (assure) openEdit(assure)
 }
 
-const handleSupprimer = () => {
-  if (selectedAssures.value.length === 0) {
-    warning('Veuillez sélectionner une assure', 'Attention')
-    return
-  }
-  const assureId = selectedAssures.value[0]
-  assureToEdit.value = assureRows.value.find((u: any) => u.id === assureId) ?? null
-  if (assureToEdit.value) showModalConfirmation.value = true
+const onRowClick =(row :AssureRow ,index: number)=>{ 
+  
+  console.log("Assures.onRowClick row:",row)
+  assureStore.selectAssure(row as Assure)
 }
 
-const handleConfirmeSuppression = async () => {
-  const assure = assureToEdit.value
-  if (!assure) return
-  try {
-    await deleteAssure.mutateAsync(assure.id)
-    showModalConfirmation.value = false
-    success('Opération effectuée avec succès', 'Succès')
-    selectedAssures.value = selectedAssures.value.filter((id) => id !== assure.id)
-  } catch (err: any) {
-    error(
-      err?.response?.data?.message || err?.message || 'Erreur lors de la suppression.',
-      'Erreur',
-    )
-  }
-}
 
 // Debounce recherche
 let searchTimeout: number | undefined
@@ -161,6 +145,8 @@ watch(tableSearch, () => {
     // Le watchKeys dans useAssure gère le reset + refetch automatiquement
   }, 300)
 })
+
+
 </script>
 
 <template>
@@ -186,6 +172,7 @@ watch(tableSearch, () => {
     :scroll-threshold="200"
     end-message="— Fin des données —"
     :show-end-message="true"
+    @row-click="onRowClick"
     @load-more="handleLoadMore"
   >
     <template #caption-extra>
@@ -204,9 +191,10 @@ watch(tableSearch, () => {
         :active-modifier="isLigneSelectionnee"
         :active-supprimer="isLigneSelectionnee"
         :masque-impression="true"
+        :masque-supprimer="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
-        @supprimer="handleSupprimer"
+      
       />
     </template>
 
@@ -219,7 +207,7 @@ watch(tableSearch, () => {
       <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
     </template>
     <template #cell-domaineActivite="{ value }">
-      <span class="font-mono text-md uppercase" v-if="value">{{ value.libelle }}</span>
+      <span class="font-mono text-sm uppercase" v-if="value">{{ value.libelle }}</span>
     </template>
     <template #cell-sigle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
@@ -227,7 +215,12 @@ watch(tableSearch, () => {
     <template #cell-raisonSociale="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
-
+    <template #cell-description="{ value }">
+      <span class="font-mono text-sm uppercase">{{ value }}</span>
+    </template>
+    <template #cell-rue="{ value }">
+      <span class="font-mono text-sm uppercase">{{ value }}</span>
+    </template>
   </TTable>
 
   <TModal v-model="showModal" :title="titleModal">
@@ -237,19 +230,5 @@ watch(tableSearch, () => {
       @success="onFormSuccess"
       @cancel="closeModal"
     />
-  </TModal>
-
-  <TModal v-model="showModalConfirmation" title="Demande de confirmation">
-    <TDemandeConfirmation
-      @annuler="showModalConfirmation = false"
-      @confirmer="handleConfirmeSuppression"
-    >
-      <template #message>
-        <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4">
-          Voulez-vous supprimer la assure
-          <span class="font-extrabold">{{ assureToEdit?.raisonSociale }}</span>
-        </p>
-      </template>
-    </TDemandeConfirmation>
   </TModal>
 </template>
