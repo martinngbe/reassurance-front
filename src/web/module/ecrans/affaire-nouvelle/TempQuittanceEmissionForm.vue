@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
-import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
+import type {  FormField } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
@@ -11,6 +11,8 @@ import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQ
 
 
 const tempQuittanceStore = useTempQuittanceStore()
+// lecture du tempQuittance en cours
+// on a pris soin de le charger via tempPolice
 const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 const emit = defineEmits<{
   success: [message: string]
@@ -20,8 +22,8 @@ const emit = defineEmits<{
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
-async function fetchActeur(query: string, page: number) {
-  const res = await apiClient.get('/pays', {
+async function fetchDevise(query: string, page: number) {
+  const res = await apiClient.get('/devise', {
     params: { search: query, page, limit: 20 }
   })
   return {
@@ -30,52 +32,42 @@ async function fetchActeur(query: string, page: number) {
   }
 }
 
-async function fetchSousBranche(query: string, page: number) {
-  const res = await apiClient.get('/sous-branche', {
-    params: { search: query, page, limit: 20 }
-  })
-  return {
-    options: res.data.items || res.data.data || [],
-    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
-  }
-}
+
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 
-const tempQuittanceFields: FieldConfig[] = [
-  {
-    key: 'acteurCedanteId',
-    label: 'Cédente',
-    type: 'async-select',
-    required: true,
-    placeholder: 'Sélectionner une cédente ...',
-    loadOptions: fetchActeur,
-    autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
-    asyncOptions: {
-      trackBy: 'id',
-      labelBy: 'libelle'
-    }
-  },
-  {
-    key: 'sousBrancheId',
-    label: 'Sous Branche',
-    type: 'async-select',
-    required: true,
-    placeholder: 'Sélectionner une sous branche ...',
-    loadOptions: fetchSousBranche,
-    autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
-    asyncOptions: {
-      trackBy: 'id',
-      labelBy: 'libelle'
-    }
-  },
-{ key: 'isCession',             label: 'Cession',   type: 'checkbox' },  
-{ key: 'isReconductionTacite',  label: 'Tacite reconduction',   type: 'checkbox' },
-{ key: 'isIard',                label: 'IARD',   type: 'checkbox' },
-{ key: 'isFacPure',             label: 'FAC pure',   type: 'checkbox' },  
+const tempQuittanceFields: FormField[] = [
+  ///////////////////////////// 
+  ////// Emission 
+  /////////////////////////////  
+  //dateEmission?: string; date système
+  /////////////////////////////
+{ section: 'Période de couverture' },
+{ key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
+{ key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar' },
+{ section: 'Devise' },
+{
+  key: 'deviseId',
+  label: 'Devise',
+  type: 'async-select',
+  required: true,
+  placeholder: 'Sélectionner une devise ...',
+  loadOptions: fetchDevise,
+  autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
+  asyncOptions: {
+    trackBy: 'id',
+    labelBy: 'libelle'
+  }
+},
+{ key: 'coursDevise',           label: 'Cours devise',      type: 'number' ,required: true,},
+
+{ section: 'Autres informations' },
+{ key: 'avisEcheance',          label: 'Avis sinistre',     type: 'number' },  
+{ key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number' }, 
+{ key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number' }, 
+{ key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number' }, 
 
 ]
-
 // ==================== LOGIQUE FORMULAIRE ====================
 
 const isEditing = computed(() => !!tempQuittance.value?.id)
@@ -85,8 +77,10 @@ const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : '
 function initializeFormData(): TempQuittanceFormData {
   if (!tempQuittance) {
     return Object.fromEntries(
-      tempQuittanceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
-    ) as  unknown as TempQuittanceFormData
+      tempQuittanceFields
+        .filter((f) => 'key' in f)  // ✅ Garde uniquement les objets avec une propriété 'key'
+        .map((f) => [f.key, f.type === 'checkbox' ? true : ''])
+    ) as unknown as TempQuittanceFormData
   }
 
   const data = { ...tempQuittance.value } as TempQuittanceFormData
@@ -141,80 +135,105 @@ const handleSubmit = async (data: Record<string, any>) => {
       await updateTempQuittance.mutateAsync({
         id: tempQuittance.value.id,
         data: {
-            numero: data.numero,
-            isCession: data.isCession,
-            isProportionnel: data.isProportionnel,
-            isFac: data.isFac,
-            dateEmission: data.isFac,
-            dateEffet: data.dateEffet,
+            ///////////////////////////// 
+            ////// Emission 
+            /////////////////////////////  
+            // dateEmission: data.dateEmission,// date système
+            ///////////////////////////
+            
+            dateEffet: data.dateEffet ,  
             dateEcheance: data.dateEcheance,
+            deviseId: extractId(data.deviseId),
             coursDevise: data.coursDevise,
             avisEcheance: data.avisEcheance,
-            capitaux: data.capitaux,
-            limiteCapitauxImpliques: data.limiteCapitauxImpliques,
-            ici: data.ici,
-            smp: data.smp,
-            limite: data.limite,
-            retention: data.retention,
-            conservation: data.conservation,
-            capacite: data.capacite,
-            estimationPrime: data.estimationPrime,
-            tauxCedante: data.tauxCedante,
-            tauxAccepte: data.tauxAccepte,
-            tauxCommission: data.tauxCommission,
-            taxeSurCommission: data.taxeSurCommission,
-            primeBrute: data.primeBrute,
-            primeNette: data.primeNette,
-            taxeSurPrime: data.taxeSurPrime,
             nombreEcheancePmd: data.nombreEcheancePmd,
-            sinistreAuComptant: data.sinistreAuComptant,
+            sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
-            aliment: data.aliment,           
+            ///////////////////////////// 
+            ////// Capitaux 
+            /////////////////////////////
+            // capitaux: data.capitaux, 
+            // //limiteCapitauxImpliques: data.dateEmission,
+            // lci: data.lci,
+            // smp: data.smp,
+            // limite: data.limite,
+            // retention: data.retention,
+            // conservation: data.conservation,
+            // capacite: data.capacite,
+            ///////////////////////////// 
+            ////// Prime 
+            /////////////////////////////
+            // estimationPrime: data.estimationPrime,
+            // primeBrute: data.primeBrute,
+            // primeNette: data.primeNette, 
+
+            // ///////////////////////////// 
+            // ////// Taux et Taxes 
+            // /////////////////////////////
+            // tauxCedante: data.tauxCedante, 
+            // tauxAccepte: data.tauxAccepte,
+            // tauxCommission: data.tauxCommission,
+            // taxeSurPrime: data.taxeSurPrime, 
+            // taxeSurCommission: data.taxeSurCommission,
+
+
             // Relations
-            mouvementId: extractId(data.mouvementId),
-            tempPoliceId: extractId(data.tempPoliceId),
-            deviseId: extractId(data.deviseId),
+            //mouvementId: extractId(data.mouvementId),
+            //tempPoliceId: extractId(data.tempPoliceId),
+            //.deviseId),
         },
       })
-      emit('success', 'Assuré modifié avec succès')
+      emit('success', 'Quittance Emission modifié avec succès')
     } else {
       await createTempQuittance.mutateAsync({
-            numero: data.numero,
-            isCession: data.isCession,
-            isProportionnel: data.isProportionnel,
-            isFac: data.isFac,
-            dateEmission: data.isFac,
-            dateEffet: data.dateEffet,
+            ///////////////////////////// 
+            ////// Emission 
+            /////////////////////////////  
+            // dateEmission: data.dateEmission,// date système
+            ///////////////////////////
+            
+            dateEffet: data.dateEffet ,  
             dateEcheance: data.dateEcheance,
+            deviseId: extractId(data.deviseId),
             coursDevise: data.coursDevise,
             avisEcheance: data.avisEcheance,
-            capitaux: data.capitaux,
-            limiteCapitauxImpliques: data.limiteCapitauxImpliques,
-            ici: data.ici,
-            smp: data.smp,
-            limite: data.limite,
-            retention: data.retention,
-            conservation: data.conservation,
-            capacite: data.capacite,
-            estimationPrime: data.estimationPrime,
-            tauxCedante: data.tauxCedante,
-            tauxAccepte: data.tauxAccepte,
-            tauxCommission: data.tauxCommission,
-            taxeSurCommission: data.taxeSurCommission,
-            primeBrute: data.primeBrute,
-            primeNette: data.primeNette,
-            taxeSurPrime: data.taxeSurPrime,
             nombreEcheancePmd: data.nombreEcheancePmd,
-            sinistreAuComptant: data.sinistreAuComptant,
+            sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
-            aliment: data.aliment,           
-            // Relations
-            mouvementId: extractId(data.mouvementId),
-            tempPoliceId: extractId(data.tempPoliceId),
-            deviseId: extractId(data.deviseId),
+            ///////////////////////////// 
+            ////// Capitaux 
+            /////////////////////////////
+            // capitaux: data.capitaux, 
+            // //limiteCapitauxImpliques: data.dateEmission,
+            // lci: data.lci,
+            // smp: data.smp,
+            // limite: data.limite,
+            // retention: data.retention,
+            // conservation: data.conservation,
+            // capacite: data.capacite,
+            ///////////////////////////// 
+            ////// Prime 
+            /////////////////////////////
+            // estimationPrime: data.estimationPrime,
+            // primeBrute: data.primeBrute,
+            // primeNette: data.primeNette, 
 
+            // ///////////////////////////// 
+            // ////// Taux et Taxes 
+            // /////////////////////////////
+            // tauxCedante: data.tauxCedante, 
+            // tauxAccepte: data.tauxAccepte,
+            // tauxCommission: data.tauxCommission,
+            // taxeSurPrime: data.taxeSurPrime, 
+            // taxeSurCommission: data.taxeSurCommission,
+
+
+            // Relations
+            //mouvementId: extractId(data.mouvementId),
+            //tempPoliceId: extractId(data.tempPoliceId),
+            //.deviseId),
       } as TempQuittance)
-      emit('success', 'Assuré créé avec succès')
+      emit('success', 'Quittance Emission créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
@@ -234,7 +253,7 @@ const dismissError = () => {
 
 <template>
   <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Quittance" class="mb-8" />  
+    <TTitreSousModule  libelle="Quittance Emission" class="mb-1" />  
    
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
@@ -244,6 +263,9 @@ const dismissError = () => {
       :fields="tempQuittanceFields"
       :mode="formMode"
       :show-delete="false"
+      :columns="2"
+      responsive
+      gap="md"
       :loading="loading"
       :submit-label="isEditing ? 'Mettre à jour' : 'Créer'"
       @submit="handleSubmit"

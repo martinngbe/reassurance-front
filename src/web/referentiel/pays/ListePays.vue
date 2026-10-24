@@ -231,10 +231,10 @@ watch(tableSearch, () => {
           :active-supprimer="isLigneSelection"
          
           :masque-impression="true"
+          :masque-supprimer="true"
           @nouveau="handleNouveau"
           @modifier="handleModifier"
-          @supprimer="handleSupprimer"
-        
+         
         /> 
     </template>
 

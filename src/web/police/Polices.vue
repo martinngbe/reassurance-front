@@ -6,7 +6,6 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
 import { usePolices } from '@/services/police/usePolice'
-import { useToast } from '@/composants/toast/useToast'
 import type { Police } from '@/services/police/police'
 import TButton from '@/composants/forms/TButton.vue'
 import AffaireNouvelle from '../module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
@@ -34,20 +33,15 @@ const params = computed<PaginationParams>(() => ({
 // Ne pas destructurer polices
 const store = usePolices(params)
 const assureStore = useAssureStore()
-const { polices, createPolice, updatePolice, deletePolice } = store
-const { success, error, warning, info } = useToast()
- 
+const { polices } = store
 const assureEnCours = computed(() => assureStore.currentAssure)
-///console.warn(" -- Polices.vue polices:",polices)
-
 type PoliceRow = Police & { [key: string]: any }
 
 // ==================== COLONNES ====================
 const policeColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isProportionnel',       label: 'Propt°',      width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'natureOffre',           label: 'Nature Offre',    width: 100,  minWidth: 100, },
   
 
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
@@ -144,7 +138,6 @@ watch(tableSearch, () => {
           placeholder="Rechercher…"
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
-        
       </div>
     </template>
 
@@ -167,8 +160,8 @@ watch(tableSearch, () => {
 
   </TTable>
 
-   <TModal v-model="showModal" width="55%" :title="titleModal" >
-    <AffaireNouvelle/>
+   <TModal v-model="showModal" width="55%"  height="750px" :title="titleModal" >
+      <AffaireNouvelle  />
   </TModal>
  
 </template>

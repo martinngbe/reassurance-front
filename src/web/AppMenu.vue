@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MODULE_ACCEPTATION, MODULE_ACCUEIL, MODULE_CESSION, MODULE_COMPTABILITE, MODULE_COMPTE, MODULE_CONSULTATION, MODULE_PARAMETRAGE, MODULE_REGLEMENT, MODULE_SINISTRE } from '@/services/ecrans/ecrans.store';
 import { useTheme } from '@/theme/useTheme';
 import { computed, ref } from 'vue';
 
@@ -21,19 +22,20 @@ interface MenuItem {
   icon: string; // Contient désormais les classes PrimeIcon (ex: 'pi pi-home')
 }
 
-const activeMenu = ref('accueil');
+const activeMenu = ref(MODULE_ACCUEIL);
+
 
 const menus: MenuItem[] = [
-  { id: 'accueil', label: 'Accueil', icon: 'pi pi-home' },
-  { id: 'acceptation', label: 'Acceptation', icon: 'pi pi-file-check' },
-  { id: 'cession', label: 'Cession', icon: 'pi pi-arrow-right-arrow-left' },
-  { id: 'sinistre', label: 'Sinistre', icon: 'pi pi-exclamation-triangle' },
-  { id: 'compte', label: 'Compte', icon: 'pi pi-id-card' },
-  { id: 'reglement', label: 'Règlement', icon: 'pi pi-dollar' },
-  { id: 'comptabilisation', label: 'Comptabilisation', icon: 'pi pi-book' },
-  { id: 'consultation', label: 'Consultation', icon: 'pi pi-eye' },
-  { id: 'acteur', label: 'Acteur', icon: 'pi pi-users' },
-  { id: 'parametrage', label: 'Paramétrage', icon: 'pi pi-cog' },
+  { id: MODULE_ACCUEIL,       label: 'Accueil', icon: 'pi pi-home' },
+  { id: MODULE_ACCEPTATION,   label: 'Acceptation', icon: 'pi pi-file-check' },
+  { id: MODULE_CESSION,       label: 'Cession', icon: 'pi pi-arrow-right-arrow-left' },
+  { id: MODULE_SINISTRE,      label: 'Sinistre', icon: 'pi pi-exclamation-triangle' },
+  { id: MODULE_COMPTE,        label: 'Compte', icon: 'pi pi-id-card' },
+  { id: MODULE_REGLEMENT,     label: 'Règlement', icon: 'pi pi-dollar' },
+  { id: MODULE_COMPTABILITE,  label: 'Comptabilisation', icon: 'pi pi-book' },
+  { id: MODULE_CONSULTATION,  label: 'Consultation', icon: 'pi pi-eye' },
+  //{ id: 'acteur',             label: 'Acteur', icon: 'pi pi-users' },
+  { id: MODULE_PARAMETRAGE,   label: 'Paramétrage', icon: 'pi pi-cog' },
 ];
 
 // Gestion sélection menu

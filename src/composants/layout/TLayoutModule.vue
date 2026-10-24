@@ -88,7 +88,7 @@ const accentVars = computed(() => ({
       :use-viewport-size="false"
       zone-padding="p-0"
       main-padding="p-0"
-      main-overflow="hidden"
+      main-overflow="auto"
       v-model:header-visible="topVisible"
       v-model:footer-visible="bottomVisible"
       v-model:left-visible="leftVisible"

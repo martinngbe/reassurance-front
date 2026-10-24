@@ -39,7 +39,6 @@ const menus: MenuItem[] = [
     label: 'Domaine activité',
     icon: 'pi pi-briefcase',
   },
-
   {
     id: 'acteur',
     label: 'Acteur',
@@ -61,15 +60,21 @@ const menus: MenuItem[] = [
     label: 'Utilisateur',
     icon: 'pi pi-user',
   },
- 
-
-
    {
     id: 'devise',
     label: 'Dévise',
     icon: 'pi pi-dollar',
   },
- 
+    {
+    id: 'natureOffre',
+    label: 'Nature Offre',
+    icon: 'pi pi-dollar',
+  },
+     {
+    id: 'natureCession',
+    label: 'Nature Cession',
+    icon: 'pi pi-dollar',
+  },
  
 ];
 

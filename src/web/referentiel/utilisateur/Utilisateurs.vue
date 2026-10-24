@@ -197,13 +197,12 @@ watch(tableSearch, () => {
       <div class="flex items-center gap-2">
         <TAction
          
-          :active-modifier="isLigneSelectionnee"
-          :active-supprimer="isLigneSelectionnee"         
+          :active-modifier="isLigneSelectionnee"        
           :masque-impression="true"
+          :masque-supprimer="true"
           @nouveau="handleNouveau"
           @modifier="handleModifier"
-          @supprimer="handleSupprimer"
-
+          
         />
       </div>
     </template>

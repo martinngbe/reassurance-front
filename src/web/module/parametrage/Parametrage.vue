@@ -16,10 +16,12 @@ const moduleComponents: Record<string, any> = {
   region: defineAsyncComponent(() => import('@//web/referentiel/region/TRegion.vue')),
   domaineActivite: defineAsyncComponent(() => import('@//web/referentiel/domaine-activite/TDomaineActivite.vue')),
   devise: defineAsyncComponent(() => import('@//web/referentiel/devise/TDevise.vue')),
+  natureOffre: defineAsyncComponent(() => import('@/web/referentiel/nature-offre/TNatureOffre.vue')),
+  natureCession: defineAsyncComponent(() => import('@/web/referentiel/nature-cession/TNatureCession.vue')),
 
   acteur: defineAsyncComponent(() => import('@//web/acteurs/acteur/TActeur.vue')),
   assure: defineAsyncComponent(() => import('@//web/acteurs/assure/TAssure.vue')),
-  
+ 
 }
 
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)

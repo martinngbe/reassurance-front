@@ -11,6 +11,7 @@ import { useDevises } from '@/services/referentiel/devise/useDevise.ts'
 import type { Devise } from '@/services/referentiel/devise/devise.ts'
 import TDeviseForm from './TDeviseForm.vue'
 import type { PaginationParams } from '@/type/pagination.ts'
+import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
@@ -193,14 +194,15 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption>
-      <TAction
+      <TTitreSousModule libelle="Table Système" />
+      <!--TAction
         :active-modifier="isLigneSelectionnee"
         :active-supprimer="isLigneSelectionnee"
         :masque-impression="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
         @supprimer="handleSupprimer"
-      />
+      /-->
     </template>
 
     <template #cell-code="{ value }">

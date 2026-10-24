@@ -5,6 +5,7 @@ import Assures from '@/web/acteurs/assure/Assures.vue';
 import Polices from '@/web/police/Polices.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
 
+
 </script>
 
 <template>

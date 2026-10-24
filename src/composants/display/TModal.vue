@@ -104,7 +104,7 @@ onBeforeUnmount(() => {
           role="dialog"
           aria-modal="true"
           :aria-label="title || 'Boîte de dialogue'"
-          class="t-modal-panel relative w-full rounded-2xl border border-primary-400 bg-white shadow-xl ring-1 ring-neutral-200 dark:border-primary-700 dark:bg-neutral-900 dark:ring-neutral-800"
+          class="t-modal-panel relative flex flex-col w-full overflow-hidden rounded-2xl border border-primary-400 bg-white shadow-xl ring-1 ring-neutral-200 dark:border-primary-700 dark:bg-neutral-900 dark:ring-neutral-800"
           :class="!width ? sizes[size] : ''"
           :style="panelStyle"
         >

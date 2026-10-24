@@ -1,43 +1,53 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
+export const MODULE_ACCUEIL = 'accueil'
+export const MODULE_ACCEPTATION = 'acceptation'
+export const MODULE_CESSION = 'cession'
+export const MODULE_SINISTRE = 'sinistre'
+export const MODULE_COMPTE = 'compte'
+export const MODULE_REGLEMENT = 'reglement'
+export const MODULE_COMPTABILITE = 'comptabilisation'
+export const MODULE_CONSULTATION = 'consultation'
+export const MODULE_PARAMETRAGE = 'parametrage'
+export const MODULE_AUTRE = 'autre'
+
+export const FORME_ECRAN_FACULTATIVE = 'ecranFacultative'
+export const FORME_ECRAN_TRAITE = 'ecranTraite'
+export const FORME_ECRAN_TABLEAU_DE_BORD = 'ecranTableauDeBord'
+export const FORME_ECRAN_AUTRE = 'XXX'
+
+
 //export type Module = 'google' | 'github' | 'facebook'
-export const useEcransStore = defineStore('ecranStore', () => {
+export const useEcransStore = defineStore('ecransStore', () => {
   // ==================== STATE ====================
-  //const currentScreen = ref<Acteur | null>(null)
-  const isModuleAcceptation = ref(false)
-  const isModuleCession = ref(false)
-  const isFacultative = ref(false)
-  const isTraite= ref(false)
-  // ==================== GETTERS ====================
+  const currenteModule = ref<string>(MODULE_AUTRE)
+  const currenteFormeEcran = ref<string>(FORME_ECRAN_AUTRE)
   
+  // ==================== GETTERS ====================  
   // ==================== ACTIONS ====================
-  const setModuleAcceptation = (b: boolean) => {
-    isModuleAcceptation.value = b
-    isModuleCession.value = !b
-  }
-   const setModuleCession = (b: boolean) => {
-    isModuleCession.value = b
-    isModuleAcceptation.value = !b
-  }
-  const setFacultative = (b: boolean) => {
-   isFacultative.value =b
-  }
-  const setTraite = (b: boolean) => {
-   isTraite.value =b
+  const setModule = (b: string) => {
+    currenteModule.value = b
+    //console.log('_____________________________________')
+    //console.log('___ useEcransStore.setModule ____')
+    //console.log('___ currenteModule    :',currenteModule.value)
+    //console.log('___ currenteFormeEcran: ',currenteFormeEcran.value)
   }
   
+  const setFormeEcran = (b: string) => {
+   currenteFormeEcran.value =b
+    //console.log('_____________________________________')
+    //console.log('___ useEcransStore.setFormeEcran ____')
+    //console.log('___ currenteModule    :',currenteModule.value)
+    //console.log('___ currenteFormeEcran: ',currenteFormeEcran.value)
+  }
+ 
 
 
   return {
-   isModuleAcceptation ,
-   isModuleCession ,
-   isFacultative,
-   isTraite,
-
-   setModuleAcceptation,
-   setModuleCession,
-   setFacultative,
-   setTraite
+   currenteModule ,
+   currenteFormeEcran ,
+   setModule,
+   setFormeEcran,
   }
 })

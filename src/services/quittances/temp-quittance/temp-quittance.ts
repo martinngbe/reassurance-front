@@ -7,36 +7,51 @@ import type { BaseEntity } from "@/type/base-entity";
 
 export interface TempQuittance extends BaseEntity {
   numero: string;
- 
+  ////// Hérité de l'entité TempPolice
   isCession?: boolean; 
   isProportionnel?: boolean;
   isFac?: boolean;
+  ///////////////////////////// 
+  ////// Emission 
+  /////////////////////////////  
   dateEmission?: string;
   dateEffet?: string;
   dateEcheance?: string;
   coursDevise: number;
-  avisEcheance?: number; 
+  avisEcheance?: number;
+  nombreEcheancePmd: number;
+  sinistreAuComptant?: number;
+  avisSinistre?: number;
+  ///////////////////////////// 
+  ////// Capitaux 
+  /////////////////////////////
   capitaux: number; 
   limiteCapitauxImpliques: number;
-  ici: number;
+  lci: number;
   smp: number;
   limite: number;
   retention: number;
   conservation: number;
   capacite: number;
-  estimationPrime: number;
+  estimationPrime: number; 
+  ///////////////////////////// 
+  ////// Prime 
+  /////////////////////////////
+  primeBrute: number;
+  primeNette: number;  
+  ///////////////////////////// 
+  ////// Taux et Taxes 
+  /////////////////////////////
   tauxCedante: number;
   tauxAccepte: number;
   tauxCommission: number;
-  taxeSurCommission: number;
-  primeBrute: number;
-  primeNette: number;
   taxeSurPrime: number;
-  nombreEcheancePmd: number;
-  sinistreAuComptant?: number;
-  avisSinistre?: number;
-  aliment?: number;
+  taxeSurCommission: number;
+  ///////////////////////////// 
+  ////// Autres 
+  /////////////////////////////
 
+  aliment?: number;    
   ////// Relation
   mouvement: Mouvement
   mouvementId: number;

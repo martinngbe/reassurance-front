@@ -20,7 +20,9 @@ const sortState = ref<SortState>({ key: null, direction: null })
 const emit = defineEmits<{ 
   (e: 'row-click',  tempPolice: any): void
 }>()
-
+const props = defineProps<{
+  masqueAffaireNouvelle?: boolean
+}>()
 
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -34,9 +36,8 @@ const params = computed<PaginationParams>(() => ({
 // Ne pas destructurer tempPolices
 const store = useTempPolices(params)
 const assureStore = useAssureStore()
-const { tempPolices, createTempPolice, updateTempPolice, deleteTempPolice } = store
-const { success, error, warning, info } = useToast()
- 
+const { tempPolices } = store
+
 const assureEnCours = computed(() => assureStore.currentAssure)
 ///console.warn(" -- TempPolices.vue tempPolices:",tempPolices)
 
@@ -45,9 +46,11 @@ type TempPoliceRow = TempPolice & { [key: string]: any }
 // ==================== COLONNES ====================
 const tempPoliceColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°TempPolice',    width: 20,   minWidth: 80 },
-  { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isProportionnel',       label: 'Propt°',      width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isCession',             label: 'Cess°',           width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'natureOffre',           label: 'Nature Offre',    width: 100,  minWidth: 100, },
+  
+  //{ key: 'isProportionnel',       label: 'Propt°',      width: 50,   minWidth: 80,  align: 'center' },
+  //{ key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
   
 
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
@@ -55,6 +58,7 @@ const tempPoliceColumns: TableColumn[] = [
   { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
   
   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 100,  minWidth: 100, align: 'center' },
+  
   { key: 'cedante',               label: 'Cedente',          width: 500,  minWidth: 500, },
   { key: 'courtier',              label: 'Courtier',         width: 500,  minWidth: 500, },
   { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
@@ -92,34 +96,6 @@ async function handleLoadMore() {
 const showModal = ref(false)
 const titleModal = ref('')
 const tempPoliceToEdit = ref<TempPolice | null>(null)
-/*
-const openCreate = () => {
-  tempPoliceToEdit.value = null
-  titleModal.value = 'Nouvelle tempPolice'
-  showModal.value = true
-}
-
-const openEdit = (tempPolice: TempPoliceRow) => {
-  tempPoliceToEdit.value = tempPolice
-  titleModal.value = 'Modifier tempPolice'
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-  tempPoliceToEdit.value = null
-}
-
-// ==================== HANDLERS CRUD ====================
-const onFormSuccess = (message: string) => {
-  closeModal()
-  success(message, 'Succès')
-  tempPolices.refresh()
-}
-
-const handleNouveau = () => openCreate()
-
-*/
 
 
 
@@ -186,7 +162,7 @@ watch(tableSearch, () => {
             {{ assureEnCours?.raisonSociale }}
           </p>
           <TButton 
-                      v-if ="assureEnCours" 
+                      v-if ="assureEnCours && !props.masqueAffaireNouvelle" 
                       type="button"
                       variant="soft" 
                       @click="openAffaireNouvelle"           
@@ -201,7 +177,7 @@ watch(tableSearch, () => {
 
   </TTable>
 
-   <TModal v-model="showModal" width="75%" title="Nouvelle tempPolice" >
+   <TModal v-model="showModal" width="45%" title="Nouvelle tempPolice" >
     <AffaireNouvelle/>
   </TModal>
  

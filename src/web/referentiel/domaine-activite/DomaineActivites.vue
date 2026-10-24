@@ -42,7 +42,7 @@ type DomaineActiviteRow = DomaineActivite & { [key: string]: any }
 const domaineActiviteColumns: TableColumn[] = [ 
   { key: 'code',       label: 'Code',       width: '5%',  minWidth: 150 , sortable: true},
   { key: 'libelle',    label: 'Libellé',    width: '55%',  minWidth: 150 , sortable: true},
-  { key: 'description',    label: 'Description',    width: '40%',  minWidth: 150 },
+  { key: 'description',label: 'Description',    width: '40%',  minWidth: 150 },
  
 ]
 const emit = defineEmits<{ 
@@ -198,13 +198,12 @@ watch(tableSearch, () => {
     <template #caption="{ selectedCount, total }">
        <TAction
           :active-modifier="isLigneSelectionnee"
-          :active-supprimer="isLigneSelectionnee"
-         
+          
           :masque-impression="true"
+          :masque-supprimer="true"
           @nouveau="handleNouveau"
           @modifier="handleModifier"
-          @supprimer="handleSupprimer"
-        
+          
         /> 
     </template>
 

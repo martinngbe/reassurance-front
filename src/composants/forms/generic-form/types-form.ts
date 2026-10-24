@@ -1,74 +1,60 @@
-// types-form.ts
 import type { CalendarSelectionMode, CalendarSize, CalendarVariant } from '../TCalendar.vue'
+import type { DatePickerOutputFormat } from '../TDatePicker.vue'
 
-export type FieldType =
-  | 'text' | 'number' | 'email' | 'password'
-  | 'textarea' | 'select' | 'checkbox' | 'date'
-  | 'calendar' | 'async-select'
-
-export interface FieldOption {
-  label: string
-  value: string | number | boolean
+// ==================== SECTION (titre de groupe) ====================
+export interface SectionHeader {
+  section: string
 }
 
-export interface CalendarFieldOptions {
-  selectionMode?: CalendarSelectionMode
-  locale?: string
-  firstDayOfWeek?: 0 | 1
-  minDate?: Date | string | null
-  maxDate?: Date | string | null
-  disabledDates?: Date[] | ((date: Date) => boolean)
-  highlightedDates?: Date[]
-  size?: CalendarSize
-  variant?: CalendarVariant
-  showOutsideDays?: boolean
-  outputFormat?: 'iso' | 'date' | string
-  dateFormat?: Intl.DateTimeFormatOptions
-  clearable?: boolean
-}
-
+// ==================== CHAMP ====================
 export interface FieldConfig {
   key: string
-  label: string
-  type: 'text' | 'email' | 'password' | 'number' | 'date' | 'textarea' | 'select' | 'checkbox' | 'calendar' | 'async-select'
+  label?: string
+  type: 'text' | 'email' | 'password' | 'number' | 'date' | 'textarea' | 'select' | 'async-select' | 'checkbox' | 'calendar'
   placeholder?: string
   required?: boolean
   disabled?: boolean
+  options?: Array<{ label: string; value: string | number }>
   helpText?: string
   
-  // Pour le select natif (petites listes statiques)
-  options?: FieldOption[]
+  // Props pour le layout
+  colSpan?: 1 | 2 | 3 | 'full'
   
-  // 🆕 Pour le scroll infini (TAsyncSelect)
-  // Fonction qui charge les options avec pagination
-  // query: texte recherché par l'utilisateur
-  // page: numéro de page à charger (1, 2, 3...)
-  loadOptions?: (query: string, page: number) => Promise<{ options: any[], hasMore: boolean }>
-  
-  // Configuration pour TAsyncSelect
+  // Props spécifiques async-select
+  loadOptions?: (query: string, page: number) => Promise<{ options: any[]; hasMore: boolean }>
   asyncOptions?: {
-    trackBy?: string  // Clé de l'ID dans l'objet API (ex: 'id')
-    labelBy?: string  // Clé du texte affiché (ex: 'libelle', 'name')
+    trackBy?: string
+    labelBy?: string
   }
-  autoSelectFirst?: boolean  // ✅ Ajout
-  // Pour le calendar
-  calendarOptions?:CalendarFieldOptions
+  autoSelectFirst?: boolean
+  
+  // Props spécifiques calendar
+  calendarOptions?: {
+    selectionMode?: CalendarSelectionMode
+    locale?: string
+    firstDayOfWeek?: 0 | 1
+    minDate?: Date | string | null
+    maxDate?: Date | string | null
+    disabledDates?: Date[] | ((date: Date) => boolean)
+    highlightedDates?: Date[]
+    size?: CalendarSize
+    variant?: CalendarVariant
+    showOutsideDays?: boolean
+    dateFormat?: Intl.DateTimeFormatOptions | (() => Intl.DateTimeFormatOptions)
+    outputFormat?: DatePickerOutputFormat
+    clearable?: boolean
+  }
 }
 
+// ==================== TYPE UNIFIÉ ====================
+// ✅ Un champ du formulaire peut être soit un champ, soit un séparateur de section
+export type FormField = FieldConfig | SectionHeader
 
-
-export interface FieldOption {
-  label: string
-  value: string | number | boolean
+// ==================== TYPE GUARDS ====================
+export function isSection(field: FormField): field is SectionHeader {
+  return 'section' in field && !('key' in field)
 }
 
-export interface TextAreaOptions {
-  rows?: number
-  maxlength?: number
-  minlength?: number
-  autoResize?: boolean
-  showCounter?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  variant?: 'default' | 'soft' | 'outline'
+export function isField(field: FormField): field is FieldConfig {
+  return 'key' in field && 'type' in field
 }
-

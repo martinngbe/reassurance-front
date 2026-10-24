@@ -7,31 +7,41 @@ import type { PaginationParams } from '@/type/pagination'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { usePoliceStore } from './police.store'
+import { useEcransStore } from '../ecrans/ecrans.store'
+import { useAssureStore } from '../acteurs/assure/assure.store'
 
 const KEY = 'polices';
 export function usePolices(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
   const policeStore = usePoliceStore() // ⭐ 
+  const ecranStore = useEcransStore()
+  const assureStore = useAssureStore()
+
+  const isFAC = computed(()=> ecranStore.currenteFormeEcran)
+  const currentAssure = computed(()=> assureStore.currentAssure)
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
   }))
   //////////////////////////////
-  const polices = useInfiniteList<Police>({
+  const polices = useInfiniteList<Police>(
+    {
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
       //console.warn(" -- usePolice polices = useInfiniteList<Police> ")
       // const response = await policeApi.getAll(params.value)
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
+        // On Ajoute assureId si nous omme en FAC
         const response = await policeApi.getAll({
           ...toValue(params),
+          ...(isFAC.value &&  currentAssure.value && { assureId: currentAssure.value?.id }),
           page,      // ← page dynamique (1, 2, 3...)
           limit,     // ← limit dynamique
         })
       // ✅ Retourner l'objet IResponse complet, pas response.data
-      console.log(" -- usePolice response:",response)
+      //console.log(" -- usePolice response:",response)
       return response as PaginatedResponse<Police>
     },
   })

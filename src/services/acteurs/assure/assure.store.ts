@@ -37,7 +37,7 @@ export const useAssureStore = defineStore('assureStore', () => {
   const clearSelectedAssures = () => {
     selectedAssures.value = []
   }
-
+  
   const toggleAssureSelection = (id: string | number) => {
     const index = selectedAssures.value.indexOf(id)
     if (index === -1) {
@@ -46,7 +46,20 @@ export const useAssureStore = defineStore('assureStore', () => {
       selectedAssures.value.splice(index, 1)
     }
   }
+  // ⭐ Action utile : mettre à jour l'acteur en cache
+  // (par ex. après un updateActeur réussi)
+  const updateCurrentAssure = (data: Partial<Assure>) => {
+    if (currentAssure.value) {
+      currentAssure.value = { ...currentAssure.value, ...data }
+    }
+  }
 
+  // ⭐ Action utile : effacer si l'acteur supprimé est celui sélectionné
+  const removeIfCurrent = (id: number) => {
+    if (currentAssure.value?.id === id) {
+      currentAssure.value = null
+    }
+  }
   return {
     // State
     currentAssure,
@@ -61,6 +74,8 @@ export const useAssureStore = defineStore('assureStore', () => {
     // Actions (Multiple)
     setSelectedAssures,
     clearSelectedAssures,
+    updateCurrentAssure,
+    removeIfCurrent,
     toggleAssureSelection,
   }
 })

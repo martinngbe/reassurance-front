@@ -38,7 +38,14 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
 
  // ==================== CREATE ====================
   const createTempQuittance = useMutation({
-    mutationFn: (data: TempQuittance) => tempQuittanceApi.create(data),
+    mutationFn:async  (data: TempQuittance) => {
+     const tQuittance= await tempQuittanceApi.create(data)
+      // ⭐ Synchroniser le store si c'est l'tempQuittance sélectionné
+      if (tempQuittanceStore.currentTempQuittanceId !== tQuittance.id) {
+        tempQuittanceStore.selectTempQuittance(tQuittance)
+      }
+     return tQuittance
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tempQuittances'] })
       tempQuittances.refresh()

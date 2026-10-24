@@ -204,11 +204,12 @@ watch(tableSearch, () => {
     <template #caption>
       <TAction
         :active-modifier="isLigneSelectionnee"
-        :active-supprimer="isLigneSelectionnee"
+       
         :masque-impression="true"
+        :masque-supprimer="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
-        @supprimer="handleSupprimer"
+       
       />
     </template>
    <template #cell-pays="{ value }">

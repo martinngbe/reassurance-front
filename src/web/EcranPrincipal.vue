@@ -4,6 +4,7 @@ import TLayout from '@/composants/layout/TLayout.vue'
 import AppHeader from '@//web/AppHeader.vue'
 import AppMenu from '@//web/AppMenu.vue'
 import AppFooter from './AppFooter.vue';
+import { useEcransStore } from '@/services/ecrans/ecrans.store.ts';
 
 const props = defineProps<{
   theme: 'light' | 'dark'
@@ -73,9 +74,20 @@ const quickInfos = [
   { label: 'Agence', value: 'Paris Centre' },
   { label: 'Session', value: 'Active' },
 ]
-
-function selectMenu(menuId: string) {
-  activeMenu.value = menuId
+////////////////////////  ECRANS  //////////////////
+const ecransStore = useEcransStore()
+const currentModuleEcran = computed(()=> ecransStore.currenteModule)
+const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
+////////////////////////
+function selectMenu(moduleId: string) {
+  activeMenu.value = moduleId
+  console.log(activeMenu.value)
+  ecransStore.setModule(moduleId)
+  ///////////////////////////////////////////////////
+  //console.log(" _____________________ ")
+  //console.log(" _______ ECRANS ______ ")
+  //console.log(" ___ currentModuleEcran    :",currentModuleEcran.value)
+  //console.log(" ___ currenteFormeEcran:",currenteFormeEcran.value)
 }
 </script>
 

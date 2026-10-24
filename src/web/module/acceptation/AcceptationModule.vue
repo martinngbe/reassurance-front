@@ -2,7 +2,8 @@
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import MenuAcceptation from './MenuAcceptation.vue';
 import TTitreModule from '@/composants/utilitaire/TTitreModule.vue';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
+import { FORME_ECRAN_TABLEAU_DE_BORD, useEcransStore } from '@/services/ecrans/ecrans.store.ts';
 
 
 // Chargement dynamique des modules
@@ -13,15 +14,34 @@ const moduleComponents: Record<string, any> = {
 
 }
 
-const activeMenu = ref('ecranTableauDeBord')
+const activeMenu = ref(FORME_ECRAN_TABLEAU_DE_BORD)
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
-function selectMenu(menuId: string) {
-  console.log('________________________________')
-  console.log('AcceptationModule')
-  console.log('menuId:'+menuId)
-  console.log('________________________________')
-  activeMenu.value = menuId
+
+////////////////////////  ECRANS  //////////////////
+const ecransStore = useEcransStore()
+// ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+const currentModuleEcran = computed(()=> ecransStore.currenteModule)
+const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
+//const currentModuleEcran = ecransStore.currenteModule
+//const currenteFormeEcran = ecransStore.currenteFormeEcran
+////////////////////////
+function selectMenu(moduleId: string) {
+  activeMenu.value = moduleId
+  console.log("AcceptationModule.selectMenu",activeMenu.value)
+  ecransStore.setFormeEcran(moduleId)
+  ///////////////////////////////////////////////////
+  //console.log(" _____________________________________ ")
+  //console.log(" _______ ECRANS : ACCEPTATION_MODULE ______ ")
+  //console.log(" _______ currentModuleEcran    :",currentModuleEcran.value)
+  //console.log(" _______ currenteFormeEcran:",currenteFormeEcran.value)
 }
+
+onMounted(()=>{
+  //console.log(' _____________________________________')
+  //console.log(" _______ ECRANS : ACCEPTATION_MODULE onMounted ______ ")
+    ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+})
+
 </script>
 
 <template>

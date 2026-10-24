@@ -4,6 +4,11 @@ import TFieldWrapper from './TFieldWrapper.vue'
 import { nextUid } from '../../utilitaire/uid.ts'
 import TModal from '../display/TModal.vue';
 import TButton from './TButton.vue';
+// // 🆕 À ajouter dans TAsyncSelect.vue
+// export type AsyncSelectLoadOptions = (
+//   query: string,
+//   page: number,
+// ) => Promise<{ options: any[]; hasMore: boolean }>
 
 const props = withDefaults(defineProps<{
   modelValue?: any

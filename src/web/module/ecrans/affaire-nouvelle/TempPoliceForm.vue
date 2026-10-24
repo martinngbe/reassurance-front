@@ -2,17 +2,24 @@
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import type { PaginationParams } from '@/type/pagination'
+import type { IPageInfo, IResponse, PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import type { TempPolice, TempPoliceFormData } from '@/services/temp-police/temp-police'
 import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
 import { useTempPolices } from '@/services/temp-police/useTempPolice'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
-import TLigneHorizontale from '@/composants/utilitaire/TLigneHorizontale.vue'
+import { useAssureStore } from '@/services/acteurs/assure/assure.store'
+import { FORME_ECRAN_FACULTATIVE, useEcransStore } from '@/services/ecrans/ecrans.store'
 
 
 const tempPoliceStore = useTempPoliceStore()
 const tempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+// on recupere l'assure en cours
+const assureStore = useAssureStore()  
+const currentAssure =assureStore.currentAssure
+// on recupére l'cran sur lequel nous sommes
+const {currenteFormeEcran}  = useEcransStore()
+const isFAC = computed(() => currenteFormeEcran == FORME_ECRAN_FACULTATIVE)
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
@@ -22,15 +29,32 @@ const emit = defineEmits<{
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
 async function fetchActeur(query: string, page: number) {
-  const res = await apiClient.get('/pays', {
+  const res = await apiClient.get('/acteur', {
     params: { search: query, page, limit: 20 }
-  })
+  }) as IResponse
+  // const data = res.data.data
+  // const pageInfo = res.data.pageInfo as IPageInfo
+  // console.log("---- async function fetchActeur data:",data)
+  // console.log("---- pageInfo:",pageInfo)
   return {
     options: res.data.items || res.data.data || [],
-    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
+    hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
   }
 }
-
+async function fetchNatureOffre(query: string, page: number) {
+  const params = { search: query, page, limit: 20 , ...(isFAC.value && { isFacultative: true }) }
+  console.log(">>>>> function fetchNatureOffre  isFAC.value:",isFAC.value)
+  console.log(">>>>> function fetchNatureOffre  params:",params)
+  const res = await apiClient.get('/nature-offre', {params}) as IResponse
+  // const data = res.data.data
+  // const pageInfo = res.data.pageInfo as IPageInfo
+  // console.log("---- async function fetchActeur data:",data)
+  // console.log("---- pageInfo:",pageInfo)
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
+  }
+}
 async function fetchSousBranche(query: string, page: number) {
   const res = await apiClient.get('/sous-branche', {
     params: { search: query, page, limit: 20 }
@@ -45,7 +69,7 @@ async function fetchSousBranche(query: string, page: number) {
 
 const tempPoliceFields: FieldConfig[] = [
   {
-    key: 'acteurCedanteId',
+    key: 'acteurCedanteId',//'' acteurId
     label: 'Cédente',
     type: 'async-select',
     required: true,
@@ -54,7 +78,7 @@ const tempPoliceFields: FieldConfig[] = [
     autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
     asyncOptions: {
       trackBy: 'id',
-      labelBy: 'libelle'
+      labelBy: 'raisonSociale'
     }
   },
   {
@@ -70,10 +94,21 @@ const tempPoliceFields: FieldConfig[] = [
       labelBy: 'libelle'
     }
   },
-{ key: 'isCession',             label: 'Cession',   type: 'checkbox' },  
+  {
+    key: 'natureOffreId',
+    label: 'Nature offre',
+    type: 'async-select',
+    required: true,
+    placeholder: 'Sélectionner une offre ...',
+    loadOptions: fetchNatureOffre,
+    autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
+    asyncOptions: {
+      trackBy: 'id',
+      labelBy: 'libelle'
+    }
+  },
+//{ key: 'isCession',             label: 'Cession',   type: 'checkbox' },  
 { key: 'isReconductionTacite',  label: 'Tacite reconduction',   type: 'checkbox' },
-{ key: 'isIard',                label: 'IARD',   type: 'checkbox' },
-{ key: 'isFacPure',             label: 'FAC pure',   type: 'checkbox' },  
 
 ]
 
@@ -91,6 +126,13 @@ function initializeFormData(): TempPoliceFormData {
   }
 
   const data = { ...tempPolice.value } as TempPoliceFormData
+  console.log("_____ TempPoliceForm.initializeFormData _____")
+  console.log("tempPolice.value:",tempPolice.value)
+  //  En FAC il faut absolument un assuré
+  if( isFAC && 
+      currentAssure && !tempPolice.value?.assure){
+    data.assureId = currentAssure.id
+  }
 
   // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
   // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
@@ -98,16 +140,26 @@ function initializeFormData(): TempPoliceFormData {
     data.sousBrancheId = data.sousBranche  // ✅ Objet complet, PAS juste l'ID
     delete data.sousBranche // ✅ Supprimer pour éviter les doublons
   }
+  if (data.natureOffre) {
+    data.natureOffreId = data.natureOffre  // ✅ Objet complet, PAS juste l'ID
+    delete data.natureOffre // ✅ Supprimer pour éviter les doublons
+  }
+  if (data.acteurCedante) {
+    data.acteurCedanteId = data.acteurCedante  // ✅ Objet complet, PAS juste l'ID
+    delete data.acteurCedante // ✅ Supprimer pour éviter les doublons
+  }
 
-
+  console.log("data:",data)
   return data as TempPoliceFormData
 }
 
 const formData = ref<TempPoliceFormData>(initializeFormData())
 
 // ✅ Watcher pour gérer les changements de props.tempPolice
-watch(() => tempPolice, (newActeur) => {
-  if (newActeur) {
+watch(() => tempPolice, (newPolice) => {
+  console.log("_____ TempPoliceForm.watch.tempPolice _____")
+  console.log("newPolice:",newPolice)
+  if (newPolice) {
     formData.value = initializeFormData()
   }
 }, { deep: true })
@@ -128,39 +180,43 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
+  console.log("_____ TempPoliceForm.handleSubmit _____")
+  console.log("data:",data)
   try {
     if (isEditing.value && tempPolice.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempPolice.mutateAsync({
         id: tempPolice.value.id,
-        data: {
+        data: {            
             numero: data.numero,
             isCession: data.isCession,
             isReconductionTacite: data.isReconductionTacite,
-            isIard: data.isIard,
-            isFacPure: data.isFacPure,
+            
             // Relations
+            natureOffreId: extractId(data.natureOffreId),
             sousBrancheId: extractId(data.sousBrancheId),
             acteurCedanteId: extractId(data.acteurCedanteId),
             acteurCourtierId: extractId(data.acteurCourtierId),
-            assureId: extractId(data.paysId),
+            assureId: data.assureId,
         },
       })
-      emit('success', 'Assuré modifié avec succès')
+     
+      emit('success', 'TempPolice modifiée avec succès')
     } else {
       await createTempPolice.mutateAsync({
             numero: data.numero,
             isCession: data.isCession,
             isReconductionTacite: data.isReconductionTacite,
-            isIard: data.isIard,
-            isFacPure: data.isFacPure,
+           
             // Relations
+            natureOffreId: extractId(data.natureOffreId),
             sousBrancheId: extractId(data.sousBrancheId),
             acteurCedanteId: extractId(data.acteurCedanteId),
             acteurCourtierId: extractId(data.acteurCourtierId),
-            assureId: extractId(data.paysId),
+            assureId: data.assureId,
 
       } as TempPolice)
+      
       emit('success', 'Assuré créé avec succès')
     }
   } catch (err: any) {
@@ -181,7 +237,7 @@ const dismissError = () => {
 
 <template>
   <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Police" class="mb-8" />  
+    <TTitreSousModule  libelle="Police" />  
    
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}

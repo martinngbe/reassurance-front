@@ -7,11 +7,18 @@ import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-s
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useTempPoliceStore } from './temp-police.store'
 import { tempPoliceApi } from './temp-police.api'
+import { useAssureStore } from '../acteurs/assure/assure.store'
+import { useEcransStore } from '../ecrans/ecrans.store'
 
 const KEY = 'temp-polices';
 export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
-  const policeStore = useTempPoliceStore() // ⭐ 
+  const tempPoliceStore = useTempPoliceStore() // ⭐ 
+  const ecranStore = useEcransStore()
+  const assureStore = useAssureStore()
+
+  const isFAC = computed(()=> ecranStore.currenteFormeEcran)
+  const currentAssure = computed(()=> assureStore.currentAssure)
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
@@ -25,8 +32,10 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       //console.warn(" -- useTempPolice polices = useInfiniteList<TempPolice> ")
       // const response = await tempPoliceApi.getAll(params.value)
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
+        // On affiche les police d'un assuré sir nous sommes en FAC
         const response = await tempPoliceApi.getAll({
           ...toValue(params),
+          ...(isFAC.value &&  currentAssure.value && { assureId: currentAssure.value?.id }),
           page,      // ← page dynamique (1, 2, 3...)
           limit,     // ← limit dynamique
         })
@@ -38,7 +47,15 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
 
  // ==================== CREATE ====================
   const createTempPolice = useMutation({
-    mutationFn: (data: TempPolice) => tempPoliceApi.create(data),
+    mutationFn: async (data: TempPolice) => {
+     const tPolice= await  tempPoliceApi.create(data)
+     // dès la création d'une TempPolice, on la selctionne
+     // ⭐ Synchroniser le store si c'est l'police sélectionné
+      if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
+        tempPoliceStore.selectTempPolice(tPolice)
+      }
+     return tPolice
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['polices'] })
       tempPolices.refresh()
@@ -56,8 +73,8 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
         tempPolices.items.value[index] = { ...tempPolices.items.value[index], ...data } as TempPolice
       }
       // ⭐ Synchroniser le store si c'est l'police sélectionné
-      if (policeStore.currentTempPoliceId === id) {
-        policeStore.updateCurrentTempPolice(data)
+      if (tempPoliceStore.currentTempPoliceId === id) {
+        tempPoliceStore.updateCurrentTempPolice(data)
       }
       return { previousItems, index }
     },
@@ -79,7 +96,7 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       const previousItems = [...tempPolices.items.value]
       tempPolices.items.value = tempPolices.items.value.filter((d) => d.id !== id)
       // ⭐ Effacer la sélection si c'est l'police supprimé
-      policeStore.removeIfCurrent(id)
+      tempPoliceStore.removeIfCurrent(id)
       return { previousItems }
     },
     onError: (_err, _id, context) => {
