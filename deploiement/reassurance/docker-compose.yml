@@ -1,0 +1,50 @@
+services:
+  # ===== BACKEND =====
+  reassurance-back:
+    # build: .
+    image: reassurance-back:0.0.1
+    container_name: reassurance-back
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      # Base de données
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=reass
+      # ✅ JWT Secret (à changer en production !)
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    volumes:
+      - app_logs:/app/logs
+    networks:
+      - mariadb_network
+
+  # ===== FRONTEND =====
+  reassurance-front:
+    image: reassurance-front:0.0.1
+    container_name: reassurance-front
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      # URL de l'API (utilisée par le front pour appeler le back)
+      - API_URL=http://reassurance-back:3000
+    depends_on:
+      - reassurance-back
+    networks:
+      - mariadb_network
+
+networks:
+  mariadb_network:
+    external: true
+    name: mariadb_network
+
+volumes:
+  app_logs:
