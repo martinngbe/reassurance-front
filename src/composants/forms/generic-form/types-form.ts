@@ -1,3 +1,6 @@
+// types-form.ts
+
+import type { FormatNumberOptions } from '@/utilitaire/number.ts'
 import type { CalendarSelectionMode, CalendarSize, CalendarVariant } from '../TCalendar.vue'
 import type { DatePickerOutputFormat } from '../TDatePicker.vue'
 
@@ -16,10 +19,18 @@ export interface FieldConfig {
   disabled?: boolean
   options?: Array<{ label: string; value: string | number }>
   helpText?: string
-  
   // Props pour le layout
   colSpan?: 1 | 2 | 3 | 'full'
-  
+ 
+
+ // ✅ NOUVEAU
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  maxlength?: number
+
+
+
+
+
   // Props spécifiques async-select
   loadOptions?: (query: string, page: number) => Promise<{ options: any[]; hasMore: boolean }>
   asyncOptions?: {
@@ -27,7 +38,13 @@ export interface FieldConfig {
     labelBy?: string
   }
   autoSelectFirst?: boolean
-  
+    // ✅ NOUVEAU
+  numberOptions?: {
+    decimals?: number
+    formatOptions?: FormatNumberOptions
+    returnType?: 'string' | 'number'
+  }
+
   // Props spécifiques calendar
   calendarOptions?: {
     selectionMode?: CalendarSelectionMode
@@ -47,7 +64,6 @@ export interface FieldConfig {
 }
 
 // ==================== TYPE UNIFIÉ ====================
-// ✅ Un champ du formulaire peut être soit un champ, soit un séparateur de section
 export type FormField = FieldConfig | SectionHeader
 
 // ==================== TYPE GUARDS ====================

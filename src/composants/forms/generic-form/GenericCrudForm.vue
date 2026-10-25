@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { FormField, FieldConfig } from './types-form'
 import { isSection } from './types-form'
 import TInput from '../TInput.vue'
+import TNumberInput from '../TNumberInput.vue'
 import TLigneHorizontale from '@/composants/utilitaire/TLigneHorizontale.vue'
 import TButton from '../TButton.vue'
 import TToggle from '../TToggle.vue'
@@ -88,16 +89,19 @@ const getColSpanClasses = (field: FieldConfig) => {
   return [spanMap[field.colSpan]]
 }
 
-// ✅ Helper pour vérifier le type (évite les casts dans le template)
 const isInputType = (field: FieldConfig, types: string[]) => 
   types.includes(field.type)
+
+// ✅ Helper pour mettre à jour un champ depuis le template
+const handleUpdate = (key: string, value: any) => {
+  updateField(key, value)
+}
 </script>
 
 <template>
   <form @submit.prevent="emit('submit', modelValue)" class="space-y-5">
     <div :class="gridClasses">
       <template v-for="field in fields" :key="isSection(field) ? `section-${field.section}` : field.key">
-
         <!-- Section (titre de groupe) -->
         <div
           v-if="isSection(field)"
@@ -109,7 +113,7 @@ const isInputType = (field: FieldConfig, types: string[]) =>
           <div class="mt-1 h-px bg-primary-200 dark:bg-primary-700"></div>
         </div>
 
-        <!-- ✅ Champ réel : on cast explicitement en FieldConfig -->
+        <!-- Champ réel -->
         <div
           v-else
           :class="[
@@ -117,27 +121,46 @@ const isInputType = (field: FieldConfig, types: string[]) =>
             ...getColSpanClasses(field as FieldConfig)
           ]"
         >
-          <!-- ✅ On utilise la variable castée pour éviter les erreurs -->
           <template v-if="(field as FieldConfig).type">
-            <!-- Text / Email / Password / Number / Date -->
+            <!-- Text / Email / Password / Date -->
             <TInput
-              v-if="isInputType(field as FieldConfig, ['text', 'email', 'password', 'number', 'date'])"
+              v-if="isInputType(field as FieldConfig, ['text', 'email', 'password', 'date'])"
               :id="(field as FieldConfig).key"
               :type="(field as FieldConfig).type"
-              :modelValue="modelValue[(field as FieldConfig).key]"
+              :model-value="modelValue[(field as FieldConfig).key]"
               :label="(field as FieldConfig).label"
               :placeholder="(field as FieldConfig).placeholder"
               :required="(field as FieldConfig).required"
               :disabled="isDisabled(field as FieldConfig)"
+              :size="(field as FieldConfig).size"
               @input="onInput((field as FieldConfig).key, $event)"
             />
+
+            <!-- Number avec TNumberInput -->
+
+<!-- ✅ À INSÉRER JUSTE APRÈS, AVANT LE TEXTAREA -->
+          <TNumberInput
+            v-else-if="(field as FieldConfig).type === 'number'"
+            :id="(field as FieldConfig).key"
+            :model-value="modelValue[(field as FieldConfig).key]"
+            :label="(field as FieldConfig).label"
+            :placeholder="(field as FieldConfig).placeholder"
+            :hint="(field as FieldConfig).helpText"
+            :required="(field as FieldConfig).required"
+            :disabled="isDisabled(field as FieldConfig)"
+            :size="(field as FieldConfig).size ?? 'md'"
+            :decimals="(field as FieldConfig).numberOptions?.decimals ?? 0"
+            :format-options="(field as FieldConfig).numberOptions?.formatOptions"
+            :return-type="(field as FieldConfig).numberOptions?.returnType ?? 'number'"
+            @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+          />
 
             <!-- Textarea -->
             <TTextarea
               v-else-if="(field as FieldConfig).type === 'textarea'"
               :id="(field as FieldConfig).key"
               :label="(field as FieldConfig).label"
-              :modelValue="modelValue[(field as FieldConfig).key]"
+              :model-value="modelValue[(field as FieldConfig).key]"
               :placeholder="(field as FieldConfig).placeholder"
               :required="(field as FieldConfig).required"
               :disabled="isDisabled(field as FieldConfig)"
@@ -181,7 +204,7 @@ const isInputType = (field: FieldConfig, types: string[]) =>
               :track-by="(field as FieldConfig).asyncOptions?.trackBy || 'id'"
               :label-by="(field as FieldConfig).asyncOptions?.labelBy || 'libelle'"
               :auto-select-first="(field as FieldConfig).autoSelectFirst"
-              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+              @update:model-value="(v) => handleUpdate((field as FieldConfig).key, v)"
             />
 
             <!-- Toggle -->
@@ -194,7 +217,7 @@ const isInputType = (field: FieldConfig, types: string[]) =>
               variant="switch"
               size="md"
               color="primary"
-              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+              @update:model-value="(v) => handleUpdate((field as FieldConfig).key, v)"
             />
 
             <!-- DatePicker -->
@@ -220,12 +243,15 @@ const isInputType = (field: FieldConfig, types: string[]) =>
               :show-outside-days="(field as FieldConfig).calendarOptions?.showOutsideDays ?? true"
               :date-format="(field as FieldConfig).calendarOptions?.dateFormat"
               :clearable="(field as FieldConfig).calendarOptions?.clearable ?? true"
-              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+              @update:model-value="(v) => handleUpdate((field as FieldConfig).key, v)"
             />
 
+           
             <!-- Help text -->
             <p
-              v-if="(field as FieldConfig).helpText && (field as FieldConfig).type !== 'calendar'"
+              v-if="(field as FieldConfig).helpText 
+                    && (field as FieldConfig).type !== 'calendar' 
+                    && (field as FieldConfig).type !== 'number'"
               class="text-xs text-gray-400 mt-0.5"
             >
               {{ (field as FieldConfig).helpText }}

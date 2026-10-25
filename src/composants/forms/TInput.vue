@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TFieldWrapper from './TFieldWrapper.vue'
-import { nextUid } from '../../utilitaire/uid.ts'
+import { nextUid } from '../../utilitaire/uid'
 import { controlBase } from './fieldStyles'
 
-// TInput
-const controlClass = computed<string[]>(() => [...controlBase(props.error !== ''), 'h-10', 'px-3'])
-type InputType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | (string & {})
+export type InputSize = 'sm' | 'md' | 'lg' | 'xl'
+
+const sizeClasses: Record<InputSize, string> = {
+  sm: 'h-8 px-2 text-xs',
+  md: 'h-10 px-3 text-sm',
+  lg: 'h-12 px-4 text-base',
+  xl: 'h-14 px-5 text-lg',
+}
 
 const props = withDefaults(
   defineProps<{
     modelValue?: string
-    type?: InputType
+    type?: string
     id?: string
     label?: string
     placeholder?: string
@@ -20,23 +25,24 @@ const props = withDefaults(
     required?: boolean
     disabled?: boolean
     readonly?: boolean
+    size?: InputSize
+    maxlength?: number
   }>(),
-  {
-    modelValue: '',
-    type: 'text',
-    id: undefined,
-    label: '',
-    placeholder: '',
-    hint: '',
-    error: '',
-  },
+  { modelValue: '', type: 'text', size: 'md', id: undefined },
 )
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
+  (e: 'focus', event: FocusEvent): void
+  (e: 'blur', event: FocusEvent): void
 }>()
 
-const fieldId: string = props.id ?? nextUid('t-input')
+const fieldId = props.id ?? nextUid('t-input')
+
+const controlClass = computed<string[]>(() => [
+  ...controlBase(props.error !== ''),
+  sizeClasses[props.size],
+])
 
 function onInput(event: Event): void {
   emit('update:modelValue', (event.target as HTMLInputElement).value)
@@ -44,20 +50,12 @@ function onInput(event: Event): void {
 </script>
 
 <template>
-  <TFieldWrapper
-    :label="label"
-    :hint="hint"
-    :error="error"
-    :required="required"
-    :html-for="fieldId"
-  >
+  <TFieldWrapper :label="label" :hint="hint" :error="error" :required="required" :html-for="fieldId">
     <div class="relative">
-      <span
-        v-if="$slots.prefix"
-        class="absolute inset-y-0 left-3 flex items-center text-neutral-400"
-      >
+      <span v-if="$slots.prefix" class="absolute inset-y-0 left-3 flex items-center text-neutral-400">
         <slot name="prefix" />
       </span>
+
       <input
         :id="fieldId"
         :type="type"
@@ -66,13 +64,14 @@ function onInput(event: Event): void {
         :disabled="disabled"
         :readonly="readonly"
         :required="required"
+        :maxlength="maxlength"
         :class="[controlClass, $slots.prefix && 'pl-9', $slots.suffix && 'pr-9']"
         @input="onInput"
+        @focus="emit('focus', $event)"
+        @blur="emit('blur', $event)"
       />
-      <span
-        v-if="$slots.suffix"
-        class="absolute inset-y-0 right-3 flex items-center text-neutral-400"
-      >
+
+      <span v-if="$slots.suffix" class="absolute inset-y-0 right-3 flex items-center text-neutral-400">
         <slot name="suffix" />
       </span>
     </div>

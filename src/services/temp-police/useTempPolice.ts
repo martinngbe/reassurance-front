@@ -49,9 +49,16 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const createTempPolice = useMutation({
     mutationFn: async (data: TempPolice) => {
      const tPolice= await  tempPoliceApi.create(data)
+     console.log("__________________________________")
+     console.log("const createTempPolice = useMutation")
+     console.log("__________________________________")
+     console.log("tPolice:",tPolice)
+     console.log("tempPoliceStore.currentTempPoliceId :",tempPoliceStore.currentTempPoliceId )
+     console.log("__________________________________")
      // dès la création d'une TempPolice, on la selctionne
      // ⭐ Synchroniser le store si c'est l'police sélectionné
       if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
+        console.log("Stockage de TempPolice tPolice:",tPolice)
         tempPoliceStore.selectTempPolice(tPolice)
       }
      return tPolice

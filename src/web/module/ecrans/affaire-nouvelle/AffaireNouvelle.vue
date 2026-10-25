@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TTitreModule from '@/composants/utilitaire/TTitreModule.vue'
-import { defineAsyncComponent, computed, ref } from 'vue'
+import { defineAsyncComponent, computed, ref, watch } from 'vue'
 import TLigneHorizontale from '@/composants/utilitaire/TLigneHorizontale.vue'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
 import AffaireNouvelleEtapes from './AffaireNouvelleEtapes.vue'
@@ -11,6 +11,10 @@ import TAlert from '@/composants/display/TAlert.vue'
 import { useTempPoliceStore } from '@/services/temp-police/temp-police.store.ts'
 import TempPolices from '@/web/police/TempPolices.vue'
 import TModal from '@/composants/display/TModal.vue'
+import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store.ts'
+import { useMouvements } from '@/services/referentiel/mouvement/useMouvement.ts'
+import { MOUVEMENT_AFN } from '@/services/common/constantes.ts'
+import type { IResponse } from '@/type/pagination.ts'
 
 const assureStore = useAssureStore()
 const assureEnCours = computed(() => assureStore.currentAssure)
@@ -61,13 +65,15 @@ const moduleComponents: Record<EtapeId, any> = {
   emission: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceEmissionForm.vue')),
   capitaux: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceCapitauxForm.vue')),
   primes: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittancePrimesForm.vue')),
-  tauxEtTaxes: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittancePrimeTaxeEtTauxForm.vue')),
-  courtage: defineAsyncComponent(() => import('@/web/EnConstruction.vue')),
+  tauxEtTaxes: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceTaxesEtTauxForm.vue')),
+  courtage: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceCourtageForm.vue')),
   recapitulation: defineAsyncComponent(() => import('@/web/EnConstruction.vue')),
 }
 
 const tempPoliceStore = useTempPoliceStore()
 const ecransStore = useEcransStore()
+const mouvementsStore = useMouvementStore()
+const  {getMouvementByCode} = useMouvements()
 const currenteModuleDisplay = computed(() => ecransStore.currenteModule)
 const currenteFormeEcran = computed(() => ecransStore.currenteFormeEcran)
 const currentTempPilice = computed(() =>tempPoliceStore.currentTempPolice)
@@ -78,10 +84,29 @@ const titleHistoriqueSaisie= computed(() =>currentTempPilice.value?
 // ✅ 5. Fallback garanti → jamais undefined
 const currentModule = computed(() => moduleComponents[activeMenu.value] ?? EnConstruction)
 const showModal = ref(false)
-const onAfficheHistoriqueTempPolice =()=>{
-   console.log(" -- const onAfficheHistoriqueTempPolice -- ")
-  showModal.value=true
-}
+// lecture du mouvement AFN
+const afn = ref(MOUVEMENT_AFN);
+const { data: mouvement } = getMouvementByCode(afn);
+
+// ✅ SOLUTION : Utiliser watch pour attendre le chargement asynchrone
+watch(mouvement  , (newData ) => {
+   
+  if (newData) {
+    console.log(">>>>>> AffaireNouvelle.vue mouvement newData:", newData);
+    // Note : Selon la configuration de votre intercepteur Axios, 
+    // le mouvement réel se trouve soit dans newData.data, soit directement dans newData.
+    // D'après votre screenshot, la réponse est {success: true, data: {...}}.
+    // Si votre intercepteur fait "return response.data", alors le mouvement est dans newData.data.
+    //const mouvementAStocker = newData.data ?? newData; 
+    
+    const mouvementAStocker = newData?? null; 
+   
+    
+    console.log(">>>>>> AffaireNouvelle.vue mouvement chargé:", mouvementAStocker);
+    mouvementsStore.selectMouvement(mouvementAStocker);
+  }
+}, { immediate: true }); 
+
 </script>
 
 <template>
@@ -118,12 +143,7 @@ const onAfficheHistoriqueTempPolice =()=>{
     </template>
 
     <template #footer >
-      <div class="flex gap-1 justify-between items-center ">      
-        <TAlert  
-          variant="primary" :title="titleHistoriqueSaisie" 
-          class="cursor-pointer"
-          @click ="onAfficheHistoriqueTempPolice"
-          />  
+      <div class="flex gap-1 justify-between items-center "> 
         <TAlert  variant="info" :title="currenteModuleDisplay +' / '+ currenteFormeEcran"/>
       </div>
     </template>

@@ -8,18 +8,26 @@ import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
+import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
+import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import TAlert from '@/composants/display/TAlert.vue'
 
-
+const mouvementStore = useMouvementStore()
+const tempPoliceStore = useTempPoliceStore()
 const tempQuittanceStore = useTempQuittanceStore()
 // lecture du tempQuittance en cours
 // on a pris soin de le charger via tempPolice
 const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+// lecture du mouvement en cours
+// on a pris soin de le reference dans AffaireNouvelle.vue
+const currentMouvement = computed(()=> mouvementStore.currentMouvement)
+const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
 // ✅ REMPLACER le ref local par un computed lié au store
-
+console.log(" >>>>>> currentMouvement.value: ",currentMouvement.value)
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
 async function fetchDevise(query: string, page: number) {
@@ -31,16 +39,11 @@ async function fetchDevise(query: string, page: number) {
     hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
   }
 }
-
-
-
 // ==================== CONFIGURATION DES CHAMPS ====================
 
 const tempQuittanceFields: FormField[] = [
   ///////////////////////////// 
   ////// Emission 
-  /////////////////////////////  
-  //dateEmission?: string; date système
   /////////////////////////////
 { section: 'Période de couverture' },
 { key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
@@ -62,10 +65,10 @@ const tempQuittanceFields: FormField[] = [
 { key: 'coursDevise',           label: 'Cours devise',      type: 'number' ,required: true,},
 
 { section: 'Autres informations' },
-{ key: 'avisEcheance',          label: 'Avis sinistre',     type: 'number' },  
+{ key: 'avisEcheance',          label: 'Avis Echéance',     type: 'number' , helpText:"Délais (jours) de notification avant échéance"},  
 { key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number' }, 
-{ key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number' }, 
-{ key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number' }, 
+{ key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number' , helpText:'Montant min à payer sans attendre'}, 
+{ key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number' , helpText:'Délais (jours) de notification du sinistre'}, 
 
 ]
 // ==================== LOGIQUE FORMULAIRE ====================
@@ -87,18 +90,12 @@ function initializeFormData(): TempQuittanceFormData {
 
   // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
   // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
-  if (data.mouvement) {
-    data.mouvementId = data.mouvement  // ✅ Objet complet, PAS juste l'ID
-    delete data.mouvement // ✅ Supprimer pour éviter les doublons
-  }
+
     if (data.devise) {
     data.deviseId = data.devise  // ✅ Objet complet, PAS juste l'ID
     delete data.devise // ✅ Supprimer pour éviter les doublons
-  }
-  if (data.tempPolice) {
-    data.tempPoliceId = data.tempPolice  // ✅ Objet complet, PAS juste l'ID
-    delete data.tempPolice // ✅ Supprimer pour éviter les doublons
-  }
+    }
+   
 
 
   return data as TempQuittanceFormData
@@ -130,6 +127,13 @@ function extractId(value: any): number | undefined {
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
   try {
+    if(!data.mouvementId && currentMouvement.value)
+      data.mouvementId = currentMouvement.value.id;
+    if(!data.policeId && currentTempPolice.value)
+      data.policeId = currentTempPolice.value.id;
+
+    console.log(" _____ TempQuittanceEmissionForme.handleSubmit   data:",data)
+   
     if (isEditing.value && tempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
@@ -149,49 +153,17 @@ const handleSubmit = async (data: Record<string, any>) => {
             nombreEcheancePmd: data.nombreEcheancePmd,
             sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            // capitaux: data.capitaux, 
-            // //limiteCapitauxImpliques: data.dateEmission,
-            // lci: data.lci,
-            // smp: data.smp,
-            // limite: data.limite,
-            // retention: data.retention,
-            // conservation: data.conservation,
-            // capacite: data.capacite,
-            ///////////////////////////// 
-            ////// Prime 
-            /////////////////////////////
-            // estimationPrime: data.estimationPrime,
-            // primeBrute: data.primeBrute,
-            // primeNette: data.primeNette, 
-
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            // tauxCedante: data.tauxCedante, 
-            // tauxAccepte: data.tauxAccepte,
-            // tauxCommission: data.tauxCommission,
-            // taxeSurPrime: data.taxeSurPrime, 
-            // taxeSurCommission: data.taxeSurCommission,
-
-
-            // Relations
-            //mouvementId: extractId(data.mouvementId),
-            //tempPoliceId: extractId(data.tempPoliceId),
-            //.deviseId),
         },
       })
       emit('success', 'Quittance Emission modifié avec succès')
     } else {
+
       await createTempQuittance.mutateAsync({
             ///////////////////////////// 
             ////// Emission 
-            /////////////////////////////  
-            // dateEmission: data.dateEmission,// date système
             ///////////////////////////
-            
+            mouvementId: currentMouvement.value?.id,
+            policeId: currentTempPolice.value?.id,
             dateEffet: data.dateEffet ,  
             dateEcheance: data.dateEcheance,
             deviseId: extractId(data.deviseId),
@@ -200,41 +172,11 @@ const handleSubmit = async (data: Record<string, any>) => {
             nombreEcheancePmd: data.nombreEcheancePmd,
             sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            // capitaux: data.capitaux, 
-            // //limiteCapitauxImpliques: data.dateEmission,
-            // lci: data.lci,
-            // smp: data.smp,
-            // limite: data.limite,
-            // retention: data.retention,
-            // conservation: data.conservation,
-            // capacite: data.capacite,
-            ///////////////////////////// 
-            ////// Prime 
-            /////////////////////////////
-            // estimationPrime: data.estimationPrime,
-            // primeBrute: data.primeBrute,
-            // primeNette: data.primeNette, 
-
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            // tauxCedante: data.tauxCedante, 
-            // tauxAccepte: data.tauxAccepte,
-            // tauxCommission: data.tauxCommission,
-            // taxeSurPrime: data.taxeSurPrime, 
-            // taxeSurCommission: data.taxeSurCommission,
-
-
-            // Relations
-            //mouvementId: extractId(data.mouvementId),
-            //tempPoliceId: extractId(data.tempPoliceId),
-            //.deviseId),
+          
       } as TempQuittance)
       emit('success', 'Quittance Emission créé avec succès')
     }
+   
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
     errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
@@ -258,7 +200,7 @@ const dismissError = () => {
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
     </div>
-    <GenericCrudForm
+    <GenericCrudForm v-if="currentTempPolice"
       v-model="formData"
       :fields="tempQuittanceFields"
       :mode="formMode"
@@ -271,6 +213,11 @@ const dismissError = () => {
       @submit="handleSubmit"
       @cancel="handleCancel"
     />
+    <div class="w-full" v-else>
+        <TAlert  variant="warning">
+            <p class="text-xl">Saisissez d'abord la police svp ...</p>
+        </TAlert>
+    </div>
   </div>
 </template>
 <style scoped>

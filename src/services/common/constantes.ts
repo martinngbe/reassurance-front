@@ -1,0 +1,1 @@
+export const MOUVEMENT_AFN ="AFN"

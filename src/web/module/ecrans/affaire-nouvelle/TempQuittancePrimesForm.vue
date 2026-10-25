@@ -8,10 +8,18 @@ import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
+import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import TAlert from '@/composants/display/TAlert.vue'
+import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 
 
 const tempQuittanceStore = useTempQuittanceStore()
+const tempPoliceStore = useTempPoliceStore()
 const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+const mouvementStore = useMouvementStore()
+const currentMouvement = computed(()=> mouvementStore.currentMouvement)
+
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
@@ -41,63 +49,34 @@ async function fetchSousBranche(query: string, page: number) {
 }
 
 // ==================== CONFIGURATION DES CHAMPS ====================
-
+const numberConfig = {
+  decimals: 2,
+  returnType: 'number' as const,
+}
 const tempQuittanceFields: FieldConfig[] = [
-  ///////////////////////////// 
-  ////// Emission 
-  /////////////////////////////  
-  //dateEmission?: string; date système
-  /////////////////////////////
-
-// { key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
-// { key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar' },
-
-// {
-//   key: 'deviseId',
-//   label: 'Devise',
-//   type: 'async-select',
-//   required: true,
-//   placeholder: 'Sélectionner une devise ...',
-//   loadOptions: fetchActeur,
-//   autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
-//   asyncOptions: {
-//     trackBy: 'id',
-//     labelBy: 'libelle'
-//   }
-// },
-
-// { key: 'coursDevise',           label: 'Cours devise',      type: 'number' },
-// { key: 'avisEcheance',          label: 'Avis sinistre',     type: 'number' },  
-// { key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number' }, 
-// { key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number' }, 
-// { key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number' }, 
-///////////////////////////// 
-////// Capitaux 
-/////////////////////////////
-//   { key: 'capitaux',     label: 'Avis sinistre',     type: 'number' }, 
-//  // { key: 'limiteCapitauxImpliques',          label: 'Avis sinistre',     type: 'number' }, 
-//   { key: 'lci',          label: 'LCI',          type: 'number' }, 
-//   { key: 'smp',          label: 'SMP',          type: 'number' }, 
-//   { key: 'limite',       label: 'Limite',       type: 'number' }, 
-//   { key: 'retention',    label: 'Retention',    type: 'number' }, 
-//   { key: 'conservation', label: 'Conservation', type: 'number' }, 
-//   { key: 'capacite',     label: 'Capacite',     type: 'number' }, 
-//   ///////////////////////////// 
+  /////////////////////////////// 
   ////// Prime 
   /////////////////////////////
-  { key: 'primeBrute',          label: 'Prime Brute',     type: 'number' }, 
-  { key: 'primeNette',          label: 'Prime Nette',     type: 'number' }, 
-  { key: 'estimationPrime',     label: 'Estimation',      type: 'number' }, 
+  { key: 'primeBrute',          label: 'Prime Brute',     type: 'number' , size:'lg' , helpText:"Prime Brute à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
+  { key: 'primeNette',          label: 'Prime Nette',     type: 'number' , size:'lg' , helpText:"Prime Nette à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
+  { key: 'estimationPrime',     label: 'Estimation',      type: 'number' , size:'lg' , helpText:"Estimation à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
  
-  ///////////////////////////// 
-  ////// Taux et Taxes 
-  /////////////////////////////
-    // { key: 'tauxCedante',          label: 'Taux Cédente',     type: 'number' }, 
-    // { key: 'tauxAccepte',          label: 'Taux Accepté',     type: 'number' }, 
-    // { key: 'tauxCommission',       label: 'Taux Commission',  type: 'number' }, 
-    // { key: 'taxeSurPrime',         label: 'Taxe sur prime',     type: 'number' }, 
-    // { key: 'taxeSurCommission',    label: 'Taxe sur commission',     type: 'number' }, 
-
+ 
 ]
 // ==================== LOGIQUE FORMULAIRE ====================
 
@@ -113,23 +92,6 @@ function initializeFormData(): TempQuittanceFormData {
   }
 
   const data = { ...tempQuittance.value } as TempQuittanceFormData
-
-  // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
-  // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
-  if (data.mouvement) {
-    data.mouvementId = data.mouvement  // ✅ Objet complet, PAS juste l'ID
-    delete data.mouvement // ✅ Supprimer pour éviter les doublons
-  }
-    if (data.devise) {
-    data.deviseId = data.devise  // ✅ Objet complet, PAS juste l'ID
-    delete data.devise // ✅ Supprimer pour éviter les doublons
-  }
-  if (data.tempPolice) {
-    data.tempPoliceId = data.tempPolice  // ✅ Objet complet, PAS juste l'ID
-    delete data.tempPolice // ✅ Supprimer pour éviter les doublons
-  }
-
-
   return data as TempQuittanceFormData
 }
 
@@ -158,98 +120,33 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
+   if(!data.mouvementId && currentMouvement.value)
+      data.mouvementId = currentMouvement.value.id;
   try {
     if (isEditing.value && tempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
         id: tempQuittance.value.id,
-        data: {           
-            dateEffet: data.dateEffet ,  
-            dateEcheance: data.dateEcheance,
-            deviseId: extractId(data.deviseId),
-            coursDevise: data.coursDevise,
-            avisEcheance: data.avisEcheance,
-            nombreEcheancePmd: data.nombreEcheancePmd,
-            sinistreAuComptant: data.sinistreAuComptant ,
-            avisSinistre: data.avisSinistre,
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            // capitaux: data.capitaux, 
-            // //limiteCapitauxImpliques: data.dateEmission,
-            // lci: data.lci,
-            // smp: data.smp,
-            // limite: data.limite,
-            // retention: data.retention,
-            // conservation: data.conservation,
-            // capacite: data.capacite,
+        data: {          
+           
             ///////////////////////////// 
             ////// Prime 
             /////////////////////////////
-            // estimationPrime: data.estimationPrime,
-            // primeBrute: data.primeBrute,
-            // primeNette: data.primeNette, 
-
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            // tauxCedante: data.tauxCedante, 
-            // tauxAccepte: data.tauxAccepte,
-            // tauxCommission: data.tauxCommission,
-            // taxeSurPrime: data.taxeSurPrime, 
-            // taxeSurCommission: data.taxeSurCommission,
-
-
-            // Relations
-            //mouvementId: extractId(data.mouvementId),
-            //tempPoliceId: extractId(data.tempPoliceId),
-            //.deviseId),d(data.deviseId),
+            estimationPrime: data.estimationPrime,
+            primeBrute: data.primeBrute,
+            primeNette: data.primeNette, 
         },
       })
       emit('success', 'Quittance des primes modifié avec succès')
     } else {
       await createTempQuittance.mutateAsync({
  
-            dateEffet: data.dateEffet ,  
-            dateEcheance: data.dateEcheance,
-            deviseId: extractId(data.deviseId),
-            coursDevise: data.coursDevise,
-            avisEcheance: data.avisEcheance,
-            nombreEcheancePmd: data.nombreEcheancePmd,
-            sinistreAuComptant: data.sinistreAuComptant ,
-            avisSinistre: data.avisSinistre,
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            // capitaux: data.capitaux, 
-            // //limiteCapitauxImpliques: data.dateEmission,
-            // lci: data.lci,
-            // smp: data.smp,
-            // limite: data.limite,
-            // retention: data.retention,
-            // conservation: data.conservation,
-            // capacite: data.capacite,
             ///////////////////////////// 
             ////// Prime 
             /////////////////////////////
-            // estimationPrime: data.estimationPrime,
-            // primeBrute: data.primeBrute,
-            // primeNette: data.primeNette, 
-
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            // tauxCedante: data.tauxCedante, 
-            // tauxAccepte: data.tauxAccepte,
-            // tauxCommission: data.tauxCommission,
-            // taxeSurPrime: data.taxeSurPrime, 
-            // taxeSurCommission: data.taxeSurCommission,
-
-
-            // Relations
-            //mouvementId: extractId(data.mouvementId),
-            //tempPoliceId: extractId(data.tempPoliceId),
-            //.deviseId),
+            estimationPrime: data.estimationPrime,
+            primeBrute: data.primeBrute,
+            primeNette: data.primeNette, 
       } as TempQuittance)
       emit('success', 'Quittance des Primes créé avec succès')
     }
@@ -276,7 +173,7 @@ const dismissError = () => {
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
     </div>
-    <GenericCrudForm
+    <GenericCrudForm v-if="currentTempPolice"
       v-model="formData"
       :fields="tempQuittanceFields"
       :mode="formMode"
@@ -286,6 +183,11 @@ const dismissError = () => {
       @submit="handleSubmit"
       @cancel="handleCancel"
     />
+    <div class="w-full" v-else>
+        <TAlert  variant="warning">
+            <p class="text-xl">Saisissez d'abord la police svp ...</p>
+        </TAlert>
+    </div>
   </div>
 </template>
 <style scoped>

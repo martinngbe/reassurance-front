@@ -28,14 +28,22 @@ const emit = defineEmits<{
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
-async function fetchActeur(query: string, page: number) {
-  const res = await apiClient.get('/acteur', {
+async function fetchActeurCedante(query: string, page: number) {
+  const res = await apiClient.get('/acteur?roles=assureur,reassureur', {
     params: { search: query, page, limit: 20 }
   }) as IResponse
-  // const data = res.data.data
-  // const pageInfo = res.data.pageInfo as IPageInfo
-  // console.log("---- async function fetchActeur data:",data)
-  // console.log("---- pageInfo:",pageInfo)
+
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
+  }
+}
+
+async function fetchActeurCourtier(query: string, page: number) {
+  const res = await apiClient.get('/acteur?roles=courtier', {
+    params: { search: query, page, limit: 20 }
+  }) as IResponse
+
   return {
     options: res.data.items || res.data.data || [],
     hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
@@ -43,13 +51,9 @@ async function fetchActeur(query: string, page: number) {
 }
 async function fetchNatureOffre(query: string, page: number) {
   const params = { search: query, page, limit: 20 , ...(isFAC.value && { isFacultative: true }) }
-  console.log(">>>>> function fetchNatureOffre  isFAC.value:",isFAC.value)
-  console.log(">>>>> function fetchNatureOffre  params:",params)
+
   const res = await apiClient.get('/nature-offre', {params}) as IResponse
-  // const data = res.data.data
-  // const pageInfo = res.data.pageInfo as IPageInfo
-  // console.log("---- async function fetchActeur data:",data)
-  // console.log("---- pageInfo:",pageInfo)
+
   return {
     options: res.data.items || res.data.data || [],
     hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
@@ -73,8 +77,21 @@ const tempPoliceFields: FieldConfig[] = [
     label: 'Cédente',
     type: 'async-select',
     required: true,
-    placeholder: 'Sélectionner une cédente ...',
-    loadOptions: fetchActeur,
+    placeholder: 'Sélectionner une cédante ...',
+    loadOptions: fetchActeurCedante,
+    autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
+    asyncOptions: {
+      trackBy: 'id',
+      labelBy: 'raisonSociale'
+    }
+  },
+  {
+    key: 'acteurCourtierId',//'' acteurId
+    label: 'Courtier',
+    type: 'async-select',
+    required: false,
+    placeholder: 'Sélectionner un courtier ...',
+    loadOptions: fetchActeurCourtier,
     autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
     asyncOptions: {
       trackBy: 'id',
@@ -147,6 +164,10 @@ function initializeFormData(): TempPoliceFormData {
   if (data.acteurCedante) {
     data.acteurCedanteId = data.acteurCedante  // ✅ Objet complet, PAS juste l'ID
     delete data.acteurCedante // ✅ Supprimer pour éviter les doublons
+  }
+  if (data.acteurCourtier) {
+    data.acteurCourtierId = data.acteurCourtier  // ✅ Objet complet, PAS juste l'ID
+    delete data.acteurCourtier // ✅ Supprimer pour éviter les doublons
   }
 
   console.log("data:",data)

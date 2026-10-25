@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { FieldConfig } from './types-form'
+import type { FormField, FieldConfig } from './types-form'
+import { isSection } from './types-form'
 import TInput from '../TInput.vue'
 import TLigneHorizontale from '@/composants/utilitaire/TLigneHorizontale.vue'
 import TButton from '../TButton.vue'
@@ -12,17 +13,23 @@ import TAsyncSelect from '../TAsyncSelect.vue'
 const props = withDefaults(
   defineProps<{
     modelValue: Record<string, any>
-    fields: FieldConfig[]
+    fields: FormField[]
     mode?: 'create' | 'edit' | 'view'
     submitLabel?: string
     showDelete?: boolean
     loading?: boolean
+    columns?: 1 | 2 | 3 | 4
+    responsive?: boolean
+    gap?: 'sm' | 'md' | 'lg'
   }>(),
   {
     mode: 'create',
     submitLabel: 'Enregistrer',
     showDelete: false,
     loading: false,
+    columns: 1,
+    responsive: true,
+    gap: 'md',
   },
 )
 
@@ -47,167 +54,204 @@ const onInput = (key: string, event: Event) => {
 const isDisabled = (field: FieldConfig) =>
   props.mode === 'view' || field.disabled || props.loading
 
-
 const inputClasses = computed(() => [
   'w-full rounded-lg px-3 py-2 text-sm',
   'transition-colors duration-150',
   'focus:outline-none focus:ring-2 focus:ring-blue-500',
   'disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
   'placeholder-gray-400',
-  'bg-white dark:bg-neutral-900',  // Fond sans bordure
+  'bg-white dark:bg-neutral-900',
 ])
 
+const gridClasses = computed(() => {
+  const gapMap = { sm: 'gap-3', md: 'gap-4', lg: 'gap-6' }
+  const colsMap = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+  }
+  return [
+    'grid',
+    gapMap[props.gap],
+    props.responsive ? colsMap[props.columns] : `grid-cols-${props.columns}`,
+  ]
+})
+
+const getColSpanClasses = (field: FieldConfig) => {
+  if (!field.colSpan || field.colSpan === 1) return []
+  const spanMap = {
+    2: 'md:col-span-2',
+    3: 'md:col-span-2 lg:col-span-3',
+    full: 'col-span-full',
+  }
+  return [spanMap[field.colSpan]]
+}
+
+// ✅ Helper pour vérifier le type (évite les casts dans le template)
+const isInputType = (field: FieldConfig, types: string[]) => 
+  types.includes(field.type)
 </script>
 
 <template>
   <form @submit.prevent="emit('submit', modelValue)" class="space-y-5">
-    <!-- ====== Champs dynamiques ====== -->
-    <div
-      v-for="field in fields"
-      :key="field.key"
-      class="flex flex-col gap-1"
-    >
-      <!-- Text / Email / Password / Number / Date (input natif) -->
-      <TInput
-        v-if="['text', 'email', 'password', 'number', 'date'].includes(field.type)"
-        :id="field.key"
-        :type="field.type"
-        :modelValue="modelValue[field.key]"
-        :label="field.label"
-        :placeholder="field.placeholder"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        @input="onInput(field.key, $event)"
-      />
+    <div :class="gridClasses">
+      <template v-for="field in fields" :key="isSection(field) ? `section-${field.section}` : field.key">
 
-      <!-- Textarea -->
-   
-      <TTextarea
-        v-else-if="field.type === 'textarea'"
-        :id="field.key"
-        :label="field.label"
-        :modelValue="modelValue[field.key]"
-        
-        :placeholder="field.placeholder"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        
-        :class="[...inputClasses, 'resize-y']"
-        @input="onInput(field.key, $event)"
-      />
-
-      <!-- Select -->
-      <select
-        v-else-if="field.type === 'select'"
-        :id="field.key"
-        :value="modelValue[field.key]"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        :class="inputClasses"
-        @change="onInput(field.key, $event)"
-      >
-        <option value="" disabled>
-          {{ field.placeholder || '— Choisir —' }}
-        </option>
-        <option
-          v-for="opt in field.options"
-          :key="String(opt.value)"
-          :value="opt.value"
+        <!-- Section (titre de groupe) -->
+        <div
+          v-if="isSection(field)"
+          class="col-span-full pt-1 pb-1"
         >
-          {{ opt.label }}
-        </option>
-      </select>
-        
-        <!-- 🆕 Async Select (Scroll infini) -->
-       <!--
-      <TAsyncSelect
-        v-else-if="field.type === 'async-select'"
-        :id="field.key"
-        :model-value="modelValue[field.key]"
-        :label="field.label"
-        :placeholder="field.placeholder"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        :hint="field.helpText"
-        :load-options="field.loadOptions"
-        :auto-select-first="field.autoSelectFirst"  
-        :track-by="field.asyncOptions?.trackBy || 'id'"
-        :label-by="field.asyncOptions?.labelBy || 'label'"
-        @update:model-value="(v) => updateField(field.key, v)"
-      />        
-       -->
-      <TAsyncSelect
-        v-else-if="field.type === 'async-select'"
-        :id="field.key"
-        :model-value="modelValue[field.key]"
-        :label="field.label"
-        :placeholder="field.placeholder"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        :hint="field.helpText"
-        :load-options="field.loadOptions"
-        :track-by="field.asyncOptions?.trackBy || 'id'"
-        :label-by="field.asyncOptions?.labelBy || 'libelle'"
-        :auto-select-first="field.autoSelectFirst"   
-        @update:model-value="(v) => updateField(field.key, v)"
-      />
+          <h3 class="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wide">
+            {{ field.section }}
+          </h3>
+          <div class="mt-1 h-px bg-primary-200 dark:bg-primary-700"></div>
+        </div>
 
-      <!-- Toggle (checkbox moderne) -->
-      <TToggle
-        v-else-if="field.type === 'checkbox'"
-        :id="field.key"
-        :model-value="!!modelValue[field.key]"
-        :label="field.placeholder || field.label"
-        :disabled="isDisabled(field)"
-        variant="switch"
-        size="md"
-        color="primary"
-        @update:model-value="(v) => updateField(field.key, v)"
-      />
+        <!-- ✅ Champ réel : on cast explicitement en FieldConfig -->
+        <div
+          v-else
+          :class="[
+            'flex flex-col gap-0.5',
+            ...getColSpanClasses(field as FieldConfig)
+          ]"
+        >
+          <!-- ✅ On utilise la variable castée pour éviter les erreurs -->
+          <template v-if="(field as FieldConfig).type">
+            <!-- Text / Email / Password / Number / Date -->
+                     <!-- Text / Email / Password / Number / Date -->
+            <TInput
+              v-if="isInputType(field as FieldConfig, ['text', 'email', 'password', 'number', 'date'])"
+              :id="(field as FieldConfig).key"
+              :type="(field as FieldConfig).type"
+              :modelValue="(field as FieldConfig).type === 'number' 
+                ? String(modelValue[(field as FieldConfig).key] ?? '') 
+                : modelValue[(field as FieldConfig).key]"
+              :label="(field as FieldConfig).label"
+              :placeholder="(field as FieldConfig).placeholder"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              @input="onInput((field as FieldConfig).key, $event)"
+            /> 
+            <!--TInput
+              v-if="isInputType(field as FieldConfig, ['text', 'email', 'password', 'number', 'date'])"
+              :id="(field as FieldConfig).key"
+              :type="(field as FieldConfig).type"
+              :modelValue="modelValue[(field as FieldConfig).key]"
+              :label="(field as FieldConfig).label"
+              :placeholder="(field as FieldConfig).placeholder"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              @input="onInput((field as FieldConfig).key, $event)"
+            /-->
 
-      <!-- 🆕 DatePicker (s'ouvre dans un TModal) -->
-      <TDatePicker
-        v-else-if="field.type === 'calendar'"
-        :id="field.key"
-        :model-value="modelValue[field.key]"
-        :label="field.label"
-       
-        output-format="yyyy-MM-dd"
-        :placeholder="field.placeholder"
-        :required="field.required"
-        :disabled="isDisabled(field)"
-        :hint="field.helpText"
-        :selection-mode="field.calendarOptions?.selectionMode ?? 'single'"
-        :locale="field.calendarOptions?.locale ?? 'fr-FR'"
-        :first-day-of-week="field.calendarOptions?.firstDayOfWeek ?? 1"
-        :min-date="field.calendarOptions?.minDate ?? null"
-        :max-date="field.calendarOptions?.maxDate ?? null"
-        :disabled-dates="field.calendarOptions?.disabledDates"
-        :highlighted-dates="field.calendarOptions?.highlightedDates"
-        :size="field.calendarOptions?.size ?? 'md'"
-        :variant="field.calendarOptions?.variant ?? 'default'"
-        :show-outside-days="field.calendarOptions?.showOutsideDays ?? true"
-        
-        :date-format="field.calendarOptions?.dateFormat"
-        :clearable="field.calendarOptions?.clearable ?? true"
-        @update:model-value="(v) => updateField(field.key, v)"
-      />
+            <!-- Textarea -->
+            <TTextarea
+              v-else-if="(field as FieldConfig).type === 'textarea'"
+              :id="(field as FieldConfig).key"
+              :label="(field as FieldConfig).label"
+              :modelValue="modelValue[(field as FieldConfig).key]"
+              :placeholder="(field as FieldConfig).placeholder"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              :class="[...inputClasses, 'resize-y']"
+              @input="onInput((field as FieldConfig).key, $event)"
+            />
 
-      <!-- Help text (sauf pour calendar qui a son propre hint) -->
-      <p
-        v-if="field.helpText && field.type !== 'calendar'"
-        class="text-xs text-gray-400 mt-0.5"
-      >
-        {{ field.helpText }}
-      </p>
+            <!-- Select -->
+            <select
+              v-else-if="(field as FieldConfig).type === 'select'"
+              :id="(field as FieldConfig).key"
+              :value="modelValue[(field as FieldConfig).key]"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              :class="inputClasses"
+              @change="onInput((field as FieldConfig).key, $event)"
+            >
+              <option value="" disabled>
+                {{ (field as FieldConfig).placeholder || '— Choisir —' }}
+              </option>
+              <option
+                v-for="opt in (field as FieldConfig).options"
+                :key="String(opt.value)"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
+
+            <!-- Async Select -->
+            <TAsyncSelect
+              v-else-if="(field as FieldConfig).type === 'async-select'"
+              :id="(field as FieldConfig).key"
+              :model-value="modelValue[(field as FieldConfig).key]"
+              :label="(field as FieldConfig).label"
+              :placeholder="(field as FieldConfig).placeholder"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              :hint="(field as FieldConfig).helpText"
+              :load-options="(field as FieldConfig).loadOptions"
+              :track-by="(field as FieldConfig).asyncOptions?.trackBy || 'id'"
+              :label-by="(field as FieldConfig).asyncOptions?.labelBy || 'libelle'"
+              :auto-select-first="(field as FieldConfig).autoSelectFirst"
+              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+            />
+
+            <!-- Toggle -->
+            <TToggle
+              v-else-if="(field as FieldConfig).type === 'checkbox'"
+              :id="(field as FieldConfig).key"
+              :model-value="!!modelValue[(field as FieldConfig).key]"
+              :label="(field as FieldConfig).placeholder || (field as FieldConfig).label"
+              :disabled="isDisabled(field as FieldConfig)"
+              variant="switch"
+              size="md"
+              color="primary"
+              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+            />
+
+            <!-- DatePicker -->
+            <TDatePicker
+              v-else-if="(field as FieldConfig).type === 'calendar'"
+              :id="(field as FieldConfig).key"
+              :model-value="modelValue[(field as FieldConfig).key]"
+              :label="(field as FieldConfig).label"
+              output-format="yyyy-MM-dd"
+              :placeholder="(field as FieldConfig).placeholder"
+              :required="(field as FieldConfig).required"
+              :disabled="isDisabled(field as FieldConfig)"
+              :hint="(field as FieldConfig).helpText"
+              :selection-mode="(field as FieldConfig).calendarOptions?.selectionMode ?? 'single'"
+              :locale="(field as FieldConfig).calendarOptions?.locale ?? 'fr-FR'"
+              :first-day-of-week="(field as FieldConfig).calendarOptions?.firstDayOfWeek ?? 1"
+              :min-date="(field as FieldConfig).calendarOptions?.minDate ?? null"
+              :max-date="(field as FieldConfig).calendarOptions?.maxDate ?? null"
+              :disabled-dates="(field as FieldConfig).calendarOptions?.disabledDates"
+              :highlighted-dates="(field as FieldConfig).calendarOptions?.highlightedDates"
+              :size="(field as FieldConfig).calendarOptions?.size ?? 'md'"
+              :variant="(field as FieldConfig).calendarOptions?.variant ?? 'default'"
+              :show-outside-days="(field as FieldConfig).calendarOptions?.showOutsideDays ?? true"
+              :date-format="(field as FieldConfig).calendarOptions?.dateFormat"
+              :clearable="(field as FieldConfig).calendarOptions?.clearable ?? true"
+              @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
+            />
+
+            <!-- Help text -->
+            <p
+              v-if="(field as FieldConfig).helpText && (field as FieldConfig).type !== 'calendar'"
+              class="text-xs text-gray-400 mt-0.5"
+            >
+              {{ (field as FieldConfig).helpText }}
+            </p>
+          </template>
+        </div>
+      </template>
     </div>
 
-    <!-- ====== Actions ====== -->
+    <!-- Actions -->
     <TLigneHorizontale />
-    <div
-      v-if="mode !== 'view'"
-      class="flex items-center justify-end gap-3 pt-4"
-    >
+    <div v-if="mode !== 'view'" class="flex items-center justify-end gap-3 pt-1">
       <TButton
         type="button"
         variant="soft"

@@ -23,7 +23,7 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
     // toutes les TempQuittances rattachée . On prendra soin de veiller
     // qui'il n'en ait pas plus de un
     let listeTempQuittances : TempQuittance[]=[]
-    if(tempPolice)
+    if(tempPolice && tempPolice.quittances)
         listeTempQuittances= tempPolice.quittances
 
     if(listeTempQuittances.length===0)

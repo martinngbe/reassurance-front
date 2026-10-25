@@ -13,11 +13,14 @@ export const mouvementApi = {
   getById: (id: number) =>
     apiClient.get<Mouvement>(`${BASE}/${id}`).then((r) => r.data),
 
+  getByCode: (code: string) =>
+    apiClient.get<IResponse>(`${BASE}/code/${code}`).then((r) => r.data.data),
+
   create: (data: CreateMouvementDto) =>
-    apiClient.post<Mouvement>(BASE, data).then((r) => r.data),
+    apiClient.post<IResponse>(BASE, data).then((r) => r.data.data),
 
   update: (id: number, data: UpdateMouvementDto) =>
-    apiClient.patch<Mouvement>(`${BASE}/${id}`, data).then((r) => r.data),
+    apiClient.patch<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),
 
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),

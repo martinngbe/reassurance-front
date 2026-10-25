@@ -10,11 +10,11 @@ export const tempPoliceApi = {
     return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
   },
   getById: (id: number) =>
-    apiClient.get<TempPolice>(`${BASE}/${id}`).then((r) => r.data),
+    apiClient.get<IResponse>(`${BASE}/${id}`).then((r) => r.data.data),
   create: (data: CreateTempPoliceDto) =>
-    apiClient.post<TempPolice>(BASE, data).then((r) => r.data),
+    apiClient.post<IResponse>(BASE, data).then((r) => r.data.data),
   update: (id: number, data: UpdateTempPoliceDto) =>
-    apiClient.patch<TempPolice>(`${BASE}/${id}`, data).then((r) => r.data),
+    apiClient.patch<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),
 }

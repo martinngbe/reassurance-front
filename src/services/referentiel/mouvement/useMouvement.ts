@@ -15,13 +15,24 @@ export function useMouvements(params: MaybeRefOrGetter<PaginationParams> = {}) {
     queryFn: () => mouvementApi.getAll(toValue(params)),
   });
 
-  const mouvementById = (id: number) =>
+  // const mouvementById = (id: number) =>
+  //   useQuery({
+  //     queryKey: [KEY, id],
+  //     queryFn: () => mouvementApi.getById(id),
+  //     enabled: !!id,
+  //   });
+  const mouvementById = (id: MaybeRefOrGetter<number | undefined>) =>
+  useQuery({
+    queryKey: computed(() => [KEY, 'by-id', toValue(id)]),
+    queryFn: () => mouvementApi.getById(toValue(id)!),
+    enabled: computed(() => Number(toValue(id)) > 0),
+  });  
+  const getMouvementByCode = (code: MaybeRefOrGetter<string | undefined>) =>
     useQuery({
-      queryKey: [KEY, id],
-      queryFn: () => mouvementApi.getById(id),
-      enabled: !!id,
+      queryKey: computed(() => [KEY, 'by-code', toValue(code)]),
+      queryFn: () => mouvementApi.getByCode(toValue(code)!),
+      enabled: computed(() => Boolean(toValue(code)?.trim())),
     });
-
   // ─── Mutations ─────────────────────────────────────────────
   const createMouvement = useMutation({
     mutationFn: (data: CreateMouvementDto) => mouvementApi.create(data),
@@ -45,6 +56,7 @@ export function useMouvements(params: MaybeRefOrGetter<PaginationParams> = {}) {
   return {
     mouvements,
     mouvementById,
+    getMouvementByCode,
     createMouvement,
     updateMouvement,
     deleteMouvement,

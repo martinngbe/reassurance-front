@@ -26,7 +26,7 @@ export interface TempQuittance extends BaseEntity {
   ////// Capitaux 
   /////////////////////////////
   capitaux: number; 
-  limiteCapitauxImpliques: number;
+  //limiteCapitauxImpliques: number;
   lci: number;
   smp: number;
   limite: number;
@@ -56,8 +56,8 @@ export interface TempQuittance extends BaseEntity {
   mouvement: Mouvement
   mouvementId: number;
 
-  tempPolice: TempPolice
-  tempPoliceId: number;
+  police: TempPolice
+  policeId: number;
 
   devise: Devise
   deviseId: number;
@@ -69,9 +69,9 @@ export type CreateTempQuittanceDto = Omit<TempQuittance, keyof BaseEntity>;
 export type UpdateTempQuittanceDto = Partial<CreateTempQuittanceDto>;
 
 // ✅ Type pour les données du formulaire (paysId et domaineActiviteId peuvent être des objets)
-export type TempQuittanceFormData = Partial<Omit<TempQuittance, 'mouvementId'|'tempPoliceId'|'deviseId' >> & {
+export type TempQuittanceFormData = Partial<Omit<TempQuittance, 'mouvementId'|'policeId'|'deviseId' >> & {
   mouvementId: number | Mouvement;
-  tempPoliceId: number | TempPolice;
+  policeId: number | TempPolice;
   deviseId: number | Devise;
 };
  
