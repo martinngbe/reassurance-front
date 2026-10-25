@@ -14,7 +14,7 @@ export const useTempQuittanceStore = defineStore('tempQuittanceStore', () => {
     currentTempQuittance.value = tempQuittance
   }
 
-  const clearSelection = () => {
+  const clearTempQuittanceSelection = () => {
     currentTempQuittance.value = null
   }
 
@@ -27,19 +27,24 @@ export const useTempQuittanceStore = defineStore('tempQuittanceStore', () => {
   }
 
   // ⭐ Action utile : effacer si l'tempQuittance supprimé est celui sélectionné
-  const removeIfCurrent = (id: number) => {
+  const removeIfCurrentTempQuittance = (id: number) => {
     if (currentTempQuittance.value?.id === id) {
       currentTempQuittance.value = null
     }
+  }
+
+    const setCurrentTempQuittance = (police: TempQuittance) => {
+    currentTempQuittance.value = police
   }
 
   return {
     currentTempQuittance,
     isSelected,
     currentTempQuittanceId,
+    setCurrentTempQuittance,
     selectTempQuittance,
-    clearSelection,
+    clearTempQuittanceSelection,
     updateCurrentTempQuittance,
-    removeIfCurrent,
+    removeIfCurrentTempQuittance,
   }
 })

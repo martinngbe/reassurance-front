@@ -10,15 +10,20 @@ import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQ
 import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
+import { AUCUN } from '@/services/common/constantes'
 
 
 const tempQuittanceStore = useTempQuittanceStore()
 const tempPoliceStore = useTempPoliceStore()
 const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+const currentCourtier = computed(()=> currentTempPolice.value ?currentTempPolice.value.acteurCourtier : null )
+const existeCourtier = computed(()=> currentCourtier.value?.sigle !==AUCUN )
+const titreFormulaire =  computed(()=> currentCourtier.value? 
+`Courtage ${currentCourtier.value.raisonSociale}` : 'Courtage' )
+
 const mouvementStore = useMouvementStore()
 const currentMouvement = computed(()=> mouvementStore.currentMouvement)
-
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
@@ -51,7 +56,6 @@ function initializeFormData(): TempQuittanceFormData {
   }
 
   const data = { ...tempQuittance.value } as TempQuittanceFormData
-
   return data as TempQuittanceFormData
 }
 
@@ -129,12 +133,12 @@ const dismissError = () => {
 
 <template>
   <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Courtage" class="mb-8" />  
+    <TTitreSousModule  :libelle="titreFormulaire" class="mb-8" />  
    
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
     </div>
-    <GenericCrudForm v-if="currentTempPolice"
+    <GenericCrudForm v-if="currentTempPolice && existeCourtier"
       v-model="formData"
       :fields="tempQuittanceFields"
       :mode="formMode"
@@ -149,7 +153,12 @@ const dismissError = () => {
     />
     <div class="w-full" v-else>
         <TAlert  variant="warning">
-            <p class="text-xl">Saisissez d'abord la police svp ...</p>
+            <p class="text-xl"  v-if="!currentTempPolice">
+              Saisissez d'abord la police svp ...
+            </p >
+            <p class="text-xl" v-else >
+             Aucun courtier ...
+            </p>
         </TAlert>
     </div>
   </div>

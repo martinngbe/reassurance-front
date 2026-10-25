@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { TempPolice } from './temp-police'
 import { useTempQuittanceStore } from '../quittances/temp-quittance/temp-quittance.store'
-import ThemeModeToggle from '@/composants/theme/ThemeModeToggle.vue'
 import type { TempQuittance } from '../quittances/temp-quittance/temp-quittance'
 
 export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
@@ -27,13 +26,13 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
         listeTempQuittances= tempPolice.quittances
 
     if(listeTempQuittances.length===0)
-      tempQuittanceStore.clearSelection()
+      tempQuittanceStore.clearTempQuittanceSelection()
     else   tempQuittanceStore
       .selectTempQuittance(listeTempQuittances[0]?? null) 
 
   }
 
-  const clearSelection = () => {
+  const clearTempPoliceSelection = () => {
     currentTempPolice.value = null
   }
 
@@ -46,19 +45,24 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   }
 
   // ⭐ Action utile : effacer si l'tempPolice supprimé est celui sélectionné
-  const removeIfCurrent = (id: number) => {
+  const removeIfCurrentTempPolice = (id: number) => {
     if (currentTempPolice.value?.id === id) {
       currentTempPolice.value = null
     }
   }
 
+  const setCurrentTempPolice = (police: TempPolice) => {
+  currentTempPolice.value = police
+}
+
   return {
     currentTempPolice,
     isSelected,
     currentTempPoliceId,
+    setCurrentTempPolice,
     selectTempPolice,
-    clearSelection,
+    clearTempPoliceSelection,
     updateCurrentTempPolice,
-    removeIfCurrent,
+    removeIfCurrentTempPolice,
   }
 })

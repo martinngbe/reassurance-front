@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store';
-import { useEcransStore } from '@/services/ecrans/ecrans.store';
+import { FORME_ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
 import Polices from '@/web/police/Polices.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
 import { computed, onMounted } from 'vue';
@@ -11,7 +11,7 @@ const assureStore = useAssureStore()
 //const assureEnCours = computed(()=> assureStore.currentAssure)
 const ecransStore = useEcransStore()
 onMounted(()=>{
-  ecransStore.setTraite(true)
+  ecransStore.setFormeEcran(FORME_ECRAN_TRAITE)
   assureStore.clearCurrentAssure()
 })
 

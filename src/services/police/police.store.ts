@@ -32,11 +32,17 @@ export const usePoliceStore = defineStore('policeStore', () => {
       currentPolice.value = null
     }
   }
+  const setCurrentPolice = (police: Police) => {
+    currentPolice.value = police
+  }
 
+
+  
   return {
     currentPolice,
     isSelected,
     currentPoliceId,
+    setCurrentPolice,
     selectPolice,
     clearSelection,
     updateCurrentPolice,

@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import type { IPageInfo, IResponse, PaginationParams } from '@/type/pagination'
+import type {  IResponse, PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import type { TempPolice, TempPoliceFormData } from '@/services/temp-police/temp-police'
 import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
@@ -10,10 +10,18 @@ import { useTempPolices } from '@/services/temp-police/useTempPolice'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store'
 import { FORME_ECRAN_FACULTATIVE, useEcransStore } from '@/services/ecrans/ecrans.store'
-
+import { AUCUN } from '@/services/common/constantes'
+import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
+import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
 
 const tempPoliceStore = useTempPoliceStore()
-const tempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+// QUITTANCE
+const tempQuittanceeStore = useTempQuittanceStore()
+const currentTempQuittance = computed(()=> tempQuittanceeStore.currentTempQuittance)
+const paramsTempQUittance = computed<PaginationParams>(() => ({}))
+const {createTempQuittance, updateTempQuittance} = useTempQuittances(paramsTempQUittance)
+
 // on recupere l'assure en cours
 const assureStore = useAssureStore()  
 const currentAssure =assureStore.currentAssure
@@ -131,23 +139,23 @@ const tempPoliceFields: FieldConfig[] = [
 
 // ==================== LOGIQUE FORMULAIRE ====================
 
-const isEditing = computed(() => !!tempPolice.value?.id)
+const isEditing = computed(() => !!currentTempPolice.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempPoliceFormData {
-  if (!tempPolice) {
+  if (!currentTempPolice) {
     return Object.fromEntries(
       tempPoliceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
     ) as  unknown as TempPoliceFormData
   }
 
-  const data = { ...tempPolice.value } as TempPoliceFormData
+  const data = { ...currentTempPolice.value } as TempPoliceFormData
   console.log("_____ TempPoliceForm.initializeFormData _____")
-  console.log("tempPolice.value:",tempPolice.value)
+  console.log("currentTempPolice.value:",currentTempPolice.value)
   //  En FAC il faut absolument un assuré
   if( isFAC && 
-      currentAssure && !tempPolice.value?.assure){
+      currentAssure && !currentTempPolice.value?.assure){
     data.assureId = currentAssure.id
   }
 
@@ -176,9 +184,9 @@ function initializeFormData(): TempPoliceFormData {
 
 const formData = ref<TempPoliceFormData>(initializeFormData())
 
-// ✅ Watcher pour gérer les changements de props.tempPolice
-watch(() => tempPolice, (newPolice) => {
-  console.log("_____ TempPoliceForm.watch.tempPolice _____")
+// ✅ Watcher pour gérer les changements de props.currentTempPolice
+watch(() => currentTempPolice, (newPolice) => {
+  console.log("_____ TempPoliceForm.watch.currentTempPolice _____")
   console.log("newPolice:",newPolice)
   if (newPolice) {
     formData.value = initializeFormData()
@@ -201,27 +209,52 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  console.log("_____ TempPoliceForm.handleSubmit _____")
-  console.log("data:",data)
+  /**
+   * La création ou la mise à jour de TempPolice antraine automatiquement
+   * sa sélection comme currentTempPolice.
+   * NB: La mise à jour recharge depuis le serveur et la
+   * sélectionne comme currentTempPolice. 
+   */
+    
   try {
-    if (isEditing.value && tempPolice.value?.id) {
-      console.log("<<<<<<< handleSubmit data:",data)
+    if (isEditing.value && currentTempPolice.value?.id) {
       await updateTempPolice.mutateAsync({
-        id: tempPolice.value.id,
-        data: {            
-            numero: data.numero,
-            isCession: data.isCession,
-            isReconductionTacite: data.isReconductionTacite,
-            
-            // Relations
-            natureOffreId: extractId(data.natureOffreId),
-            sousBrancheId: extractId(data.sousBrancheId),
-            acteurCedanteId: extractId(data.acteurCedanteId),
-            acteurCourtierId: extractId(data.acteurCourtierId),
-            assureId: data.assureId,
-        },
-      })
-     
+              id: currentTempPolice.value.id,
+              data: {            
+                  numero: data.numero,
+                  isCession: data.isCession,
+                  isReconductionTacite: data.isReconductionTacite,                  
+                  // Relations
+                  natureOffreId: extractId(data.natureOffreId),
+                  sousBrancheId: extractId(data.sousBrancheId),
+                  acteurCedanteId: extractId(data.acteurCedanteId),
+                  acteurCourtierId: extractId(data.acteurCourtierId),
+                  assureId: data.assureId,
+              },
+            })
+      /* 
+        Lors de la MAJ, on dois vérifier si le  acteurCourtier.sigle ===AUCUN
+        afin de réinitialiser le taux de courtage
+      */     
+      if(currentTempPolice.value && 
+         currentTempPolice.value.acteurCourtier && 
+         currentTempPolice.value.acteurCourtier.sigle ===AUCUN){
+        console.log(" _________________ MAJ AUCUN COURTIER _____________ ")
+        // Initialisation du taux de courtage
+        if(currentTempQuittance.value) {
+                   console.log(" AVANT currentTempQuittance.value:",currentTempQuittance.value)
+                    // La currentTempQuittance existe donc MAJ
+                   await updateTempQuittance.mutateAsync({
+                          id:currentTempQuittance.value.id,
+                          data:{
+                            tauxCommission:0,
+                            taxeSurCommission:0
+                          } 
+                      })
+                  console.log(" APRES currentTempQuittance.value:",currentTempQuittance.value)
+        }
+           
+      }   
       emit('success', 'TempPolice modifiée avec succès')
     } else {
       await createTempPolice.mutateAsync({
@@ -237,14 +270,17 @@ const handleSubmit = async (data: Record<string, any>) => {
             assureId: data.assureId,
 
       } as TempPolice)
-      
-      emit('success', 'Assuré créé avec succès')
+        
+      emit('success', 'TempPolice créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
     errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
   }
+      
 }
+
+
 
 const handleCancel = () => {
   errorMessage.value = null

@@ -28,7 +28,7 @@ const props = withDefaults(
     size?: InputSize
     maxlength?: number
   }>(),
-  { modelValue: '', type: 'text', size: 'md', id: undefined },
+  { modelValue: '', type: 'text', size: 'md', id: undefined , error:'' },
 )
 
 const emit = defineEmits<{

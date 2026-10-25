@@ -84,7 +84,9 @@ async function handleLoadMore() {
 
 // ==================== MODALES ====================
 const showModal = ref(false)
-const titleModal = ref('AFFAIRE NOUVELLE')
+const titleModal = ref( assureEnCours.value?
+ `AFFAIRE NOUVELLE : ${assureEnCours.value.raisonSociale.toUpperCase()}` :
+ 'AFFAIRE NOUVELLE')
 const policeToEdit = ref<Police | null>(null)
 const onRowClick = ( row: any, index: number)=>{       
     emit('row-click',row as Police)

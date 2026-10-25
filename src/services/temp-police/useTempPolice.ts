@@ -10,7 +10,7 @@ import { tempPoliceApi } from './temp-police.api'
 import { useAssureStore } from '../acteurs/assure/assure.store'
 import { useEcransStore } from '../ecrans/ecrans.store'
 
-const KEY = 'temp-polices';
+const KEY = 'temp-tempPolices';
 export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
   const tempPoliceStore = useTempPoliceStore() // ⭐ 
@@ -29,7 +29,7 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      //console.warn(" -- useTempPolice polices = useInfiniteList<TempPolice> ")
+      //console.warn(" -- useTempPolice tempPolices = useInfiniteList<TempPolice> ")
       // const response = await tempPoliceApi.getAll(params.value)
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
         // On affiche les police d'un assuré sir nous sommes en FAC
@@ -55,16 +55,16 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
      console.log("tPolice:",tPolice)
      console.log("tempPoliceStore.currentTempPoliceId :",tempPoliceStore.currentTempPoliceId )
      console.log("__________________________________")
-     // dès la création d'une TempPolice, on la selctionne
+     // dès la création d'une TempPolice, on la selectionne
      // ⭐ Synchroniser le store si c'est l'police sélectionné
       if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
-        console.log("Stockage de TempPolice tPolice:",tPolice)
+        console.log("Stockage  useTempPolice.ts tPolice:",tPolice)
         tempPoliceStore.selectTempPolice(tPolice)
       }
      return tPolice
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['polices'] })
+      queryClient.invalidateQueries({ queryKey: ['tempPolices'] })
       tempPolices.refresh()
     },
   })
@@ -79,7 +79,6 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       if (index !== -1) {
         tempPolices.items.value[index] = { ...tempPolices.items.value[index], ...data } as TempPolice
       }
-      // ⭐ Synchroniser le store si c'est l'police sélectionné
       if (tempPoliceStore.currentTempPoliceId === id) {
         tempPoliceStore.updateCurrentTempPolice(data)
       }
@@ -90,12 +89,18 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
         tempPolices.items.value = context.previousItems
       }
     },
+    onSuccess: async (_data, { id }) => {
+      // ⭐ Si c'est la police courante, on la recharge complètement depuis le serveur
+      if (tempPoliceStore.currentTempPoliceId === id) {
+        await reloadCurrentTempPolice()
+      }
+   
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [KEY] })
       tempPolices.refresh()
     },
   })
-
   // ==================== DELETE ====================
   const deleteTempPolice = useMutation({
     mutationFn: (id: number) => tempPoliceApi.delete(id),
@@ -103,7 +108,7 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       const previousItems = [...tempPolices.items.value]
       tempPolices.items.value = tempPolices.items.value.filter((d) => d.id !== id)
       // ⭐ Effacer la sélection si c'est l'police supprimé
-      tempPoliceStore.removeIfCurrent(id)
+      tempPoliceStore.removeIfCurrentTempPolice(id)
       return { previousItems }
     },
     onError: (_err, _id, context) => {
@@ -112,15 +117,29 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['polices'] })
+      queryClient.invalidateQueries({ queryKey: ['tempPolices'] })
     },
   })
+
+   // ==================== RELOAD CURRENT ====================
+  const reloadCurrentTempPolice = async () => {
+    const currentId = tempPoliceStore.currentTempPoliceId
+    if (!currentId) return
+    // On recharge la 
+    try {
+      const tempPol = await tempPoliceApi.getById(currentId)
+      tempPoliceStore.setCurrentTempPolice(tempPol)
+    } catch (err) {
+      console.error('Erreur lors du rechargement de la tempPolice', err)
+    }
+  }
 
   return {
     tempPolices,
     createTempPolice,
     updateTempPolice,
     deleteTempPolice,
+    reloadCurrentTempPolice,
     refresh: tempPolices.refresh,
   }
 }

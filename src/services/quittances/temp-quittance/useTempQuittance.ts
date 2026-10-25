@@ -73,6 +73,12 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
         tempQuittances.items.value = context.previousItems
       }
     },
+        onSuccess: async (_data, { id }) => {
+      // ⭐ Si c'est la quittance courante, on la recharge complètement depuis le serveur
+      if (tempQuittanceStore.currentTempQuittanceId === id) {
+        await reloadCurrentTempQuittance()
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [KEY] })
       tempQuittances.refresh()
@@ -86,7 +92,7 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
       const previousItems = [...tempQuittances.items.value]
       tempQuittances.items.value = tempQuittances.items.value.filter((d) => d.id !== id)
       // ⭐ Effacer la sélection si c'est l'tempQuittance supprimé
-      tempQuittanceStore.removeIfCurrent(id)
+      tempQuittanceStore.removeIfCurrentTempQuittance(id)
       return { previousItems }
     },
     onError: (_err, _id, context) => {
@@ -99,11 +105,27 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
     },
   })
 
+   // ==================== RELOAD CURRENT ====================
+  const reloadCurrentTempQuittance = async () => {
+    const currentId = tempQuittanceStore.currentTempQuittanceId
+    if (!currentId) return
+    // On recharge la 
+    try {
+      const tempPol = await tempQuittanceApi.getById(currentId)
+      tempQuittanceStore.setCurrentTempQuittance(tempPol)
+    } catch (err) {
+      console.error('Erreur lors du rechargement de la tempQuittance', err)
+    }
+  }
+
+
+
   return {
     tempQuittances,
     createTempQuittance,
     updateTempQuittance,
     deleteTempQuittance,
+    reloadCurrentTempQuittance,
     refresh: tempQuittances.refresh,
   }
 }

@@ -99,7 +99,7 @@ const handleUpdate = (key: string, value: any) => {
 </script>
 
 <template>
-  <form @submit.prevent="emit('submit', modelValue)" class="space-y-5">
+  <form @submit.prevent="emit('submit', modelValue)" class="space-y-5"  novalidate>
     <div :class="gridClasses">
       <template v-for="field in fields" :key="isSection(field) ? `section-${field.section}` : field.key">
         <!-- Section (titre de groupe) -->

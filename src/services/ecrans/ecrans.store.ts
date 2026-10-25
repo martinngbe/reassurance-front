@@ -28,18 +28,10 @@ export const useEcransStore = defineStore('ecransStore', () => {
   // ==================== ACTIONS ====================
   const setModule = (b: string) => {
     currenteModule.value = b
-    //console.log('_____________________________________')
-    //console.log('___ useEcransStore.setModule ____')
-    //console.log('___ currenteModule    :',currenteModule.value)
-    //console.log('___ currenteFormeEcran: ',currenteFormeEcran.value)
   }
   
   const setFormeEcran = (b: string) => {
    currenteFormeEcran.value =b
-    //console.log('_____________________________________')
-    //console.log('___ useEcransStore.setFormeEcran ____')
-    //console.log('___ currenteModule    :',currenteModule.value)
-    //console.log('___ currenteFormeEcran: ',currenteFormeEcran.value)
   }
  
 
