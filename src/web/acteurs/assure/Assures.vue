@@ -130,8 +130,7 @@ const handleModifier = () => {
   if (assure) openEdit(assure)
 }
 
-const onRowClick =(row :AssureRow ,index: number)=>{ 
-  
+const onRowClick =(row :AssureRow ,index: number)=>{
   console.log("Assures.onRowClick row:",row)
   assureStore.selectAssure(row as Assure)
 }

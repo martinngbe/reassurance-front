@@ -28,10 +28,21 @@ const currentAssure =assureStore.currentAssure
 // on recupére l'cran sur lequel nous sommes
 const {currenteFormeEcran}  = useEcransStore()
 const isFAC = computed(() => currenteFormeEcran == FORME_ECRAN_FACULTATIVE)
+const isAucunCourtier = computed(()=>currentTempPolice.value && 
+         currentTempPolice.value.acteurCourtier && 
+         currentTempPolice.value.acteurCourtier.sigle ===AUCUN)
+
+
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
+
+console.log(' ================================== ')
+console.log(' TempPoliceForm.vue')
+console.log(' isFAC:',isFAC)
+console.log(' ================================== ')
+
 // ✅ REMPLACER le ref local par un computed lié au store
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
@@ -209,6 +220,9 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
+  console.log('____________ TempPoliceForm.handleSubmit __________________')
+  console.log('data: ',data)
+ 
   /**
    * La création ou la mise à jour de TempPolice antraine automatiquement
    * sa sélection comme currentTempPolice.
@@ -236,9 +250,7 @@ const handleSubmit = async (data: Record<string, any>) => {
         Lors de la MAJ, on dois vérifier si le  acteurCourtier.sigle ===AUCUN
         afin de réinitialiser le taux de courtage
       */     
-      if(currentTempPolice.value && 
-         currentTempPolice.value.acteurCourtier && 
-         currentTempPolice.value.acteurCourtier.sigle ===AUCUN){
+      if(isAucunCourtier.value){
         console.log(" _________________ MAJ AUCUN COURTIER _____________ ")
         // Initialisation du taux de courtage
         if(currentTempQuittance.value) {
@@ -305,6 +317,7 @@ const dismissError = () => {
       :mode="formMode"
       :show-delete="false"
       :loading="loading"
+      :columns="2"
       :submit-label="isEditing ? 'Mettre à jour' : 'Créer'"
       @submit="handleSubmit"
       @cancel="handleCancel"

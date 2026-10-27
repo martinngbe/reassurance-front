@@ -16,6 +16,7 @@ export const useQuittanceStore = defineStore('quittanceStore', () => {
 
   const clearSelection = () => {
     currentQuittance.value = null
+    console.log("------ useQuittanceStore.clearSelection on réinitialise la quittance ...")
   }
 
   // ⭐ Action utile : mettre à jour l'quittance en cache

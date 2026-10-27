@@ -19,26 +19,15 @@ const currentModule = computed(() => moduleComponents[activeMenu.value] || modul
 
 ////////////////////////  ECRANS  //////////////////
 const ecransStore = useEcransStore()
-// ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
-const currentModuleEcran = computed(()=> ecransStore.currenteModule)
-const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
-//const currentModuleEcran = ecransStore.currenteModule
-//const currenteFormeEcran = ecransStore.currenteFormeEcran
 ////////////////////////
 function selectMenu(moduleId: string) {
   activeMenu.value = moduleId
   console.log("AcceptationModule.selectMenu",activeMenu.value)
   ecransStore.setFormeEcran(moduleId)
   ///////////////////////////////////////////////////
-  //console.log(" _____________________________________ ")
-  //console.log(" _______ ECRANS : ACCEPTATION_MODULE ______ ")
-  //console.log(" _______ currentModuleEcran    :",currentModuleEcran.value)
-  //console.log(" _______ currenteFormeEcran:",currenteFormeEcran.value)
 }
 
 onMounted(()=>{
-  //console.log(' _____________________________________')
-  //console.log(" _______ ECRANS : ACCEPTATION_MODULE onMounted ______ ")
     ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
 })
 

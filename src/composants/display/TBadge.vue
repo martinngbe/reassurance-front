@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 type BadgeVariant = 'solid' | 'soft' | 'outline'
 type BadgeColor = 'primary' | 'neutral' | 'success' | 'warning' | 'danger' | 'info'
-type BadgeSize = 'sm' | 'md' | 'lg'
+type BadgeSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
 const props = withDefaults(
   defineProps<{
@@ -19,6 +19,8 @@ const sizes: Record<BadgeSize, string> = {
   sm: 'px-1.5 py-0.5 text-[10px]',
   md: 'px-2 py-0.5 text-xs',
   lg: 'px-2.5 py-1 text-sm',
+  xl: 'px-2.5 py-1 text-lg',
+   "2xl": 'px-2.5 py-1 text-xl',
 }
 
 const palettes: Record<BadgeColor, Record<BadgeVariant, string>> = {

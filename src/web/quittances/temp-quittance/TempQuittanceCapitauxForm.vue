@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
-import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
@@ -19,12 +18,18 @@ const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 
 
 const tempQuittanceStore = useTempQuittanceStore()
-const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
-
+console.log(' ================================== ')
+console.log(' TempQuittanceCapiatauxForm.vue')
+console.log(' ================================== ')
+console.log(' currentTempPolice.value    :',currentTempPolice.value)
+console.log(' currentTempQuittance.value :',currentTempQuittance.value)
+console.log(' currentMouvement.value     :',currentMouvement.value)
+console.log(' ================================== ')
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 
@@ -85,25 +90,25 @@ const tempQuittanceFields: FieldConfig[] = [
 ]
 // ==================== LOGIQUE FORMULAIRE ====================
 
-const isEditing = computed(() => !!tempQuittance.value?.id)
+const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
-  if (!tempQuittance) {
+  if (!currentTempQuittance) {
     return Object.fromEntries(
       tempQuittanceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
     ) as  unknown as TempQuittanceFormData
   }
 
-  const data = { ...tempQuittance.value } as TempQuittanceFormData
+  const data = { ...currentTempQuittance.value } as TempQuittanceFormData
   return data as TempQuittanceFormData
 }
 
 const formData = ref<TempQuittanceFormData>(initializeFormData())
 
-// ✅ Watcher pour gérer les changements de props.tempQuittance
-watch(() => tempQuittance, (newActeur) => {
+// ✅ Watcher pour gérer les changements de props.currentTempQuittance
+watch(() => currentTempQuittance, (newActeur) => {
   if (newActeur) {
     formData.value = initializeFormData()
   }
@@ -125,33 +130,34 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  if(!data.mouvementId && currentMouvement.value)
-      data.mouvementId = currentMouvement.value.id;
+  console.log('____ AVANT _____ TempQuittancCapitauxForme.handleSubmit _________ ')
+  console.log('currentMouvement.value: ',currentMouvement.value)
+  console.log('data: ',data)
+
   try {
-    if (isEditing.value && tempQuittance.value?.id) {
+
+    if(!data.mouvementId && currentMouvement.value)
+      data.mouvementId = currentMouvement.value.id;
+
+    if(!data.policeId && currentTempPolice.value)
+      data.policeId = currentTempPolice.value.id;
+
+    if (isEditing.value && currentTempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
-        id: tempQuittance.value.id,
-        data: {
-           
+        id: currentTempQuittance.value.id,
+        data: {           
             ///////////////////////////// 
             ////// Capitaux 
             /////////////////////////////
-            capitaux: data.capitaux, 
-            //limiteCapitauxImpliques: data.dateEmission,
+            mouvementId: data.mouvementId ,
+            capitaux: data.capitaux,
             lci: data.lci,
             smp: data.smp,
             limite: data.limite,
             retention: data.retention,
             conservation: data.conservation,
-            capacite: data.capacite,
-            ///////////////////////////// 
-            ////// Prime 
-            /////////////////////////////
-            estimationPrime: data.estimationPrime,
-            primeBrute: data.primeBrute,
-            primeNette: data.primeNette, 
-            
+            capacite: data.capacite,            
         },
       })
       emit('success', 'TempQuittance Capitaux modifié avec succès')
@@ -161,8 +167,8 @@ const handleSubmit = async (data: Record<string, any>) => {
             ///////////////////////////// 
             ////// Capitaux 
             /////////////////////////////
-            capitaux: data.capitaux, 
-            //limiteCapitauxImpliques: data.dateEmission,
+            mouvementId: data.mouvementId ,
+            capitaux: data.capitaux,            
             lci: data.lci,
             smp: data.smp,
             limite: data.limite,
@@ -172,10 +178,15 @@ const handleSubmit = async (data: Record<string, any>) => {
       } as TempQuittance)
       emit('success', 'Assuré créé avec succès')
     }
+   
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
     errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
   }
+
+  console.log('____ APRES _____ TempQuittancCapitauxForme.handleSubmit _________ ')
+  console.log('currentMouvement.value: ',currentMouvement.value)
+  console.log('data: ',data)
 }
 
 const handleCancel = () => {
@@ -200,7 +211,7 @@ const dismissError = () => {
       :fields="tempQuittanceFields"
       :mode="formMode"
       :show-delete="false"
-      :columns="2"
+      :columns="4"
       responsive
       gap="md"
       :loading="loading"

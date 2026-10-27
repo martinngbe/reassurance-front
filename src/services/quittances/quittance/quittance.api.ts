@@ -4,9 +4,12 @@ import type { IResponse, PaginationParams } from '@/type/pagination'
 import type {  Quittance, CreateQuittanceDto, UpdateQuittanceDto } from './quittance'
 
 const BASE = '/quittance'
-
+// ⭐ Étendre PaginationParams pour accepter assureId
+type QuittanceQueryParams = PaginationParams & { 
+  policeId?: number 
+}
 export const quittanceApi = {
-  getAll: (params: PaginationParams = {}) => {
+  getAll: (params: QuittanceQueryParams = {}) => {
     return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
   },
   getById: (id: number) =>

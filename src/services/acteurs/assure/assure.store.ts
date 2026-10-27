@@ -2,8 +2,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Assure } from './assure'
+import { usePoliceStore } from '@/services/police/police.store'
 
 export const useAssureStore = defineStore('assureStore', () => {
+  const policeStore = usePoliceStore()
   // ==================== STATE ====================
   // 1. Sélection unique (pour la vue détail / row-click)
   const currentAssure = ref<Assure | null>(null)
@@ -24,9 +26,13 @@ export const useAssureStore = defineStore('assureStore', () => {
   // --- Actions pour la sélection unique ---
   const selectAssure = (assure: Assure | null) => {
     currentAssure.value = assure
+    console.log("------ useAssureStore.selectAssure  l'assuré vient de changer ...")
+    // la selection d'un assuré, reinialise la polices polices rattachées
+    policeStore.clearSelection()
   }
   const clearCurrentAssure = () => {
     currentAssure.value = null
+    policeStore.clearSelection()
   }
 
   // --- Actions pour la sélection multiple (Table) ---

@@ -1,19 +1,31 @@
 <script setup lang="ts">
+import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
-import { useAssureStore } from '@/services/acteurs/assure/assure.store';
-import { FORME_ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
-import Polices from '@/web/police/Polices.vue';
+import TPatientez from '@/composants/utilitaire/TPatientez.vue';
+import { usePoliceStore } from '@/services/police/police.store';
+import Polices from '@/web/polices/police/Polices.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
-import { computed, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 
+const policeStore = usePoliceStore()
+const currentPolice = computed(() => policeStore.currentPolice)
+// ////////////////////////////////////////
+// On surveille le changementde  currentPolice
+// ////////////////////////////////////////
 
-const assureStore = useAssureStore()
-//const assureEnCours = computed(()=> assureStore.currentAssure)
-const ecransStore = useEcransStore()
-onMounted(()=>{
-  ecransStore.setFormeEcran(FORME_ECRAN_TRAITE)
-  assureStore.clearCurrentAssure()
+const isChangemementPoliceTerminee = ref(true)
+let policeTimeout: number | undefined
+watch(currentPolice, () => {
+  console.log(" ------- watch(currentPolice la police a changé ")
+  isChangemementPoliceTerminee.value=false
+  window.clearTimeout(policeTimeout)
+
+  policeTimeout = window.setTimeout(() => {
+   isChangemementPoliceTerminee.value=true
+  }, 300)
 })
+
+
 
 </script>
 
@@ -30,15 +42,27 @@ onMounted(()=>{
               :show-bottom="false"
             >
                 <template  #left>
-                   <Polices />
+                   <Polices  />
                 </template>
                 <template  #default>
-                    <span>Informations détaillé</span>
+                      <div  class="flex w-full  p-24 h-full items-center justify-center"  v-if="!currentPolice">
+                          <TAlert variant="info" >
+                              <p class="text-2xl font-bold">Détail des informations</p> 
+                          </TAlert> 
+                    </div> 
                 </template>
           </TLayoutModule>
     </template>
     <template #footer>
-          <Quittances/>
+          <Quittances :current-police="currentPolice" v-if="currentPolice && isChangemementPoliceTerminee" />
+    
+              <div  class="flex w-full  p-24 h-full items-center justify-center" v-else>
+                  <TAlert variant="info"  v-if="!currentPolice">
+                      <p class="text-2xl font-bold">Selectionnez une police svp ...</p> 
+                  </TAlert> 
+                  <TPatientez v-else-if="!isChangemementPoliceTerminee" />
+            </div>  
+    
     </template>
 
 

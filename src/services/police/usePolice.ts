@@ -55,34 +55,9 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
     },
   })
 
-  // ==================== UPDATE ====================
-/*
-  const updatePolice = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Police> }) =>
-      policeApi.update(id, data),
-    onMutate: async ({ id, data }) => {
-      const previousItems = [...polices.items.value]
-      const index = polices.items.value.findIndex((d) => d.id === id)
-      if (index !== -1) {
-        polices.items.value[index] = { ...polices.items.value[index], ...data } as Police
-      }
-      // ⭐ Synchroniser le store si c'est l'police sélectionné
-      if (policeStore.currentPoliceId === id) {
-        policeStore.updateCurrentPolice(data)
-      }
-      return { previousItems, index }
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.previousItems) {
-        polices.items.value = context.previousItems
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: [KEY] })
-      polices.refresh()
-    },
-  })
-*/
+
+
+
  // ==================== UPDATE ====================
   const updatePolice = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Police> }) =>
@@ -135,6 +110,18 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
     },
   })
 
+  // ==================== TRANSFERT TEMP -> DÉFINITIF ====================
+const transfererPolice = useMutation({
+  mutationFn: (tempPoliceId: number) => policeApi.transfererDepuisTemp(tempPoliceId),
+  onSuccess: (police) => {
+    // La nouvelle police devient la police courante
+   //policeStore.setCurrentPolice(police)
+    queryClient.invalidateQueries({ queryKey: [KEY] })
+    // Si tu as un cache pour les polices temporaires, invalide-le aussi :
+    queryClient.invalidateQueries({ queryKey: ['temp-polices'] })
+    polices.refresh()
+  },
+})
 
   // ==================== RELOAD CURRENT ====================
   const reloadCurrentPolice = async () => {
@@ -153,6 +140,7 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
     createPolice,
     updatePolice,
     deletePolice,
+    transfererPolice,
     reloadCurrentPolice,
     refresh: polices.refresh,
   }

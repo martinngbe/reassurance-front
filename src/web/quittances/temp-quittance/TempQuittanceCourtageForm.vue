@@ -15,7 +15,7 @@ import { AUCUN } from '@/services/common/constantes'
 
 const tempQuittanceStore = useTempQuittanceStore()
 const tempPoliceStore = useTempPoliceStore()
-const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 const currentCourtier = computed(()=> currentTempPolice.value ?currentTempPolice.value.acteurCourtier : null )
 const existeCourtier = computed(()=> currentCourtier.value?.sigle !==AUCUN )
@@ -29,7 +29,13 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-
+console.log('==================================')
+console.log('TempQuittanceCourtageForm.vue')
+console.log('==================================')
+console.log('currentTempPolice.value    :',currentTempPolice.value)
+console.log('currentTempQuittance.value :',currentTempQuittance.value)
+console.log('currentMouvement.value     :',currentMouvement.value)
+console.log('==================================')
 // ==================== CONFIGURATION DES CHAMPS ====================
 const numberConfig = {
   decimals: 2,
@@ -39,15 +45,16 @@ const numberConfig = {
 const tempQuittanceFields: FormField[] = [
   { key: 'tauxCommission',  label: 'Taux Commission',  type: 'number', size: 'lg', helpText: 'Taux Commission à 100%', numberOptions: numberConfig },
   { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', size: 'lg', numberOptions: numberConfig },
+
 ]
 // ==================== LOGIQUE FORMULAIRE ====================
 
-const isEditing = computed(() => !!tempQuittance.value?.id)
+const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
-   if (!tempQuittance.value) {
+   if (!currentTempQuittance.value) {
     return Object.fromEntries(
       tempQuittanceFields
         .filter((f) => 'key' in f)  // ✅ Garde uniquement les objets avec une propriété 'key'
@@ -55,7 +62,7 @@ function initializeFormData(): TempQuittanceFormData {
     ) as unknown as TempQuittanceFormData
   }
 
-  const data = { ...tempQuittance.value } as TempQuittanceFormData
+  const data = { ...currentTempQuittance.value } as TempQuittanceFormData
   return data as TempQuittanceFormData
 }
 
@@ -64,7 +71,7 @@ const formData = ref<TempQuittanceFormData>(initializeFormData())
 
 // ✅ Après : on watch sa VALEUR
 watch(
-  () => tempQuittance.value,
+  () => currentTempQuittance.value,
   (data) => { formData.value = initializeFormData() },
   { deep: true },
 )
@@ -89,11 +96,14 @@ const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
     if(!data.mouvementId && currentMouvement.value)
       data.mouvementId = currentMouvement.value.id;
+
+    if(!data.policeId && currentTempPolice.value)
+      data.policeId = currentTempPolice.value.id;
   try {
-    if (isEditing.value && tempQuittance.value?.id) {
+    if (isEditing.value && currentTempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
-        id: tempQuittance.value.id,
+        id: currentTempQuittance.value.id,
         data: {
             // ///////////////////////////// 
             // ////// Courtage

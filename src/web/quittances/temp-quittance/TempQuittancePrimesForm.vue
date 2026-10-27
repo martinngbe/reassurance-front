@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
-import type { FieldConfig, FormField } from '@/composants/forms/generic-form/types-form'
+import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
@@ -15,7 +15,7 @@ import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.st
 
 const tempQuittanceStore = useTempQuittanceStore()
 const tempPoliceStore = useTempPoliceStore()
-const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 const mouvementStore = useMouvementStore()
 const currentMouvement = computed(()=> mouvementStore.currentMouvement)
@@ -24,49 +24,93 @@ const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
+console.log('==================================')
+console.log('TempQuittancePrimesForm.vue')
+console.log('==================================')
+console.log('currentTempPolice.value    :',currentTempPolice.value)
+console.log('currentTempQuittance.value :',currentTempQuittance.value)
+console.log('currentMouvement.value     :',currentMouvement.value)
+console.log('==================================')
 
+// ✅ REMPLACER le ref local par un computed lié au store
+
+// ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
+
+async function fetchActeur(query: string, page: number) {
+  const res = await apiClient.get('/pays', {
+    params: { search: query, page, limit: 20 }
+  })
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
+  }
+}
+
+async function fetchSousBranche(query: string, page: number) {
+  const res = await apiClient.get('/sous-branche', {
+    params: { search: query, page, limit: 20 }
+  })
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
+  }
+}
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 const numberConfig = {
   decimals: 2,
   returnType: 'number' as const,
 }
-
-const tempQuittanceFields: FormField[] = [  
-  { key: 'tauxCedante',     label: 'Taux Cédente',     type: 'number', size: 'lg', helpText: 'Taux Cédente à 100%', numberOptions: numberConfig },
-  { key: 'tauxAccepte',     label: 'Taux Accepté',     type: 'number', size: 'lg', helpText: 'Taux Accepté à 100%', numberOptions: numberConfig },
-  { key: 'taxeSurPrime',      label: 'Taxe sur prime',      type: 'number', size: 'lg', numberOptions: numberConfig },
- ]
+const tempQuittanceFields: FieldConfig[] = [
+  /////////////////////////////// 
+  ////// Prime 
+  /////////////////////////////
+  { key: 'primeBrute',          label: 'Prime Brute',     type: 'number' , size:'lg' , helpText:"Prime Brute à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
+  { key: 'primeNette',          label: 'Prime Nette',     type: 'number' , size:'lg' , helpText:"Prime Nette à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
+  { key: 'estimationPrime',     label: 'Estimation',      type: 'number' , size:'lg' , helpText:"Estimation à 100%",
+        numberOptions: {
+          decimals: 2,
+          formatOptions: { style: 'decimal' },
+          returnType: 'number',
+        }}, 
+ 
+ 
+]
 // ==================== LOGIQUE FORMULAIRE ====================
 
-const isEditing = computed(() => !!tempQuittance.value?.id)
+const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
-   if (!tempQuittance.value) {
+  if (!currentTempQuittance) {
     return Object.fromEntries(
-      tempQuittanceFields
-        .filter((f) => 'key' in f)  // ✅ Garde uniquement les objets avec une propriété 'key'
-        .map((f) => [f.key, f.type === 'checkbox' ? true : ''])
-    ) as unknown as TempQuittanceFormData
+      tempQuittanceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
+    ) as  unknown as TempQuittanceFormData
   }
 
-  const data = { ...tempQuittance.value } as TempQuittanceFormData
+  const data = { ...currentTempQuittance.value } as TempQuittanceFormData
   return data as TempQuittanceFormData
 }
 
 const formData = ref<TempQuittanceFormData>(initializeFormData())
 
-
-// ✅ Après : on watch sa VALEUR
-watch(
-  () => tempQuittance.value,
-  (data) => { formData.value = initializeFormData() },
-  { deep: true },
-)
-
-
+// ✅ Watcher pour gérer les changements de props.currentTempQuittance
+watch(() => currentTempQuittance, (newActeur) => {
+  if (newActeur) {
+    formData.value = initializeFormData()
+  }
+}, { deep: true })
 
 const errorMessage = ref<string | null>(null)
 const params = computed<PaginationParams>(() => ({}))
@@ -84,36 +128,35 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  if(!data.mouvementId && currentMouvement.value)
+   if(!data.mouvementId && currentMouvement.value)
       data.mouvementId = currentMouvement.value.id;
   try {
-    if (isEditing.value && tempQuittance.value?.id) {
+    if (isEditing.value && currentTempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
-        id: tempQuittance.value.id,
-        data: {
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            tauxCedante: data.tauxCedante, 
-            tauxAccepte: data.tauxAccepte,
-            taxeSurPrime: data.taxeSurPrime, 
-            
-          },
+        id: currentTempQuittance.value.id,
+        data: {          
+           
+            ///////////////////////////// 
+            ////// Prime 
+            /////////////////////////////
+            estimationPrime: data.estimationPrime,
+            primeBrute: data.primeBrute,
+            primeNette: data.primeNette, 
+        },
       })
-      emit('success', 'Quittance des Taux et Taxes modifiée avec succès')
+      emit('success', 'Quittance des primes modifié avec succès')
     } else {
       await createTempQuittance.mutateAsync({
-
-            // ///////////////////////////// 
-            // ////// Taux et Taxes 
-            // /////////////////////////////
-            tauxCedante: data.tauxCedante, 
-            tauxAccepte: data.tauxAccepte,
-            taxeSurPrime: data.taxeSurPrime, 
-
+ 
+            ///////////////////////////// 
+            ////// Prime 
+            /////////////////////////////
+            estimationPrime: data.estimationPrime,
+            primeBrute: data.primeBrute,
+            primeNette: data.primeNette, 
       } as TempQuittance)
-      emit('success', 'Quittance des Taux et Taxex créé avec succès')
+      emit('success', 'Quittance des Primes créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
@@ -133,7 +176,7 @@ const dismissError = () => {
 
 <template>
   <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Quittance Taux et Taxes" class="mb-8" />  
+    <TTitreSousModule  libelle="Quittance Primes" class="mb-8" />  
    
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
@@ -143,10 +186,8 @@ const dismissError = () => {
       :fields="tempQuittanceFields"
       :mode="formMode"
       :show-delete="false"
-      :columns="2"
-      responsive
-      gap="md"
       :loading="loading"
+      :columns="3"
       :submit-label="isEditing ? 'Mettre à jour' : 'Créer'"
       @submit="handleSubmit"
       @cancel="handleCancel"

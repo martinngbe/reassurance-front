@@ -40,9 +40,16 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
   const createTempQuittance = useMutation({
     mutationFn:async  (data: TempQuittance) => {
      const tQuittance= await tempQuittanceApi.create(data)
+          console.log('____________________________________')
+          console.log('useTempQuittance.createTempQuittance')
+          console.log('data:',data)
+          console.log('tQuittance:',tQuittance)
+          console.log('tempQuittanceStore.currentTempQuittanceId:',tempQuittanceStore.currentTempQuittanceId)
+          console.log('____________________________________')
       // ⭐ Synchroniser le store si c'est l'tempQuittance sélectionné
       if (tempQuittanceStore.currentTempQuittanceId !== tQuittance.id) {
         tempQuittanceStore.selectTempQuittance(tQuittance)
+        console.log('____________________________________')
       }
      return tQuittance
     },
@@ -73,9 +80,16 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
         tempQuittances.items.value = context.previousItems
       }
     },
-        onSuccess: async (_data, { id }) => {
+    onSuccess: async (_data, { id }) => {
+       console.log('____________________________________')
+       console.log('useTempQuittance.updateTempQuittance')
+       console.log('____________________________________')
+       console.log('tempQuittanceStore.currentTempQuittanceId:',tempQuittanceStore.currentTempQuittanceId)
+       console.log('id:',id)
       // ⭐ Si c'est la quittance courante, on la recharge complètement depuis le serveur
-      if (tempQuittanceStore.currentTempQuittanceId === id) {
+      if (tempQuittanceStore.currentTempQuittanceId === id) {       
+        console.log('tempQuittanceStore.currentTempQuittanceId === id')
+        console.log('____________________________________')
         await reloadCurrentTempQuittance()
       }
     },
@@ -108,11 +122,17 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
    // ==================== RELOAD CURRENT ====================
   const reloadCurrentTempQuittance = async () => {
     const currentId = tempQuittanceStore.currentTempQuittanceId
+    console.log('____________________________________')
+    console.log('useTempQuittance.reloadCurrentTempQuittance')
+    console.log('currentId:',currentId)
+    console.log('____________________________________')
     if (!currentId) return
+      
     // On recharge la 
     try {
-      const tempPol = await tempQuittanceApi.getById(currentId)
-      tempQuittanceStore.setCurrentTempQuittance(tempPol)
+      const tempQuit = await tempQuittanceApi.getById(currentId)
+      console.log('On recharge tempQuit:',tempQuit)
+      tempQuittanceStore.setCurrentTempQuittance(tempQuit)
     } catch (err) {
       console.error('Erreur lors du rechargement de la tempQuittance', err)
     }

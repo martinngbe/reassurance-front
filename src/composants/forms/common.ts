@@ -1,6 +1,6 @@
 /* ----- Boutons ----- */
 export type ButtonVariant = 'solid' | 'soft' | 'outline' | 'ghost' | 'link'
-export type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonSize = 'sm' | 'md' | 'lg'  | 'xl' | '2xl'
 export type ButtonType = 'button' | 'submit' | 'reset'
 
 /* ----- Options (select, radio…) ----- */

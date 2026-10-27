@@ -8,6 +8,7 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   // ==================== STATE ====================
   const tempQuittanceStore = useTempQuittanceStore() // ⭐ 
   const currentTempPolice = ref<TempPolice | null>(null)
+  const isAffaireNouvelleExecutee = ref<boolean>(false)
   // ==================== GETTERS ====================
   const isSelected = computed(() => currentTempPolice.value !== null)
   const currentTempPoliceId = computed(() => currentTempPolice.value?.id ?? null)
@@ -54,11 +55,19 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   const setCurrentTempPolice = (police: TempPolice) => {
   currentTempPolice.value = police
 }
+ const setTempPoliceIsAffaireNouvelleExecutee = (b: boolean) => {
+  isAffaireNouvelleExecutee.value = b
+  console.log(" --------------------------------------------  ")
+  console.log(" ----MAJ de   isAffaireNouvelleExecutee.value:", isAffaireNouvelleExecutee.value)
+  console.log(" --------------------------------------------  ")
+}
 
   return {
     currentTempPolice,
     isSelected,
     currentTempPoliceId,
+    isAffaireNouvelleExecutee,
+    setTempPoliceIsAffaireNouvelleExecutee,
     setCurrentTempPolice,
     selectTempPolice,
     clearTempPoliceSelection,

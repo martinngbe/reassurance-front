@@ -6,7 +6,7 @@ export const useMouvementStore = defineStore('mouvementStore', () => {
   // ==================== STATE ====================
   const currentMouvement = ref<Mouvement | null>(null)
   // ==================== GETTERS ====================
-  const isSelected = computed(() => currentMouvement.value !== null)
+  const isSelectedMouvement = computed(() => currentMouvement.value !== null)
   const currentMouvementId = computed(() => currentMouvement.value?.id ?? null)
 
   // ==================== ACTIONS ====================
@@ -14,7 +14,7 @@ export const useMouvementStore = defineStore('mouvementStore', () => {
     currentMouvement.value = mouvement
   }
 
-  const clearSelection = () => {
+  const clearMouvementSelection = () => {
     currentMouvement.value = null
   }
 
@@ -27,7 +27,7 @@ export const useMouvementStore = defineStore('mouvementStore', () => {
   }
 
   // ⭐ Action utile : effacer si l'mouvement supprimé est celui sélectionné
-  const removeIfCurrent = (id: number) => {
+  const removeIfCurrentMouvement = (id: number) => {
     if (currentMouvement.value?.id === id) {
       currentMouvement.value = null
     }
@@ -35,11 +35,11 @@ export const useMouvementStore = defineStore('mouvementStore', () => {
 
   return {
     currentMouvement,
-    isSelected,
+    isSelectedMouvement,
     currentMouvementId,
     selectMouvement,
-    clearSelection,
+    clearMouvementSelection,
     updateCurrentMouvement,
-    removeIfCurrent,
+    removeIfCurrentMouvement,
   }
 })

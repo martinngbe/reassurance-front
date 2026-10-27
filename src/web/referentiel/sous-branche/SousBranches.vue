@@ -116,14 +116,14 @@ const onFormSuccess = (message: string) => {
 }
 const handleNouveau = () => openCreate()
 const handleModifier = () => {
-   console.log('>>>>>> handleModifier SOUS-BRANCHE >>>>>>>>>>>>>>>>>>')
+ // console.log('>>>>>> handleModifier SOUS-BRANCHE >>>>>>>>>>>>>>>>>>')
   if (selectedSousBranches.value.length === 0) {
     info('Veuillez sélectionner une Sous Branche svp', 'Info')
     return
   }
   const sousBrancheId = selectedSousBranches.value[0]
   const sousBranche = sousBrancheRows.value.find((u:any) => u.id === sousBrancheId)
-  console.log('>>>>>> handleModifier sousBranche:',sousBranche)
+ // console.log('>>>>>> handleModifier sousBranche:',sousBranche)
   if (sousBranche) openEdit(sousBranche)
 }
 

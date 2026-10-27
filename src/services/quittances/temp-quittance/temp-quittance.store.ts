@@ -12,6 +12,8 @@ export const useTempQuittanceStore = defineStore('tempQuittanceStore', () => {
   // ==================== ACTIONS ====================
   const selectTempQuittance = (tempQuittance: TempQuittance | null) => {
     currentTempQuittance.value = tempQuittance
+    console.log('Stockage de currentTempQuittance.value:',currentTempQuittance.value)
+    console.log(" _______________________________________ ")
   }
 
   const clearTempQuittanceSelection = () => {
@@ -33,8 +35,10 @@ export const useTempQuittanceStore = defineStore('tempQuittanceStore', () => {
     }
   }
 
-    const setCurrentTempQuittance = (police: TempQuittance) => {
-    currentTempQuittance.value = police
+    const setCurrentTempQuittance = (quittance: TempQuittance) => {
+    currentTempQuittance.value = quittance
+    console.log(" On stocke currentTempQuittance.value:",currentTempQuittance.value)
+    console.log(" _______________________________________ ")
   }
 
   return {

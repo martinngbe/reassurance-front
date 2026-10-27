@@ -3,15 +3,19 @@ import TTable from '@/composants/display/TTable.vue'
 import type { SortState, TableColumn } from '@/composants/forms/common'
 import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
-import TModal from '@/composants/display/TModal.vue'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
-import IconeValider from '@/composants/icone/IconeValider.vue'
-import { useToast } from '@/composants/toast/useToast'
 import TButton from '@/composants/forms/TButton.vue'
 import { useQuittances } from '@/services/quittances/quittance/useQuittance'
 import type { Quittance } from '@/services/quittances/quittance/quittance'
+import { formatDecimal } from '@/utilitaire/number'
+import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
+import type { Police } from '@/services/police/police'
+import { useQuittancesByPolice } from '@/services/quittances/quittance/useQuittancesByPolice'
+
+const props = defineProps<{
+  currentPolice: Police 
+}>()
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -32,12 +36,11 @@ const params = computed<PaginationParams>(() => ({
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer quittances
-const store = useQuittances(params)
-const { quittances } = store
-const { success, error, warning, info } = useToast()
 
-//console.warn(" -- Quittances.vue quittances:",quittances)
-
+const store = props.currentPolice?
+      useQuittancesByPolice( props.currentPolice.id ,params) :
+      useQuittances(params) ; 
+const { quittances } = store      
 type QuittanceRow = Quittance & { [key: string]: any }
 
 // ==================== COLONNES ====================
@@ -50,9 +53,9 @@ const quittanceColumns: TableColumn[] = [
   { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 500,  },
   { key: 'devise',       label: 'Devise',       width: 80,  minWidth: 80,  },
   { key: 'coursDevise',  label: 'Cours Devise', width: 200,  minWidth: 80,  },
-  { key: 'capitaux',     label: 'Capitaux',     width: 500,  minWidth: 500,  },
-  { key: 'lci',          label: 'LCI',          width: 500,  minWidth: 500,  },
-  { key: 'smp',          label: 'SMP',          width: 500,  minWidth: 500,  },
+  { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
+  { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
+  { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
   
 ]
 /* 
@@ -95,7 +98,7 @@ const totalItems = computed(() => quittances.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-const isLigneSelectionnee = computed(() => selectedQuittances.value.length > 0)
+//const isLigneSelectionnee = computed(() => selectedQuittances.value.length > 0)
 const selectedQuittances = ref<(string | number)[]>([])
 
 // ==================== TRI ====================
@@ -104,48 +107,12 @@ function onSort(state: SortState): void {
 }
 
 // ==================== INFINITE SCROLL ====================
-async function handleLoadMore() {
- 
+async function handleLoadMore() { 
   if (loadingMore.value || !hasMore.value) return
   await quittances.loadMore()
 }
 
 // ==================== MODALES ====================
-const showModal = ref(false)
-const showModalConfirmation = ref(false)
-const titleModal = ref('')
-const quittanceToEdit = ref<Quittance | null>(null)
-
-const openCreate = () => {
-  quittanceToEdit.value = null
-  titleModal.value = 'Nouvelle quittance'
-  showModal.value = true
-}
-
-const openEdit = (quittance: QuittanceRow) => {
-  quittanceToEdit.value = quittance
-  titleModal.value = 'Modifier quittance'
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-  quittanceToEdit.value = null
-}
-
-// ==================== HANDLERS CRUD ====================
-const onFormSuccess = (message: string) => {
-  closeModal()
-  success(message, 'Succès')
-  quittances.refresh()
-}
-
-const handleNouveau = () => openCreate()
-
-
-
-
-
 const onRowClick = ( row: any, index: number)=>{       
     emit('row-click',row as Quittance)
 }
@@ -206,7 +173,25 @@ watch(tableSearch, () => {
         </TButton>
 
     </template>
-  
+    <template #cell-mouvement="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.code }}</span>
+    </template>
+    <template #cell-devise="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.code }}</span>
+    </template>   
+    <template #cell-coursDevise="{ value }">      
+       <span class="font-mono text-xl uppercase" >{{formatDecimal(value,)  }}</span>
+    </template>
+    <template #cell-capitaux="{ value }">      
+       <TDisplayNumber :value="value" />
+    </template>
+    <template #cell-lci="{ value }">      
+       <TDisplayNumber :value="value" />
+    </template>
+    <template #cell-smp="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+
   </TTable>
 
  

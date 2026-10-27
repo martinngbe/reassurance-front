@@ -15,9 +15,9 @@ import TAlert from '@/composants/display/TAlert.vue'
 const mouvementStore = useMouvementStore()
 const tempPoliceStore = useTempPoliceStore()
 const tempQuittanceStore = useTempQuittanceStore()
-// lecture du tempQuittance en cours
+// lecture du currentTempQuittance en cours
 // on a pris soin de le charger via tempPolice
-const tempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
 // lecture du mouvement en cours
 // on a pris soin de le reference dans AffaireNouvelle.vue
 const currentMouvement = computed(()=> mouvementStore.currentMouvement)
@@ -26,6 +26,13 @@ const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
+console.log('==================================')
+console.log('TempQuittanceEmissionForm.vue')
+console.log('==================================')
+console.log('currentTempPolice.value    :',currentTempPolice.value)
+console.log('currentTempQuittance.value :',currentTempQuittance.value)
+console.log('currentMouvement.value     :',currentMouvement.value)
+console.log('==================================')
 // ✅ REMPLACER le ref local par un computed lié au store
 console.log(" >>>>>> currentMouvement.value: ",currentMouvement.value)
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
@@ -45,10 +52,7 @@ const tempQuittanceFields: FormField[] = [
   ///////////////////////////// 
   ////// Emission 
   /////////////////////////////
-{ section: 'Période de couverture' },
-{ key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
-{ key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar' },
-{ section: 'Devise' },
+{ section: 'Dévise et Période de couverture' },
 {
   key: 'deviseId',
   label: 'Devise',
@@ -64,6 +68,9 @@ const tempQuittanceFields: FormField[] = [
 },
 { key: 'coursDevise',           label: 'Cours devise',      type: 'number' ,required: true,},
 
+{ key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
+{ key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar' },
+
 { section: 'Autres informations' },
 { key: 'avisEcheance',          label: 'Avis Echéance',     type: 'number' , helpText:"Délais (jours) de notification avant échéance"},  
 { key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number' }, 
@@ -73,12 +80,12 @@ const tempQuittanceFields: FormField[] = [
 ]
 // ==================== LOGIQUE FORMULAIRE ====================
 
-const isEditing = computed(() => !!tempQuittance.value?.id)
+const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
-  if (!tempQuittance) {
+  if (!currentTempQuittance) {
     return Object.fromEntries(
       tempQuittanceFields
         .filter((f) => 'key' in f)  // ✅ Garde uniquement les objets avec une propriété 'key'
@@ -86,7 +93,7 @@ function initializeFormData(): TempQuittanceFormData {
     ) as unknown as TempQuittanceFormData
   }
 
-  const data = { ...tempQuittance.value } as TempQuittanceFormData
+  const data = { ...currentTempQuittance.value } as TempQuittanceFormData
 
   // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
   // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
@@ -103,8 +110,8 @@ function initializeFormData(): TempQuittanceFormData {
 
 const formData = ref<TempQuittanceFormData>(initializeFormData())
 
-// ✅ Watcher pour gérer les changements de props.tempQuittance
-watch(() => tempQuittance, (newActeur) => {
+// ✅ Watcher pour gérer les changements de props.currentTempQuittance
+watch(() => currentTempQuittance, (newActeur) => {
   if (newActeur) {
     formData.value = initializeFormData()
   }
@@ -126,25 +133,29 @@ function extractId(value: any): number | undefined {
 
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
+  console.log('____ AVANT _____ TempQuittanceEmissionForme.handleSubmit _________ ')
+  console.log('currentMouvement.value: ',currentMouvement.value)
+  console.log('data: ',data)
+
+
   try {
     if(!data.mouvementId && currentMouvement.value)
       data.mouvementId = currentMouvement.value.id;
+
     if(!data.policeId && currentTempPolice.value)
       data.policeId = currentTempPolice.value.id;
 
     console.log(" _____ TempQuittanceEmissionForme.handleSubmit   data:",data)
    
-    if (isEditing.value && tempQuittance.value?.id) {
+    if (isEditing.value && currentTempQuittance.value?.id) {
       console.log("<<<<<<< handleSubmit data:",data)
       await updateTempQuittance.mutateAsync({
-        id: tempQuittance.value.id,
+        id: currentTempQuittance.value.id,
         data: {
             ///////////////////////////// 
             ////// Emission 
             /////////////////////////////  
-            // dateEmission: data.dateEmission,// date système
-            ///////////////////////////
-            
+            mouvementId: data.mouvementId ,
             dateEffet: data.dateEffet ,  
             dateEcheance: data.dateEcheance,
             deviseId: extractId(data.deviseId),
@@ -176,11 +187,16 @@ const handleSubmit = async (data: Record<string, any>) => {
       } as TempQuittance)
       emit('success', 'Quittance Emission créé avec succès')
     }
-   
+  
+
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
     errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
   }
+    console.log('____ APRES _____ TempQuittanceEmissionForme.handleSubmit _________ ')
+    console.log('currentMouvement.value: ',currentMouvement.value)
+    console.log('data: ',data)
+   
 }
 
 const handleCancel = () => {
@@ -205,7 +221,7 @@ const dismissError = () => {
       :fields="tempQuittanceFields"
       :mode="formMode"
       :show-delete="false"
-      :columns="2"
+      :columns="4"
       responsive
       gap="md"
       :loading="loading"

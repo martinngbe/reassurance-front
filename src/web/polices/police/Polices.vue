@@ -5,21 +5,36 @@ import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import { usePolices } from '@/services/police/usePolice'
 import type { Police } from '@/services/police/police'
 import TButton from '@/composants/forms/TButton.vue'
-import AffaireNouvelle from '../module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
+import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
 import TModal from '@/composants/display/TModal.vue'
-import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
+import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import {  FORME_ECRAN_TRAITE,  useEcransStore } from '@/services/ecrans/ecrans.store'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import { usePolicesByAssure } from '@/services/police/usePolicesByAssure'
+import type { Assure } from '@/services/acteurs/assure/assure'
+import { usePoliceStore } from '@/services/police/police.store'
 
+
+const ecransStore = useEcransStore()
+const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
+const isAffairesTraite = computed(()=> currenteFormeEcran.value=== FORME_ECRAN_TRAITE)
+//const currenteModule = computed(()=> ecransStore.currenteModule)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
+
+const props = defineProps<{
+  currentAssure?: Assure | null | undefined
+}>()
+
+
 const emit = defineEmits<{ 
   (e: 'row-click',  police: any): void
 }>()
-
 
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -31,17 +46,21 @@ const params = computed<PaginationParams>(() => ({
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer polices
-const store = usePolices(params)
-const assureStore = useAssureStore()
-const { polices } = store
-const assureEnCours = computed(() => assureStore.currentAssure)
+const store = props.currentAssure?
+      usePolicesByAssure( props.currentAssure.id ,params) :
+      usePolicesByAssure( "null" ,params) ; 
+       
+const { polices  } = store
 type PoliceRow = Police & { [key: string]: any }
+const tempPoliceStore = useTempPoliceStore()
+const policeStore = usePoliceStore()
+const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvelleExecutee )
 
 // ==================== COLONNES ====================
 const policeColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'natureOffre',           label: 'Nature Offre',    width: 100,  minWidth: 100, },
+  { key: 'natureOffre',           label: 'Nature Offre',    width: 200,  minWidth: 200, },
   
 
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
@@ -49,8 +68,8 @@ const policeColumns: TableColumn[] = [
   { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
   
   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 100,  minWidth: 100, align: 'center' },
-  { key: 'cedante',               label: 'Cedente',          width: 500,  minWidth: 500, },
-  { key: 'courtier',              label: 'Courtier',         width: 500,  minWidth: 500, },
+  { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
+  { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
   { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
   { key: 'sousBranche',           label: 'Sous Branche',     width: 500,  minWidth: 500,  },
   
@@ -68,7 +87,7 @@ const totalItems = computed(() => polices.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
+//const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
 const selectedPolices = ref<(string | number)[]>([])
 
 // ==================== TRI ====================
@@ -84,16 +103,28 @@ async function handleLoadMore() {
 
 // ==================== MODALES ====================
 const showModal = ref(false)
-const titleModal = ref( assureEnCours.value?
- `AFFAIRE NOUVELLE : ${assureEnCours.value.raisonSociale.toUpperCase()}` :
+const titleModal = ref( props.currentAssure?
+ `AFFAIRE NOUVELLE : ${props.currentAssure.raisonSociale.toUpperCase()}` :
  'AFFAIRE NOUVELLE')
-const policeToEdit = ref<Police | null>(null)
-const onRowClick = ( row: any, index: number)=>{       
+//const policeToEdit = ref<Police | null>(null)
+const onRowClick = ( row: any, index: number)=>{ 
+   policeStore.setCurrentPolice(row as Police)      
     emit('row-click',row as Police)
 }
-const openAffaireNouvelle =()=>{
+const openAffaireNouvelle =()=>{  
   showModal.value=true
+  tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(false)
 }
+
+
+
+watch(
+  isAffaireNouvelleExecutee,
+  (newValue) => {
+     if (newValue) showModal.value=false
+  },
+  { immediate: true }
+)
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -144,13 +175,13 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption>
-          <p v-if="assureEnCours"
+          <p v-if="currentAssure" 
           class="text-sm"
           >
-            {{ assureEnCours?.raisonSociale }}
+            {{ currentAssure.raisonSociale }}
           </p>
           <TButton 
-                v-if ="assureEnCours" 
+                v-if ="currentAssure || isAffairesTraite" 
                 type="button"
                 variant="soft" 
                 @click="openAffaireNouvelle"           
@@ -158,11 +189,37 @@ watch(tableSearch, () => {
                         <span class="text-lg font-bold uppercase cursor-pointer">Affaire Nouvelle</span> 
             </TButton>
     </template>
-   
+    <template #cell-natureOffre="{ value }">
+      <span class="font-mono  text-xl uppercase" >{{ value.code }}</span>
+    </template>
+    <template #cell-assure="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+    </template>
+    <template #cell-sousBranche="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.libelle }}</span>
+    </template>
+    <template #cell-acteurCedante="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+    </template>
+    <template #cell-acteurCourtier="{ value }">
+      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+    </template>    
+
+    
+    <template #cell-isReconductionTacite="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
+
+
+
 
   </TTable>
 
-   <TModal v-model="showModal" width="55%"  height="750px" :title="titleModal" >
+   <TModal v-model="showModal" 
+      width="70%"  
+      height="85%" 
+      :title="titleModal" 
+   >
       <AffaireNouvelle  />
   </TModal>
  

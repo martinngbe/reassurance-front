@@ -133,6 +133,16 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       console.error('Erreur lors du rechargement de la tempPolice', err)
     }
   }
+  const executeAffaireNouvelle = async () => {
+    if (tempPoliceStore.isAffaireNouvelleExecutee) return
+      console.log(" --------------------------------------------  ")
+      console.log(" ------- On Lance l'éxécution de l' AFN -----  ")
+      console.log(" ------- tempPoliceStore.isAffaireNouvelleExecutee:  ",
+        tempPoliceStore.isAffaireNouvelleExecutee)
+      
+      console.log(" --------------------------------------------  ") 
+      tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(true)
+  }
 
   return {
     tempPolices,
@@ -141,5 +151,6 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     deleteTempPolice,
     reloadCurrentTempPolice,
     refresh: tempPolices.refresh,
+    executeAffaireNouvelle
   }
 }

@@ -9,12 +9,11 @@ import { useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import EnConstruction from '@/web/EnConstruction.vue'
 import TAlert from '@/composants/display/TAlert.vue'
 import { useTempPoliceStore } from '@/services/temp-police/temp-police.store.ts'
-import TempPolices from '@/web/police/TempPolices.vue'
+import TempPolices from '@/web/polices/temp-police/TempPolices.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store.ts'
 import { useMouvements } from '@/services/referentiel/mouvement/useMouvement.ts'
 import { MOUVEMENT_AFN } from '@/services/common/constantes.ts'
-import type { IResponse } from '@/type/pagination.ts'
 
 const assureStore = useAssureStore()
 const assureEnCours = computed(() => assureStore.currentAssure)
@@ -60,14 +59,14 @@ function onStepCancel() {
 
 // ✅ 4. Record strictement typé
 const moduleComponents: Record<EtapeId, any> = {
-  historiqueSaisie: defineAsyncComponent(() => import('@/web/police/TempPoliceHistoriques.vue')),
-  tempPolice: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempPoliceForm.vue')),
-  emission: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceEmissionForm.vue')),
-  capitaux: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceCapitauxForm.vue')),
-  primes: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittancePrimesForm.vue')),
-  tauxEtTaxes: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceTaxesEtTauxForm.vue')),
-  courtage: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/TempQuittanceCourtageForm.vue')),
-  recapitulation: defineAsyncComponent(() => import('@/web/EnConstruction.vue')),
+  historiqueSaisie: defineAsyncComponent(() => import('@/web/polices/temp-police/TempPoliceHistoriques.vue')),
+  tempPolice: defineAsyncComponent(() => import('@/web/polices/temp-police/TempPoliceForm.vue')),
+  emission: defineAsyncComponent(() => import('@/web/quittances/temp-quittance/TempQuittanceEmissionForm.vue')),
+  capitaux: defineAsyncComponent(() => import('@/web/quittances/temp-quittance/TempQuittanceCapitauxForm.vue')),
+  primes: defineAsyncComponent(() => import('@/web/quittances/temp-quittance/TempQuittancePrimesForm.vue')),
+  tauxEtTaxes: defineAsyncComponent(() => import('@/web/quittances/temp-quittance/TempQuittanceTaxesEtTauxForm.vue')),
+  courtage: defineAsyncComponent(() => import('@/web/quittances/temp-quittance/TempQuittanceCourtageForm.vue')),
+  recapitulation: defineAsyncComponent(() => import('@/web/module/ecrans/affaire-nouvelle/Recapitulation.vue')),
 }
 
 const tempPoliceStore = useTempPoliceStore()
@@ -76,11 +75,11 @@ const mouvementsStore = useMouvementStore()
 const  {getMouvementByCode} = useMouvements()
 const currenteModuleDisplay = computed(() => ecransStore.currenteModule)
 const currenteFormeEcran = computed(() => ecransStore.currenteFormeEcran)
-const currentTempPilice = computed(() =>tempPoliceStore.currentTempPolice)
-const titleHistoriqueSaisie= computed(() =>currentTempPilice.value? 
-'Historique des saisies N°Temp Police:'+currentTempPilice.value.id :
+const currentTempPolice = computed(() =>tempPoliceStore.currentTempPolice)
+/*const titleHistoriqueSaisie= computed(() =>currentTempPolice.value? 
+'Historique des saisies N°Temp Police:'+currentTempPolice.value.id :
 'Historique des saisies '
-)
+)*/
 // ✅ 5. Fallback garanti → jamais undefined
 const currentModule = computed(() => moduleComponents[activeMenu.value] ?? EnConstruction)
 const showModal = ref(false)
@@ -112,7 +111,7 @@ watch(mouvement  , (newData ) => {
 <template>
   <TLayoutModule 
       topSize="80px" 
-      leftSize="30%" 
+      leftSize="20%" 
       bottom-size="8%"
       >
     <template #header>
@@ -124,8 +123,7 @@ watch(mouvement  , (newData ) => {
 
     <template #left>
       <!-- ✅ 6. Passer activeMenu en prop -->
-      <AffaireNouvelleEtapes
-        
+      <AffaireNouvelleEtapes        
         :active-menu="activeMenu"
         @select="selectMenu"
       />

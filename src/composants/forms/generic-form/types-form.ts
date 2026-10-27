@@ -24,7 +24,7 @@ export interface FieldConfig {
  
 
  // ✅ NOUVEAU
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
   maxlength?: number
 
 
