@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue';
 
@@ -7,16 +8,18 @@ import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue';
 
 <template>
   <TLayoutModule
-    topSize="55px"
+    :show-bottom="false"
     :show-left="false"
+    :show-top="false"
     >
-    <template #header>
-     <TTitreSousModule libelle="En Construction"/>
-    </template>
+    
 
     <template #default>
-          
-
+            <div  class="flex w-full  p-24 h-full items-center justify-center">                 
+                  <TAlert variant="info">
+                      <p class="text-2xl font-bold">En Construction ...</p> 
+                  </TAlert> 
+            </div>
     </template>
 
   </TLayoutModule>

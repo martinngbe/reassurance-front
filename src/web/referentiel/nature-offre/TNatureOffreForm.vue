@@ -22,6 +22,12 @@ const natureOffreFields: FieldConfig[] = [
   { key: 'isProportionnelle', label: 'Proportionnelle',               type: 'checkbox',  },
   { key: 'isFacultative',     label: 'Facultative',                   type: 'checkbox',   },
   { key: 'isFacObligatoire',  label: 'Facultative obligatoire',       type: 'checkbox',   },
+
+
+  { key: 'isEdp',           label: 'EDP',                  type: 'checkbox',  },
+  { key: 'isQuotePart',     label: 'QP',                   type: 'checkbox',   },
+  { key: 'isXs',            label: 'Facultative XS',       type: 'checkbox',   },
+
 ]
 
 // ==================== ÉTAT ====================
@@ -46,6 +52,22 @@ const loading = computed(
     createNatureOffre.isPending.value || updateNatureOffre.isPending.value,
 )
 
+
+// ✅ Helper pour construire le payload commun (évite la duplication)
+function buildPayload(data: Record<string, any>) {
+ 
+  return {
+  
+    code: data.code,
+    libelle: data.libelle,
+    isProportionnelle: data.isProportionnelle,
+    isFacultative: data.isFacultative,
+    isFacObligatoire: data.isFacObligatoire,
+    isEdp : data.isEdp,
+    isXs : data.isXs ,
+    isQuotePart : data.isQuotePart
+  }
+}
 // ==================== HANDLERS ====================
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
@@ -55,23 +77,11 @@ const handleSubmit = async (data: Record<string, any>) => {
     if (isEditing.value && props.natureOffre?.id) {
       await updateNatureOffre.mutateAsync({
         id: props.natureOffre.id,
-        data: {
-          code: data.code,
-          libelle: data.libelle,
-          isProportionnelle: data.isProportionnelle,
-          isFacultative: data.isFacultative,
-          isFacObligatoire: data.isFacObligatoire,
-        },
+        data:buildPayload(data),
       })
       emit('success', 'NatureOffre modifié avec succès')
     } else {
-      await createNatureOffre.mutateAsync({
-        code: data.code,
-        libelle: data.libelle,
-        isProportionnelle: data.isProportionnelle,
-        isFacultative: data.isFacultative,
-        isFacObligatoire: data.isFacObligatoire,        
-      })
+      await createNatureOffre.mutateAsync(buildPayload(data))
       emit('success', 'NatureOffre créé avec succès')
     }
   } catch (err: any) {

@@ -3,7 +3,7 @@ import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
 import { useAssureStore } from '@/services/acteurs/assure/assure.store';
-import { usePoliceStore } from '@/services/police/police.store';
+import { usePoliceStore } from '@/services/polices/police/police.store';
 
 import Assures from '@/web/acteurs/assure/Assures.vue';
 import Polices from '@/web/polices/police/Polices.vue';

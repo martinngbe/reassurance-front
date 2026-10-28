@@ -27,10 +27,6 @@ export interface FieldConfig {
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
   maxlength?: number
 
-
-
-
-
   // Props spécifiques async-select
   loadOptions?: (query: string, page: number) => Promise<{ options: any[]; hasMore: boolean }>
   asyncOptions?: {

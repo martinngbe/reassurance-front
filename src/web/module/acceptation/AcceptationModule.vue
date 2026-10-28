@@ -3,7 +3,7 @@ import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import MenuAcceptation from './MenuAcceptation.vue';
 import TTitreModule from '@/composants/utilitaire/TTitreModule.vue';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
-import { FORME_ECRAN_TABLEAU_DE_BORD, useEcransStore } from '@/services/ecrans/ecrans.store.ts';
+import { ECRAN_TABLEAU_DE_BORD, useEcransStore } from '@/services/ecrans/ecrans.store.ts';
 
 
 // Chargement dynamique des modules
@@ -14,7 +14,7 @@ const moduleComponents: Record<string, any> = {
 
 }
 
-const activeMenu = ref(FORME_ECRAN_TABLEAU_DE_BORD)
+const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
 
 ////////////////////////  ECRANS  //////////////////
@@ -28,7 +28,7 @@ function selectMenu(moduleId: string) {
 }
 
 onMounted(()=>{
-    ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+    ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
 })
 
 </script>

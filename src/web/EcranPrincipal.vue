@@ -76,18 +76,11 @@ const quickInfos = [
 ]
 ////////////////////////  ECRANS  //////////////////
 const ecransStore = useEcransStore()
-const currentModuleEcran = computed(()=> ecransStore.currenteModule)
-const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
 ////////////////////////
 function selectMenu(moduleId: string) {
   activeMenu.value = moduleId
   console.log(activeMenu.value)
   ecransStore.setModule(moduleId)
-  ///////////////////////////////////////////////////
-  //console.log(" _____________________ ")
-  //console.log(" _______ ECRANS ______ ")
-  //console.log(" ___ currentModuleEcran    :",currentModuleEcran.value)
-  //console.log(" ___ currenteFormeEcran:",currenteFormeEcran.value)
 }
 </script>
 

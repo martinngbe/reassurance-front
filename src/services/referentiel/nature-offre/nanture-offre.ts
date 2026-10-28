@@ -7,6 +7,9 @@ export interface NatureOffre extends BaseEntity {
   isFacultative: boolean;
   isFacObligatoire: boolean;
   isProportionnelle: boolean;
+  isEdp: boolean;
+  isQuotePart: boolean;
+  isXs: boolean;
 }
 
 export type CreateNatureOffreDto = Omit<NatureOffre, keyof BaseEntity>;

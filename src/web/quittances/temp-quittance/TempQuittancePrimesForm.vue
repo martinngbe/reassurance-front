@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
-import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
+import type { FieldConfig, FormField } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 
@@ -19,6 +19,7 @@ const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittan
 const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 const mouvementStore = useMouvementStore()
 const currentMouvement = computed(()=> mouvementStore.currentMouvement)
+const currentNatureOffre = computed(() => tempPoliceStore.currentTempPolice?.natureOffre)
 
 const emit = defineEmits<{
   success: [message: string]
@@ -57,36 +58,68 @@ async function fetchSousBranche(query: string, page: number) {
 }
 
 // ==================== CONFIGURATION DES CHAMPS ====================
-const numberConfig = {
+// ✅ Helper pour éviter de répéter la configuration des champs numériques
+const createNumberField = (key: string, label: string): FormField => ({
+  key,
+  label,
+  type: 'number',
+  size: 'xl',
+  helpText: `${label} à 100%`,
+  numberOptions: {
+    decimals: 2,
+    formatOptions: { style: 'decimal' },
+    returnType: 'number',
+  },
+})
+// 1. Configuration commune pour les nombres (déclarée en dehors du computed pour optimiser les performances)
+const baseNumberOptions = {
   decimals: 2,
+  formatOptions: { style: 'decimal' as const },
   returnType: 'number' as const,
 }
-const tempQuittanceFields: FieldConfig[] = [
-  /////////////////////////////// 
-  ////// Prime 
-  /////////////////////////////
-  { key: 'primeBrute',          label: 'Prime Brute',     type: 'number' , size:'lg' , helpText:"Prime Brute à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }}, 
-  { key: 'primeNette',          label: 'Prime Nette',     type: 'number' , size:'lg' , helpText:"Prime Nette à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }}, 
-  { key: 'estimationPrime',     label: 'Estimation',      type: 'number' , size:'lg' , helpText:"Estimation à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }}, 
- 
- 
-]
-// ==================== LOGIQUE FORMULAIRE ====================
+const baseFieldsConfig = computed(()=>{
+         
+             // 1. Champs de base (toujours présents)
+          const fields: FormField[] = [
+            createNumberField('primeBrute', 'Prime Brute'),
+            createNumberField('primeNette','Prime Nette'),
+          //  createNumberField('estimationPrime',  'Estimation Prime'),
+          ]
+         
+ /*        
+        if(currentNatureOffre.value)  {
+             
+              if ( currentNatureOffre.value.isXs) {
+                fields.push(
+                  createNumberField('capacite', 'Portée'),
+                  createNumberField('retention', 'Franchise'),
+                )
+              }
+              if (
+                currentNatureOffre.value.isFacObligatoire || 
+                currentNatureOffre.value.isQuotePart
+              ) {
+                fields.push(
+                  createNumberField('aliment', 'Aliment'),
+                  createNumberField('capacite', 'Capacité'),
+                )
+              }
+
+        }//if(currentNatureOffre.value) 
+*/
+          return fields
+})
+// 3. Génération dynamique de tes FormField
+const tempQuittanceFields = computed<FieldConfig[]  >(() => 
+  baseFieldsConfig.value.map(({ key, label }) => ({
+    key,
+    label,
+    type: 'number',
+    size: '2xl',
+    helpText: `${label} à 100%`,
+    numberOptions: baseNumberOptions,
+  }))
+)
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
@@ -95,7 +128,7 @@ const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : '
 function initializeFormData(): TempQuittanceFormData {
   if (!currentTempQuittance) {
     return Object.fromEntries(
-      tempQuittanceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
+      tempQuittanceFields.value.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
     ) as  unknown as TempQuittanceFormData
   }
 

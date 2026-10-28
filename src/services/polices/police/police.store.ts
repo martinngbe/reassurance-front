@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Police } from './police'
-import { useQuittanceStore } from '../quittances/quittance/quittance.store'
+import { useQuittanceStore } from '../../quittances/quittance/quittance.store'
 
 export const usePoliceStore = defineStore('policeStore', () => {
 
@@ -14,15 +14,17 @@ export const usePoliceStore = defineStore('policeStore', () => {
 
   // ==================== ACTIONS ====================
   const selectPolice = (police: Police | null) => {
+    console.warn("__________ SELECTION POLICE __________")
+    console.log("ID AVANT:", currentPolice.value?.id)
+    console.log("ID APRES:", police?.id)
     currentPolice.value = police
-    console.log("------ usePoliceStore.selectPolice à changé, on réinitialise la quittance ...")
     // la selection d'une police, réinitialise les quittances rattachées
     quittanceStore.clearSelection()
   }
 
   const clearSelection = () => {
     currentPolice.value = null
-    console.log("------ usePoliceStore.clearSelection on réinitialise la police ...")
+    console.warn("__________ INITIALISTAION POLICE __________")
     quittanceStore.clearSelection()
     
   }
@@ -42,7 +44,7 @@ export const usePoliceStore = defineStore('policeStore', () => {
     }
   }
   const setCurrentPolice = (police: Police) => {
-    currentPolice.value = police
+    selectPolice(police)
   }
 
 

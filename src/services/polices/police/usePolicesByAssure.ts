@@ -14,6 +14,7 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 // usePoliceByAssure.ts
 export function usePolicesByAssure(
   assureId:   number  | string ,
+  isCession: boolean,
   params: ComputedRef<PaginationParams> // ← Retirer & { assureId: number }
 ) {
   const watchKeys = computed(() => ({
@@ -30,6 +31,7 @@ export function usePolicesByAssure(
       const response = await policeApi.getAll({
         ...toValue(params), // ← Spread des params de pagination SEULEMENT
         assureId: toValue(assureId), // ← Injection explicite
+        isCession: toValue(isCession),
         page,
         limit,
       })

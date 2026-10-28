@@ -1,11 +1,11 @@
 
 import type { Pays } from "@/services/referentiel/pays/pays";
 import type { BaseEntity } from "@/type/base-entity";
-import type { Assure } from "../acteurs/assure/assure";
-import type { Acteur } from "../acteurs/acteur/acteur";
-import type { SousBranche } from "../referentiel/sous-branche/sous-branche";
-import type { NatureOffre } from "../referentiel/nature-offre/nanture-offre";
-import type { TempQuittance } from "../quittances/temp-quittance/temp-quittance";
+import type { Assure } from "../../acteurs/assure/assure";
+import type { Acteur } from "../../acteurs/acteur/acteur";
+import type { SousBranche } from "../../referentiel/sous-branche/sous-branche";
+import type { NatureOffre } from "../../referentiel/nature-offre/nanture-offre";
+import type { TempQuittance } from "../../quittances/temp-quittance/temp-quittance";
 
 export interface TempPolice extends BaseEntity {
   numero: string;
@@ -43,7 +43,7 @@ export type TempPoliceFormData = Partial<Omit<TempPolice,
     'acteurCourtierId' | 
     'acteurCedanteId' | 
     'sousBrancheId' >> & {
-  assureId: number | Assure;
+  assureId?: number | Assure  |  null  ;
   natureOffreId: number | NatureOffre;
   acteurCourtierId: number | Acteur;
   acteurCedanteId: number | Acteur;

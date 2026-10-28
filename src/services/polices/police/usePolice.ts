@@ -7,8 +7,8 @@ import type { PaginationParams } from '@/type/pagination'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { usePoliceStore } from './police.store'
-import { useEcransStore } from '../ecrans/ecrans.store'
-import { useAssureStore } from '../acteurs/assure/assure.store'
+import { useEcransStore } from '../../ecrans/ecrans.store'
+import { useAssureStore } from '../../acteurs/assure/assure.store'
 
 const KEY = 'polices';
 export function usePolices(params: ComputedRef<PaginationParams>) {
@@ -17,7 +17,7 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
   const ecranStore = useEcransStore()
   const assureStore = useAssureStore()
 
-  const isFAC = computed(()=> ecranStore.currenteFormeEcran)
+  const isFAC = computed(()=> ecranStore.currentEcran)
   const currentAssure = computed(()=> assureStore.currentAssure)
   const watchKeys = computed(() => ({
     search: params.value.search,
@@ -54,10 +54,6 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
       polices.refresh()
     },
   })
-
-
-
-
  // ==================== UPDATE ====================
   const updatePolice = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Police> }) =>
@@ -110,18 +106,6 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
     },
   })
 
-  // ==================== TRANSFERT TEMP -> DÉFINITIF ====================
-const transfererPolice = useMutation({
-  mutationFn: (tempPoliceId: number) => policeApi.transfererDepuisTemp(tempPoliceId),
-  onSuccess: (police) => {
-    // La nouvelle police devient la police courante
-   //policeStore.setCurrentPolice(police)
-    queryClient.invalidateQueries({ queryKey: [KEY] })
-    // Si tu as un cache pour les polices temporaires, invalide-le aussi :
-    queryClient.invalidateQueries({ queryKey: ['temp-polices'] })
-    polices.refresh()
-  },
-})
 
   // ==================== RELOAD CURRENT ====================
   const reloadCurrentPolice = async () => {
@@ -140,7 +124,6 @@ const transfererPolice = useMutation({
     createPolice,
     updatePolice,
     deletePolice,
-    transfererPolice,
     reloadCurrentPolice,
     refresh: polices.refresh,
   }

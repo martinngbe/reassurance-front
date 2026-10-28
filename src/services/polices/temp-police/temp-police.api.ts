@@ -9,6 +9,10 @@ export const tempPoliceApi = {
   getAll: (params: PaginationParams = {}) => {
     return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
   },
+ transfererDepuisTemp: async (tempPoliceId: number): Promise<IResponse> => {
+      const response = await apiClient.post(`${BASE}/temp/${tempPoliceId}/transferer`)
+      return response.data // ou response.data.data selon ton format IResponse
+    },
   getById: (id: number) =>
     apiClient.get<IResponse>(`${BASE}/${id}`).then((r) => r.data.data),
   create: (data: CreateTempPoliceDto) =>

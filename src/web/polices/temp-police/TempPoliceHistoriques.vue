@@ -5,11 +5,11 @@ import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import { useTempPolices } from '@/services/temp-police/useTempPolice.ts'
-import type { TempPolice } from '@/services/temp-police/temp-police.ts'
+import { useTempPolices } from '@/services/polices/temp-police/useTempPolice'
+import type { TempPolice } from '@/services/polices/temp-police/temp-police'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 
 // ==================== ÉTAT LOCAL ====================
 const tempPoloceStore = useTempPoliceStore()
@@ -42,6 +42,8 @@ type TempPoliceRow = TempPolice & { [key: string]: any }
 const tempPoliceColumns: TableColumn[] = [
   //{ key: 'numero',                label: 'N°TempPolice',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',           width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isIard',                label: 'IARD',           width: 50,   minWidth: 80,  align: 'center' },
+ 
   { key: 'natureOffre',           label: 'Nature Offre',    width: 150,  minWidth: 100, },
 
   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 100,  minWidth: 100, align: 'center' },
@@ -144,6 +146,10 @@ watch(tableSearch, () => {
               <IconeValider v-if="value==true"/>
               <IconeNonValider v-else />
           </template>
+          <template #cell-isIard="{ value }">
+              <IconeValider v-if="value==true"/>
+              <IconeNonValider v-else />
+          </template>          
           <template #cell-isReconductionTacite="{ value }">
               <IconeValider v-if="value==true"/>
               <IconeNonValider v-else />

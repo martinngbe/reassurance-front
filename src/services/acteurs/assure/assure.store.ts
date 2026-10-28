@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Assure } from './assure'
-import { usePoliceStore } from '@/services/police/police.store'
+import { usePoliceStore } from '@/services/polices/police/police.store'
 
 export const useAssureStore = defineStore('assureStore', () => {
   const policeStore = usePoliceStore()
@@ -25,14 +25,20 @@ export const useAssureStore = defineStore('assureStore', () => {
   
   // --- Actions pour la sélection unique ---
   const selectAssure = (assure: Assure | null) => {
+    console.warn("__________ CHANGEMENT ASSURE __________")
+    console.log("ANCIEN : ",currentAssure.value?.raisonSociale.toUpperCase())
+    console.log("NOUVEAU :",assure? assure.raisonSociale.toUpperCase() : null)
     currentAssure.value = assure
-    console.log("------ useAssureStore.selectAssure  l'assuré vient de changer ...")
     // la selection d'un assuré, reinialise la polices polices rattachées
     policeStore.clearSelection()
   }
   const clearCurrentAssure = () => {
-    currentAssure.value = null
-    policeStore.clearSelection()
+    // console.warn("__________  ASSUREE  __________")
+    // console.log("ANCIEN : ",currentAssure.value?.raisonSociale.toUpperCase())
+    // console.log("NOUVEAU :",assure? assure.raisonSociale.toUpperCase() : null)
+    // currentAssure.value = null
+    // policeStore.clearSelection()
+    clearSelection()
   }
 
   // --- Actions pour la sélection multiple (Table) ---
@@ -40,8 +46,10 @@ export const useAssureStore = defineStore('assureStore', () => {
     selectedAssures.value = ids
   }
   
-  const clearSelectedAssures = () => {
+  const clearSelection = () => {
+    console.warn("__________ INITIALISTAION ASSURE __________")
     selectedAssures.value = []
+    policeStore.clearSelection()
   }
   
   const toggleAssureSelection = (id: string | number) => {
@@ -79,7 +87,7 @@ export const useAssureStore = defineStore('assureStore', () => {
     clearCurrentAssure,
     // Actions (Multiple)
     setSelectedAssures,
-    clearSelectedAssures,
+    clearSelection,
     updateCurrentAssure,
     removeIfCurrent,
     toggleAssureSelection,

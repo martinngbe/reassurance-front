@@ -7,15 +7,11 @@ const BASE = '/police'
 // ⭐ Étendre PaginationParams pour accepter assureId
 type PoliceQueryParams = PaginationParams & { 
   assureId?: number | string
+  isCession?: boolean
 }
 export const policeApi = {
   getAll: (params: PoliceQueryParams = {}) => {
     return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
-  },
-
-   transfererDepuisTemp: async (tempPoliceId: number): Promise<IResponse> => {
-    const response = await apiClient.post(`${BASE}/temp/${tempPoliceId}/transferer`)
-    return response.data // ou response.data.data selon ton format IResponse
   },
 
   getById: (id: number) =>

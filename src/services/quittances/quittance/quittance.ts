@@ -1,45 +1,71 @@
 
+import type { Police } from "@/services/polices/police/police";
+import type { Devise } from "@/services/referentiel/devise/devise";
+import type { Mouvement } from "@/services/referentiel/mouvement/mouvement";
 import type { Pays } from "@/services/referentiel/pays/pays";
 import type { BaseEntity } from "@/type/base-entity";
 
 export interface Quittance extends BaseEntity {
-  numero: string;
-  mouvementId: number;
-  policeId: number;
-  deviseId: number;
-  isCession?: boolean; 
-  isProportionnel?: boolean;
-  isFac?: boolean;
+ numero: string;
+  ////// Hérité de l'entité TempPolice
+  // isCession?: boolean; 
+  //isProportionnel?: boolean;
+  //isFac?: boolean;
+  ///////////////////////////// 
+  ////// Emission 
+  /////////////////////////////  
   dateEmission?: string;
   dateEffet?: string;
   dateEcheance?: string;
   coursDevise: number;
-  avisEcheance?: number; 
+  avisEcheance?: number;
+  nombreEcheancePmd: number;
+  sinistreAuComptant?: number;
+  avisSinistre?: number;
+  ///////////////////////////// 
+  ////// Capitaux 
+  /////////////////////////////
   capitaux: number; 
-  limiteCapitauxImpliques: number;
-  ici: number;
+  //limiteCapitauxImpliques: number;
+  lci: number;
   smp: number;
   limite: number;
   retention: number;
   conservation: number;
   capacite: number;
-  estimationPrime: number;
+ 
+  ///////////////////////////// 
+  ////// Prime 
+  /////////////////////////////
+  estimationPrime: number; 
+  primeBrute: number;
+  primeNette: number;  
+  ///////////////////////////// 
+  ////// Taux et Taxes 
+  /////////////////////////////
+  tauxCession: number;
+  tauxRetention: number;
+
   tauxCedante: number;
   tauxAccepte: number;
   tauxCommission: number;
-  taxeSurCommission: number;
-  primeBrute: number;
-  primeNette: number;
   taxeSurPrime: number;
-  nombreEcheancePmd: number;
-  sinistreAuComptant?: number;
-  avisSinistre?: number;
-  aliment?: number;
-  isAnnule?: boolean;
+  taxeSurCommission: number;
+  ///////////////////////////// 
+  ////// Autres 
+  /////////////////////////////
 
-  // Relations
-  quittancennule: Quittance
-  quittanceIdAnnule: number;
+  aliment?: number;    
+  ////// Relation
+  mouvement: Mouvement
+  mouvementId: number;
+
+  police: Police
+  policeId: number;
+
+  devise: Devise
+  deviseId: number;
+ 
 }
 
 export type CreateQuittanceDto = Omit<Quittance, keyof BaseEntity>;

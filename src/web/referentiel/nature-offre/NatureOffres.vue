@@ -45,6 +45,13 @@ type NatureOffreRow = NatureOffre & { [key: string]: any }
 const natureOffreColumns: TableColumn[] = [ 
   { key: 'code',              label: 'Code',        width: '25%',  minWidth: 150 , sortable: true},
   { key: 'libelle',           label: 'Libellé',     width: '60%',  minWidth: 150 , sortable: true},
+ 
+  { key: 'isEdp',             label: 'EDP',      width: '5%',   minWidth: 150 , sortable: true},
+  { key: 'isQuotePart',       label: 'QP',      width: '5%',   minWidth: 150 , sortable: true},
+  { key: 'isXs',              label: 'XS.',      width: '5%',   minWidth: 150 , sortable: true},
+ 
+
+ 
   { key: 'isProportionnelle', label: 'Propo.',      width: '5%',   minWidth: 150 , sortable: true},
   { key: 'isFacultative',     label: 'FAC',         width: '5%',   minWidth: 150 , sortable: true},
   { key: 'isFacObligatoire',  label: 'FACOB',       width: '5%',   minWidth: 150 , sortable: true},
@@ -221,6 +228,20 @@ watch(tableSearch, () => {
     <template #cell-libelle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
+
+    <template #cell-isEdp="{ value }">
+       <IconeValider v-if="value"/>
+       <IconeNonValider  v-else/>
+    </template>
+    <template #cell-isQuotePart="{ value }">
+       <IconeValider v-if="value"/>
+       <IconeNonValider  v-else/>
+    </template>
+        <template #cell-isXs="{ value }">
+       <IconeValider v-if="value"/>
+       <IconeNonValider  v-else/>
+    </template>
+
     <template #cell-isProportionnelle="{ value }">
        <IconeValider v-if="value"/>
        <IconeNonValider  v-else/>

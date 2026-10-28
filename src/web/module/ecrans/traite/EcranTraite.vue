@@ -2,7 +2,7 @@
 import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
-import { usePoliceStore } from '@/services/police/police.store';
+import { usePoliceStore } from '@/services/polices/police/police.store';
 import Polices from '@/web/polices/police/Polices.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
 import { computed, ref, watch } from 'vue';

@@ -48,7 +48,11 @@ export function useTempQuittances(params: ComputedRef<PaginationParams>) {
           console.log('____________________________________')
       // ⭐ Synchroniser le store si c'est l'tempQuittance sélectionné
       if (tempQuittanceStore.currentTempQuittanceId !== tQuittance.id) {
+        // la TempQuittanceCrée devient CurrentTempQuittance
         tempQuittanceStore.selectTempQuittance(tQuittance)
+        // On recharge depuis la BD afin de charger les relation de
+        // CurrentTempQuittance 
+        await reloadCurrentTempQuittance()
         console.log('____________________________________')
       }
      return tQuittance

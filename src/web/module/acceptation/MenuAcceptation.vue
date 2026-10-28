@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FORME_ECRAN_FACULTATIVE, FORME_ECRAN_TABLEAU_DE_BORD, FORME_ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
+import { ECRAN_FACULTATIVE, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
 import { onMounted, ref } from 'vue';
 
 
@@ -12,20 +12,20 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref(FORME_ECRAN_TABLEAU_DE_BORD)
+const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
 const menus: MenuItem[] = [
   {
-    id: FORME_ECRAN_TABLEAU_DE_BORD,
+    id: ECRAN_TABLEAU_DE_BORD,
     label: 'Tableau de bord',
     icon: 'pi pi-home', // ou 'pi pi-th-large'
   },
   {
-    id: FORME_ECRAN_FACULTATIVE,
+    id: ECRAN_FACULTATIVE,
     label: 'Facultative',
     icon: 'pi pi-file', // ou 'pi pi-clipboard' pour l'analyse de dossier
   },
   {
-    id: FORME_ECRAN_TRAITE,
+    id: ECRAN_TRAITE,
     label: 'Traité',
     icon: 'pi pi-shield', // ou 'pi pi-sync' pour le côté automatique, ou 'pi pi-arrows-h'
   },
@@ -40,7 +40,7 @@ function selectMenu(menuId: string) {
 }
 const ecransStore = useEcransStore()
 onMounted(()=>{
-   ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+   ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
 })
 </script>
 

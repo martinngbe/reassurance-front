@@ -1,10 +1,10 @@
 
 import type { Pays } from "@/services/referentiel/pays/pays";
 import type { BaseEntity } from "@/type/base-entity";
-import type { Assure } from "../acteurs/assure/assure";
-import type { Acteur } from "../acteurs/acteur/acteur";
-import type { SousBranche } from "../referentiel/sous-branche/sous-branche";
-import type { NatureOffre } from "../referentiel/nature-offre/nanture-offre";
+import type { Assure } from "../../acteurs/assure/assure";
+import type { Acteur } from "../../acteurs/acteur/acteur";
+import type { SousBranche } from "../../referentiel/sous-branche/sous-branche";
+import type { NatureOffre } from "../../referentiel/nature-offre/nanture-offre";
 
 export interface Police extends BaseEntity {
   numero: string;

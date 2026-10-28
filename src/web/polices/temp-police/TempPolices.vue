@@ -9,8 +9,8 @@ import TButton from '@/composants/forms/TButton.vue'
 import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
-import { useTempPolices } from '@/services/temp-police/useTempPolice.ts'
-import type { TempPolice } from '@/services/temp-police/temp-police.ts'
+import { useTempPolices } from '@/services/polices/temp-police/useTempPolice'
+import type { TempPolice } from '@/services/polices/temp-police/temp-police'
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')

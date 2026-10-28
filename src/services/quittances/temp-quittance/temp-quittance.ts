@@ -2,7 +2,7 @@
 import type { Devise } from "@/services/referentiel/devise/devise";
 import type { Mouvement } from "@/services/referentiel/mouvement/mouvement";
 import type { Pays } from "@/services/referentiel/pays/pays";
-import type { TempPolice } from "@/services/temp-police/temp-police";
+import type { TempPolice } from "@/services/polices/temp-police/temp-police";
 import type { BaseEntity } from "@/type/base-entity";
 
 export interface TempQuittance extends BaseEntity {
@@ -33,15 +33,19 @@ export interface TempQuittance extends BaseEntity {
   retention: number;
   conservation: number;
   capacite: number;
-  estimationPrime: number; 
+ 
   ///////////////////////////// 
   ////// Prime 
   /////////////////////////////
+  estimationPrime: number; 
   primeBrute: number;
   primeNette: number;  
   ///////////////////////////// 
   ////// Taux et Taxes 
   /////////////////////////////
+  tauxCession: number;
+  tauxRetention: number;
+
   tauxCedante: number;
   tauxAccepte: number;
   tauxCommission: number;

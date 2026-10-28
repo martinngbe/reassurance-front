@@ -4,7 +4,7 @@ import TInput from './TInput.vue'
 import { formatNumber, parseNumber, type FormatNumberOptions } from '../../utilitaire/number'
 import { nextUid } from '../../utilitaire/uid'
 
-type InputSize = 'sm' | 'md' | 'lg' | 'xl'
+type InputSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
 
 const props = withDefaults(
   defineProps<{

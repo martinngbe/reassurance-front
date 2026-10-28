@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { TempPolice } from './temp-police'
-import { useTempQuittanceStore } from '../quittances/temp-quittance/temp-quittance.store'
-import type { TempQuittance } from '../quittances/temp-quittance/temp-quittance'
+import { useTempQuittanceStore } from '../../quittances/temp-quittance/temp-quittance.store'
+import type { TempQuittance } from '../../quittances/temp-quittance/temp-quittance'
 
 export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   // ==================== STATE ====================
@@ -18,7 +18,9 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
     currentTempPolice.value = tempPolice
     // la selection d'une nouvelle tempPolice réinialialise 
     // la tempQuittance rattachée
-    
+    console.log(" --------------------------------------------  ")
+    console.warn(" ---selectTempPolice:", currentTempPolice.value)
+    console.log(" --------------------------------------------  ")
     // Lors de la saisie temporairaire, la TempPolice vient avec 
     // toutes les TempQuittances rattachée . On prendra soin de veiller
     // qui'il n'en ait pas plus de un
@@ -53,12 +55,26 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   }
 
   const setCurrentTempPolice = (police: TempPolice) => {
-  currentTempPolice.value = police
+
+  console.log(" --------------------------------------------  ")
+  console.warn(" ---setCurrentTempPolice:", police)
+  console.log(" --------------------------------------------  ")
+    if(currentTempPolice.value && 
+      police.id === currentTempPolice.value.id ){
+            // le ID de la police n'a pas changer
+            // c'est sûrement un des propriétés qui a changer
+            currentTempPolice.value = police
+            return
+      }
+     // ICI tout est different. C'est totalement une nouvelle police
+     currentTempPolice.value = police 
+     // Don il faut réinitialiser le cuurentTempQuittance rattachée à currentTempPolice 
+     tempQuittanceStore.clearTempQuittanceSelection() 
 }
  const setTempPoliceIsAffaireNouvelleExecutee = (b: boolean) => {
   isAffaireNouvelleExecutee.value = b
   console.log(" --------------------------------------------  ")
-  console.log(" ----MAJ de   isAffaireNouvelleExecutee.value:", isAffaireNouvelleExecutee.value)
+  console.warn(" ----MAJ de   isAffaireNouvelleExecutee.value:", isAffaireNouvelleExecutee.value)
   console.log(" --------------------------------------------  ")
 }
 

@@ -4,13 +4,15 @@ import TFieldWrapper from './TFieldWrapper.vue'
 import { nextUid } from '../../utilitaire/uid'
 import { controlBase } from './fieldStyles'
 
-export type InputSize = 'sm' | 'md' | 'lg' | 'xl'
+export type InputSize = 'sm' | 'md' | 'lg' | 'xl'| '2xl' | '4xl'
 
 const sizeClasses: Record<InputSize, string> = {
   sm: 'h-8 px-2 text-xs',
   md: 'h-10 px-3 text-sm',
   lg: 'h-12 px-4 text-base',
   xl: 'h-14 px-5 text-lg',
+  "2xl": 'h-16 px-5 text-xl',
+  "4xl": 'h-18 px-5 text-2xl',
 }
 
 const props = withDefaults(

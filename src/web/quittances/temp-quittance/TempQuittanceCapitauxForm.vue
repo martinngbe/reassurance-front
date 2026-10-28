@@ -1,104 +1,109 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
-import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
+import type { FormField } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
 
+// ==================== STORES & COMPUTED ====================
 const mouvementStore = useMouvementStore()
 const tempPoliceStore = useTempPoliceStore()
-const currentMouvement = computed(()=> mouvementStore.currentMouvement)
-const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
-
-
 const tempQuittanceStore = useTempQuittanceStore()
-const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
+
+const currentMouvement = computed(() => mouvementStore.currentMouvement)
+const currentTempPolice = computed(() => tempPoliceStore.currentTempPolice)
+const currentNatureOffre = computed(() => tempPoliceStore.currentTempPolice?.natureOffre)
+const currentTempQuittance = computed(() => tempQuittanceStore.currentTempQuittance)
+
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
 }>()
-console.log(' ================================== ')
-console.log(' TempQuittanceCapiatauxForm.vue')
-console.log(' ================================== ')
-console.log(' currentTempPolice.value    :',currentTempPolice.value)
-console.log(' currentTempQuittance.value :',currentTempQuittance.value)
-console.log(' currentMouvement.value     :',currentMouvement.value)
-console.log(' ================================== ')
+
+console.log('==================================')
+console.log('TempQuittanceCapitauxForm.vue')
+console.log('==================================')
+console.log('currentTempPolice.value    :', currentTempPolice.value)
+console.log('currentTempQuittance.value :', currentTempQuittance.value)
+console.log('currentMouvement.value     :', currentMouvement.value)
+console.log('==================================')
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 
-const tempQuittanceFields: FieldConfig[] = [
-///////////////////////////// 
-////// Capitaux 
-/////////////////////////////
-  { key: 'capitaux',     label: 'Capitaux',     type: 'number' , size:'lg', helpText:"Capitaux à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'lci',          label: 'LCI',          type: 'number', size:'lg' , helpText:"LCI à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'smp',          label: 'SMP',          type: 'number' , size:'lg', helpText:"SMP à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'limite',       label: 'Limite',       type: 'number' , size:'lg', helpText:"Limite à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'retention',    label: 'Retention',    type: 'number' , size:'lg', helpText:"Retention à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'conservation', label: 'Conservation', type: 'number' , size:'lg', helpText:"Conservation à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'capacite',     label: 'Capacite',     type: 'number' , size:'lg', helpText:"Capacite à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
+// ✅ Helper pour éviter de répéter la configuration des champs numériques
+const createNumberField = (key: string, label: string): FormField => ({
+  key,
+  label,
+  type: 'number',
+  size: 'xl',
+  helpText: `${label} à 100%`,
+  numberOptions: {
+    decimals: 2,
+    formatOptions: { style: 'decimal' },
+    returnType: 'number',
+  },
+})
+
+// ✅ Génération dynamique et lisible des champs
+const tempQuittanceFields = computed<FormField[]>(() => {
+  // 1. Champs de base (toujours présents)
+  const fields: FormField[] = [
+    createNumberField('capitaux', 'Capitaux'),
+    createNumberField('lci', 'LCI'),
+    createNumberField('smp', 'SMP'),
+  ]
+  // 2. Champs conditionnels (si l'offre n'est pas proportionnelle)
   
-]
+  if(currentNatureOffre.value)  {
+            if ( currentNatureOffre.value.isEdp) {
+                fields.push(
+                  createNumberField('retention', 'Rétention'),
+                  createNumberField('aliment', 'Aliment'),
+                )
+              }
+              if ( currentNatureOffre.value.isXs) {
+                fields.push(
+                  createNumberField('capacite', 'Portée'),
+                  createNumberField('retention', 'Franchise'),
+                )
+              }
+              if (
+                currentNatureOffre.value.isFacObligatoire || 
+                currentNatureOffre.value.isQuotePart
+              ) {
+                fields.push(
+                  createNumberField('aliment', 'Aliment'),
+                  createNumberField('capacite', 'Capacité'),
+                )
+              }
+
+  }//if(currentNatureOffre.value) 
+
+  return fields
+})
+
 // ==================== LOGIQUE FORMULAIRE ====================
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
+// ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
-  if (!currentTempQuittance) {
+  // Correction 1 : Ajout de .value et suppression de l'espace dans "currentTempQuittance"
+  if (!currentTempQuittance.value) {
     return Object.fromEntries(
-      tempQuittanceFields.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
-    ) as  unknown as TempQuittanceFormData
+      tempQuittanceFields.value
+        // Correction 2 : On filtre pour ne garder que les champs qui ont une 'key' (exclut les SectionHeader)
+        .filter((f): f is Extract<FormField, { key: string }> => 'key' in f)
+        .map((f) => [f.key, f.type === 'checkbox' ? true : ''])
+    ) as unknown as TempQuittanceFormData
   }
 
   const data = { ...currentTempQuittance.value } as TempQuittanceFormData
@@ -107,9 +112,9 @@ function initializeFormData(): TempQuittanceFormData {
 
 const formData = ref<TempQuittanceFormData>(initializeFormData())
 
-// ✅ Watcher pour gérer les changements de props.currentTempQuittance
-watch(() => currentTempQuittance, (newActeur) => {
-  if (newActeur) {
+// ✅ Watcher pour gérer les changements de currentTempQuittance
+watch(() => currentTempQuittance, (newQuittance) => {
+  if (newQuittance) {
     formData.value = initializeFormData()
   }
 }, { deep: true })
@@ -128,85 +133,66 @@ function extractId(value: any): number | undefined {
   return value
 }
 
+
+// ✅ Helper pour construire le payload commun (évite la duplication)
+function buildPayload(data: Record<string, any>) {
+   const mouvementId = data.mouvementId || currentMouvement.value?.id
+   const policeId = data.policeId || currentTempPolice.value?.id
+  return {
+          mouvementId,
+          capitaux: data.capitaux,
+          lci: data.lci,
+          smp: data.smp,
+          limite: data.limite,
+          retention: data.retention,
+          conservation: data.conservation,
+          capacite: data.capacite,
+  }
+}
+
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  console.log('____ AVANT _____ TempQuittancCapitauxForme.handleSubmit _________ ')
-  console.log('currentMouvement.value: ',currentMouvement.value)
-  console.log('data: ',data)
+  console.log('____ AVANT _____ TempQuittanceCapitauxForm.handleSubmit _________ ')
+  console.log('currentMouvement.value: ', currentMouvement.value)
+  console.log('data: ', data)
 
   try {
-
-    if(!data.mouvementId && currentMouvement.value)
-      data.mouvementId = currentMouvement.value.id;
-
-    if(!data.policeId && currentTempPolice.value)
-      data.policeId = currentTempPolice.value.id;
+  
 
     if (isEditing.value && currentTempQuittance.value?.id) {
-      console.log("<<<<<<< handleSubmit data:",data)
+      console.log(" < < < < < < < handleSubmit data: ", data)
       await updateTempQuittance.mutateAsync({
         id: currentTempQuittance.value.id,
-        data: {           
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            mouvementId: data.mouvementId ,
-            capitaux: data.capitaux,
-            lci: data.lci,
-            smp: data.smp,
-            limite: data.limite,
-            retention: data.retention,
-            conservation: data.conservation,
-            capacite: data.capacite,            
-        },
+        data: buildPayload(data),
       })
       emit('success', 'TempQuittance Capitaux modifié avec succès')
     } else {
-      await createTempQuittance.mutateAsync({
-            
-            ///////////////////////////// 
-            ////// Capitaux 
-            /////////////////////////////
-            mouvementId: data.mouvementId ,
-            capitaux: data.capitaux,            
-            lci: data.lci,
-            smp: data.smp,
-            limite: data.limite,
-            retention: data.retention,
-            conservation: data.conservation,
-            capacite: data.capacite,
-      } as TempQuittance)
-      emit('success', 'Assuré créé avec succès')
-    }
-   
+      await createTempQuittance.mutateAsync(buildPayload(data) as TempQuittance)
+      emit('success', 'Quittance créée avec succès')    }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
     errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
   }
 
-  console.log('____ APRES _____ TempQuittancCapitauxForme.handleSubmit _________ ')
-  console.log('currentMouvement.value: ',currentMouvement.value)
-  console.log('data: ',data)
+  console.log('____ APRES _____ TempQuittanceCapitauxForm.handleSubmit _________ ')
 }
 
 const handleCancel = () => {
   errorMessage.value = null
   emit('cancel')
 }
-
-const dismissError = () => {
-  errorMessage.value = null
-}
 </script>
 
 <template>
-  <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Quittance Capitaux" class="mb-8" />  
-   
+  <div class="flex flex-col">
+    <TTitreSousModule libelle="Quittance Capitaux" class="mb-8" />
+    
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
     </div>
-    <GenericCrudForm v-if="currentTempPolice"
+
+    <GenericCrudForm 
+      v-if="currentTempPolice"
       v-model="formData"
       :fields="tempQuittanceFields"
       :mode="formMode"
@@ -219,13 +205,15 @@ const dismissError = () => {
       @submit="handleSubmit"
       @cancel="handleCancel"
     />
-    <div class="w-full" v-else>
-        <TAlert  variant="warning">
-            <p class="text-xl">Saisissez d'abord la police svp ...</p>
-        </TAlert>
+    
+    <div v-else class="w-full">
+      <TAlert variant="warning">
+        <p class="text-xl">Saisissez d'abord la police svp ...</p>
+      </TAlert>
     </div>
   </div>
 </template>
+
 <style scoped>
 /* Animation pour le message d'erreur */
 .slide-fade-enter-active {

@@ -8,7 +8,7 @@ import AffaireNouvelleEtapes from './AffaireNouvelleEtapes.vue'
 import { useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import EnConstruction from '@/web/EnConstruction.vue'
 import TAlert from '@/composants/display/TAlert.vue'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store.ts'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store.ts'
 import TempPolices from '@/web/polices/temp-police/TempPolices.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store.ts'
@@ -74,15 +74,12 @@ const ecransStore = useEcransStore()
 const mouvementsStore = useMouvementStore()
 const  {getMouvementByCode} = useMouvements()
 const currenteModuleDisplay = computed(() => ecransStore.currenteModule)
-const currenteFormeEcran = computed(() => ecransStore.currenteFormeEcran)
-const currentTempPolice = computed(() =>tempPoliceStore.currentTempPolice)
-/*const titleHistoriqueSaisie= computed(() =>currentTempPolice.value? 
-'Historique des saisies N°Temp Police:'+currentTempPolice.value.id :
-'Historique des saisies '
-)*/
+const currentEcran = computed(() => ecransStore.currentEcran)
+const natureOffre = computed(()=>tempPoliceStore.currentTempPolice?.natureOffre)
+
 // ✅ 5. Fallback garanti → jamais undefined
 const currentModule = computed(() => moduleComponents[activeMenu.value] ?? EnConstruction)
-const showModal = ref(false)
+
 // lecture du mouvement AFN
 const afn = ref(MOUVEMENT_AFN);
 const { data: mouvement } = getMouvementByCode(afn);
@@ -112,7 +109,7 @@ watch(mouvement  , (newData ) => {
   <TLayoutModule 
       topSize="80px" 
       leftSize="20%" 
-      bottom-size="8%"
+      bottom-size="85px"
       >
     <template #header>
       <div class="flex flex-col p-1">
@@ -141,12 +138,18 @@ watch(mouvement  , (newData ) => {
     </template>
 
     <template #footer >
-      <div class="flex gap-1 justify-between items-center "> 
-        <TAlert  variant="info" :title="currenteModuleDisplay +' / '+ currenteFormeEcran"/>
+      
+      <div  class="flex w-full mt-2  items-center justify-center">                 
+                  <TAlert variant="info">
+                       <div class="flex flex-col">
+                            <p  v-if="natureOffre" class="text-lg font-bold">{{ natureOffre.libelle }}</p>
+                            <p class="text-md font-bold">{{ currenteModuleDisplay +' / '+ currentEcran }}</p> 
+                       </div>
+                  </TAlert> 
       </div>
     </template>
+
   </TLayoutModule>
-  <TModal v-model="showModal" width="45%" title="Historique saisie tempPolice" >
-    <TempPolices :masque-affaire-nouvelle="true"/>
-  </TModal>
+
+
 </template>

@@ -5,22 +5,23 @@ import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import type { Police } from '@/services/police/police'
+import type { Police } from '@/services/polices/police/police'
 import TButton from '@/composants/forms/TButton.vue'
 import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
 import TModal from '@/composants/display/TModal.vue'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
-import {  FORME_ECRAN_TRAITE,  useEcransStore } from '@/services/ecrans/ecrans.store'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
+import {  ECRAN_TRAITE,  MODULE_ACCEPTATION,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
-import { usePolicesByAssure } from '@/services/police/usePolicesByAssure'
+import { usePolicesByAssure } from '@/services/polices/police/usePolicesByAssure'
 import type { Assure } from '@/services/acteurs/assure/assure'
-import { usePoliceStore } from '@/services/police/police.store'
+import { usePoliceStore } from '@/services/polices/police/police.store'
 
 
 const ecransStore = useEcransStore()
-const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
-const isAffairesTraite = computed(()=> currenteFormeEcran.value=== FORME_ECRAN_TRAITE)
+const currentEcran = computed(()=> ecransStore.currentEcran)
+const isEcranTraite = computed(()=> currentEcran.value=== ECRAN_TRAITE)
+const isModuleCession = computed(()=> ecransStore.currentModule === MODULE_CESSION)
 //const currenteModule = computed(()=> ecransStore.currenteModule)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -47,12 +48,13 @@ const params = computed<PaginationParams>(() => ({
 // ==================== API + CRUD ====================
 // Ne pas destructurer polices
 const store = props.currentAssure?
-      usePolicesByAssure( props.currentAssure.id ,params) :
-      usePolicesByAssure( "null" ,params) ; 
+      usePolicesByAssure( props.currentAssure.id , isModuleCession.value ,params) :
+      usePolicesByAssure( "null" , isModuleCession.value ,params) ; 
        
 const { polices  } = store
 type PoliceRow = Police & { [key: string]: any }
 const tempPoliceStore = useTempPoliceStore()
+
 const policeStore = usePoliceStore()
 const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvelleExecutee )
 
@@ -60,7 +62,7 @@ const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvell
 const policeColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'natureOffre',           label: 'Nature Offre',    width: 200,  minWidth: 200, },
+  { key: 'natureOffre',           label: 'Nature Offre',    width: 400,  minWidth: 200, },
   
 
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
@@ -121,7 +123,11 @@ const openAffaireNouvelle =()=>{
 watch(
   isAffaireNouvelleExecutee,
   (newValue) => {
-     if (newValue) showModal.value=false
+     console.warn("isAffaireNouvelleExecutee newValue:",newValue)
+     if (newValue) {
+      showModal.value=false
+      polices.refresh()      
+     } 
   },
   { immediate: true }
 )
@@ -181,7 +187,7 @@ watch(tableSearch, () => {
             {{ currentAssure.raisonSociale }}
           </p>
           <TButton 
-                v-if ="currentAssure || isAffairesTraite" 
+                v-if ="currentAssure || isEcranTraite" 
                 type="button"
                 variant="soft" 
                 @click="openAffaireNouvelle"           
@@ -193,7 +199,7 @@ watch(tableSearch, () => {
       <span class="font-mono  text-xl uppercase" >{{ value.code }}</span>
     </template>
     <template #cell-assure="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+      <span class="font-mono text-xl uppercase" v-if="value" >{{ value.raisonSociale }}</span>
     </template>
     <template #cell-sousBranche="{ value }">
       <span class="font-mono text-xl uppercase" >{{ value.libelle }}</span>

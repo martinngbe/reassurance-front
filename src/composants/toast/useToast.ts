@@ -32,7 +32,7 @@ export function useToast() {
     const id = ++nextId
     toasts.value.push({
       id,
-      duration: 4000,
+      duration: 6000,
       closable: true,
       ...toast,
     })

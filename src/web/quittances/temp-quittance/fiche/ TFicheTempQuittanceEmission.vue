@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store';
 import type { TempQuittance } from '@/services/quittances/temp-quittance/temp-quittance';
 import { computed } from 'vue'
 
@@ -16,32 +17,51 @@ const emit = defineEmits<{
   delete: []
   back: []
 }>()
+const tempPoliceStore = useTempPoliceStore()
+const curentNatureOffre = computed(()=> tempPoliceStore.currentTempPolice?.natureOffre)
 
-// Configuration des champs pour l'affichage
-const fields = computed<FormField[]>(() => [
-  // Section Informations générales
-{ section: 'Dévise et Période de couverture' },
-{
-  key: 'deviseId',
-  label: 'Devise',
-  type: 'async-select',
-  required: true,
-  size:'xl',
-  asyncOptions: {
-    labelBy: 'libelle'
-  }
-},
-{ key: 'coursDevise',           label: 'Cours devise',      type: 'number' , size:'xl',  required: true,},
-{ key: 'dateEffet',             label: 'Date Effet',        type: 'calendar', size:'xl'},  
-{ key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar', size:'xl' },
+const fields = computed(()=>{
+     // la liste des champs par défaut et par aordre
+        const localFields : FormField[]= [
+                      // Section Informations générales
+                      { section: 'Dévise et Période de couverture' },
+                      {
+                        key: 'deviseId',
+                        label: 'Devise',
+                        type: 'async-select',
+                        required: true,
+                        size:'xl',
+                        asyncOptions: {
+                          labelBy: 'libelle'
+                        }
+                      },
+                      { key: 'coursDevise',           label: 'Cours devise',      type: 'number' , size:'xl',  required: true,},
+                      { key: 'dateEffet',             label: 'Date Effet',        type: 'calendar', size:'xl'},  
+                      { key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar', size:'xl' },
+                      { section: 'Autres informations' },
+                      { key: 'avisEcheance',          label: 'Avis Echéance',     type: 'number', size:'xl' , helpText:"Délais (jours) de notification avant échéance"},  
+              
+        ]
+          // 2. On ajoute les champs conditionnels avec de simples 'if'
+        if (curentNatureOffre.value && !curentNatureOffre.value.isProportionnelle) {
+          // Offre Non proportionnelle
+          localFields.push(
+            { key: 'nombreEcheancePmd', label: 'Nb.échéance PMD', type: 'number' },
+          );
+        }
 
-{ section: 'Autres informations' },
-{ key: 'avisEcheance',          label: 'Avis Echéance',     type: 'number', size:'xl' , helpText:"Délais (jours) de notification avant échéance"},  
-{ key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number', size:'xl' }, 
-{ key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number', size:'xl' , helpText:'Montant min à payer sans attendre'}, 
-{ key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number', size:'xl' , helpText:'Délais (jours) de notification du sinistre'}, 
 
-])
+      // 3. On finit par les champs toujours présents
+      localFields.push(
+        { key: 'sinistreAuComptant', label: 'Sinistre au Comptant', type: 'number', helpText: 'Montant min à payer sans attendre' }, 
+        { key: 'avisSinistre', label: 'Avis sinistre', type: 'number', helpText: 'Délais (jours) de notification du sinistre' }
+      );
+
+      // 4. On retourne le résultat
+      return localFields;
+
+}) ////const fields = computed(()=>{
+    
 
 // Données formatées pour l'affichage
 const formattedQuittance = computed(() => {

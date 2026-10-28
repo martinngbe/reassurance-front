@@ -4,7 +4,7 @@ import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
 import { AUCUN } from '@/services/common/constantes';
 import type { TempQuittance } from '@/services/quittances/temp-quittance/temp-quittance';
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store';
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store';
 import { computed } from 'vue'
 
 

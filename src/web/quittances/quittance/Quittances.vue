@@ -10,13 +10,16 @@ import { useQuittances } from '@/services/quittances/quittance/useQuittance'
 import type { Quittance } from '@/services/quittances/quittance/quittance'
 import { formatDecimal } from '@/utilitaire/number'
 import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
-import type { Police } from '@/services/police/police'
+import type { Police } from '@/services/polices/police/police'
 import { useQuittancesByPolice } from '@/services/quittances/quittance/useQuittancesByPolice'
+import { usePoliceStore } from '@/services/polices/police/police.store'
 
 const props = defineProps<{
-  currentPolice: Police 
+  //currentPolice: Police
+  forAllConsultation?: boolean 
 }>()
-
+const policeStore = usePoliceStore()
+const currentPolice = computed(()=> policeStore.currentPolice)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -36,10 +39,12 @@ const params = computed<PaginationParams>(() => ({
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer quittances
-
-const store = props.currentPolice?
-      useQuittancesByPolice( props.currentPolice.id ,params) :
-      useQuittances(params) ; 
+// Les quittances sont par defaut liées à une police
+// Toute il peut y arriver que l'on souhaite faire une consultation générale
+// de toutes les quittances
+  const store = props.forAllConsultation? useQuittances(params):
+      useQuittancesByPolice( 
+       currentPolice.value? currentPolice.value.id : 0 ,params) ;
 const { quittances } = store      
 type QuittanceRow = Quittance & { [key: string]: any }
 
@@ -58,34 +63,6 @@ const quittanceColumns: TableColumn[] = [
   { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
   
 ]
-/* 
-
-  dateEcheance?: string;
-  coursDevise: number;
-  avisEcheance?: number; 
-
-  capitaux: number; 
-  limiteCapitauxImpliques: number;
-  ici: number;
-  smp: number;
-  limite: number;
-  retention: number;
-  conservation: number;
-  capacite: number;
-  estimationPrime: number;
-  tauxCedante: number;
-  tauxAccepte: number;
-  tauxCommission: number;
-  taxeSurCommission: number;
-  primeBrute: number;
-  primeNette: number;
-  taxeSurPrime: number;
-  nombreEcheancePmd: number;
-  sinistreAuComptant?: number;
-  avisSinistre?: number;
-  aliment?: number;
-  isAnnule?: boolean;
-*/
 
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.quittances
@@ -166,15 +143,28 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption>
+        <p v-if="currentPolice && currentPolice.natureOffre" 
+          class="text-sm  font-extrabold"
+          >
+            {{ currentPolice.natureOffre.libelle }}
+          </p>
         <TButton  
             type="button"
             variant="soft" > 
-              <span class="text-lg font-bold uppercase cursor-pointer">Avenant</span> 
+              <span class="text-lg font-extrabold uppercase cursor-pointer">Avenant</span> 
         </TButton>
 
     </template>
     <template #cell-mouvement="{ value }">
       <span class="font-mono text-xl uppercase" >{{ value.code }}</span>
+    </template>
+    <template #cell-dateEffet="{ value }">
+      <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
+       <span class="font-mono text-xl uppercase" v-else="value">TBA</span>
+    </template>
+    <template #cell-dateEcheance="{ value }">
+      <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
+       <span class="font-mono text-xl uppercase" v-else="value">TBA</span>
     </template>
     <template #cell-devise="{ value }">
       <span class="font-mono text-xl uppercase" >{{ value.code }}</span>

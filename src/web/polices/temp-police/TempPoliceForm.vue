@@ -4,12 +4,12 @@ import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
 import type {  IResponse, PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
-import type { TempPolice, TempPoliceFormData } from '@/services/temp-police/temp-police'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
-import { useTempPolices } from '@/services/temp-police/useTempPolice'
+import type { TempPolice, TempPoliceFormData } from '@/services/polices/temp-police/temp-police'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
+import { useTempPolices } from '@/services/polices/temp-police/useTempPolice'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store'
-import { FORME_ECRAN_FACULTATIVE, useEcransStore } from '@/services/ecrans/ecrans.store'
+import { ECRAN_FACULTATIVE, MODULE_ACCEPTATION, useEcransStore } from '@/services/ecrans/ecrans.store'
 import { AUCUN } from '@/services/common/constantes'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
@@ -20,14 +20,15 @@ const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
 const tempQuittanceeStore = useTempQuittanceStore()
 const currentTempQuittance = computed(()=> tempQuittanceeStore.currentTempQuittance)
 const paramsTempQUittance = computed<PaginationParams>(() => ({}))
-const {createTempQuittance, updateTempQuittance} = useTempQuittances(paramsTempQUittance)
+const {updateTempQuittance} = useTempQuittances(paramsTempQUittance)
 
 // on recupere l'assure en cours
 const assureStore = useAssureStore()  
 const currentAssure =assureStore.currentAssure
 // on recupére l'cran sur lequel nous sommes
-const {currenteFormeEcran}  = useEcransStore()
-const isFAC = computed(() => currenteFormeEcran == FORME_ECRAN_FACULTATIVE)
+const {currentEcran , currentModule}  = useEcransStore()
+const isEcranFac = computed(() => currentEcran === ECRAN_FACULTATIVE)
+const isModuleAcceptation = computed(() => currentModule === MODULE_ACCEPTATION)
 const isAucunCourtier = computed(()=>currentTempPolice.value && 
          currentTempPolice.value.acteurCourtier && 
          currentTempPolice.value.acteurCourtier.sigle ===AUCUN)
@@ -40,7 +41,7 @@ const emit = defineEmits<{
 
 console.log(' ================================== ')
 console.log(' TempPoliceForm.vue')
-console.log(' isFAC:',isFAC)
+console.log(' isEcranFac:',isEcranFac)
 console.log(' ================================== ')
 
 // ✅ REMPLACER le ref local par un computed lié au store
@@ -69,7 +70,7 @@ async function fetchActeurCourtier(query: string, page: number) {
   }
 }
 async function fetchNatureOffre(query: string, page: number) {
-  const params = { search: query, page, limit: 20 , ...(isFAC.value && { isFacultative: true }) }
+  const params = { search: query, page, limit: 20 , ...(isEcranFac.value && { isFacultative: true }) }
 
   const res = await apiClient.get('/nature-offre', {params}) as IResponse
 
@@ -143,7 +144,7 @@ const tempPoliceFields: FieldConfig[] = [
       labelBy: 'libelle'
     }
   },
-//{ key: 'isCession',             label: 'Cession',   type: 'checkbox' },  
+{ key: 'isIard',             label: 'IARD',   type: 'checkbox' },  
 { key: 'isReconductionTacite',  label: 'Tacite reconduction',   type: 'checkbox' },
 
 ]
@@ -164,11 +165,17 @@ function initializeFormData(): TempPoliceFormData {
   const data = { ...currentTempPolice.value } as TempPoliceFormData
   console.log("_____ TempPoliceForm.initializeFormData _____")
   console.log("currentTempPolice.value:",currentTempPolice.value)
-  //  En FAC il faut absolument un assuré
-  if( isFAC && 
+/* 
+
+    //  En FAC il faut absolument un assuré
+  if( isEcranFac && 
       currentAssure && !currentTempPolice.value?.assure){
     data.assureId = currentAssure.id
+  } else {
+    data.assureId = null
   }
+
+*/
 
   // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
   // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
@@ -218,6 +225,29 @@ function extractId(value: any): number | undefined {
   return value
 }
 
+
+// ✅ Helper pour construire le payload commun (évite la duplication)
+function buildPayload(data: Record<string, any>) {
+ // // EN Facultative il faut absolument un assuré
+ const isCession = !isModuleAcceptation.value
+ const assureId =  isEcranFac &&  // On est FAC et
+      currentAssure && // Existe un assure et 
+      !currentTempPolice.value?.assure ?  // la police n'a pas d'assure
+       currentAssure.id : null 
+  return {
+    assureId,
+    isCession,
+    numero: data.numero,
+    isIard: data.isIard,
+    isReconductionTacite: data.isReconductionTacite,                  
+    // Relations
+    natureOffreId: extractId(data.natureOffreId),
+    sousBrancheId: extractId(data.sousBrancheId),
+    acteurCedanteId: extractId(data.acteurCedanteId),
+    acteurCourtierId: extractId(data.acteurCourtierId),
+   
+  }
+}
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
   console.log('____________ TempPoliceForm.handleSubmit __________________')
@@ -237,6 +267,7 @@ const handleSubmit = async (data: Record<string, any>) => {
               data: {            
                   numero: data.numero,
                   isCession: data.isCession,
+                  isIard: data.isIard,
                   isReconductionTacite: data.isReconductionTacite,                  
                   // Relations
                   natureOffreId: extractId(data.natureOffreId),
@@ -272,6 +303,7 @@ const handleSubmit = async (data: Record<string, any>) => {
       await createTempPolice.mutateAsync({
             numero: data.numero,
             isCession: data.isCession,
+            isIard: data.isIard,
             isReconductionTacite: data.isReconductionTacite,
            
             // Relations

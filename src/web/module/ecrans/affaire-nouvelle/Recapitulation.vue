@@ -3,7 +3,7 @@ import TTab from '@/composants/tab/TTab.vue';
 import TTabItem from '@/composants/tab/TTabItem.vue';
 import TTabPanel from '@/composants/tab/TTabPanel.vue';
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store';
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store';
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store.ts';
 import TFicheTempPolice from '@/web/polices/temp-police/ TFicheTempPolice.vue';
 import TFicheTempQuittanceCapitaux from '@/web/quittances/temp-quittance/fiche/ TFicheTempQuittanceCapitaux.vue';
 import TFicheTempQuittanceCourtage from '@/web/quittances/temp-quittance/fiche/ TFicheTempQuittanceCourtage.vue';

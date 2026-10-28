@@ -9,12 +9,16 @@ import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp
 import type { TempQuittance, TempQuittanceFormData } from '@/services/quittances/temp-quittance/temp-quittance'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
-import { useTempPoliceStore } from '@/services/temp-police/temp-police.store'
+import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
+import { ECRAN_FACULTATIVE, useEcransStore } from '@/services/ecrans/ecrans.store'
 
 const mouvementStore = useMouvementStore()
 const tempPoliceStore = useTempPoliceStore()
 const tempQuittanceStore = useTempQuittanceStore()
+const ecransStore = useEcransStore()
+const curentNatureOffre = computed(()=> tempPoliceStore.currentTempPolice?.natureOffre)
+
 // lecture du currentTempQuittance en cours
 // on a pris soin de le charger via tempPolice
 const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
@@ -27,11 +31,11 @@ const emit = defineEmits<{
   cancel: []
 }>()
 console.log('==================================')
-console.log('TempQuittanceEmissionForm.vue')
+console.log('=     TempQuittanceEmissionForm.vue')
 console.log('==================================')
-console.log('currentTempPolice.value    :',currentTempPolice.value)
-console.log('currentTempQuittance.value :',currentTempQuittance.value)
-console.log('currentMouvement.value     :',currentMouvement.value)
+console.log('=     currentTempPolice.value    :',currentTempPolice.value)
+console.log('=     currentTempQuittance.value :',currentTempQuittance.value)
+console.log('=     currentMouvement.value     :',currentMouvement.value)
 console.log('==================================')
 // ✅ REMPLACER le ref local par un computed lié au store
 console.log(" >>>>>> currentMouvement.value: ",currentMouvement.value)
@@ -46,38 +50,46 @@ async function fetchDevise(query: string, page: number) {
     hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
   }
 }
-// ==================== CONFIGURATION DES CHAMPS ====================
+const tempQuittanceFields = computed((): FormField[] => {
+  // 1. On initialise un tableau explicitement typé
+  const fields: FormField[] = [
+    { section: 'Dévise et Période de couverture' },
+    {
+      key: 'deviseId',
+      label: 'Devise',
+      type: 'async-select',
+      required: true,
+      placeholder: 'Sélectionner une devise ...',
+      loadOptions: fetchDevise,
+      autoSelectFirst: true,
+      asyncOptions: { trackBy: 'id', labelBy: 'libelle' }
+    },
+    { key: 'coursDevise', label: 'Cours devise', type: 'number', required: true },
+    { key: 'dateEffet', label: 'Date Effet', type: 'calendar' },  
+    { key: 'dateEcheance', label: 'Date Echéance', type: 'calendar' },
+    { section: 'Autres informations' },
+    { key: 'avisEcheance', label: 'Avis Echéance', type: 'number', helpText: "Délais (jours) de notification avant échéance" },  
+  ];
 
-const tempQuittanceFields: FormField[] = [
-  ///////////////////////////// 
-  ////// Emission 
-  /////////////////////////////
-{ section: 'Dévise et Période de couverture' },
-{
-  key: 'deviseId',
-  label: 'Devise',
-  type: 'async-select',
-  required: true,
-  placeholder: 'Sélectionner une devise ...',
-  loadOptions: fetchDevise,
-  autoSelectFirst: true,  // ✅ Pré-sélectionne le premier pays en mode création
-  asyncOptions: {
-    trackBy: 'id',
-    labelBy: 'libelle'
+  // 2. On ajoute les champs conditionnels avec de simples 'if'
+  if (curentNatureOffre.value && !curentNatureOffre.value.isProportionnelle) {
+    // Offre Non proportionnelle
+    fields.push(
+      { key: 'nombreEcheancePmd', label: 'Nb.échéance PMD', type: 'number' },
+      //{ key: 'autreChampPmd', label: 'Autre champ PMD', type: 'text' }
+    );
   }
-},
-{ key: 'coursDevise',           label: 'Cours devise',      type: 'number' ,required: true,},
 
-{ key: 'dateEffet',             label: 'Date Effet',        type: 'calendar' },  
-{ key: 'dateEcheance',          label: 'Date Echéance',     type: 'calendar' },
 
-{ section: 'Autres informations' },
-{ key: 'avisEcheance',          label: 'Avis Echéance',     type: 'number' , helpText:"Délais (jours) de notification avant échéance"},  
-{ key: 'nombreEcheancePmd',     label: 'Nb.échéance PMD',   type: 'number' }, 
-{ key: 'sinistreAuComptant',    label: 'Sinistre au Comptant',   type: 'number' , helpText:'Montant min à payer sans attendre'}, 
-{ key: 'avisSinistre',          label: 'Avis sinistre',     type: 'number' , helpText:'Délais (jours) de notification du sinistre'}, 
+  // 3. On finit par les champs toujours présents
+  fields.push(
+    { key: 'sinistreAuComptant', label: 'Sinistre au Comptant', type: 'number', helpText: 'Montant min à payer sans attendre' }, 
+    { key: 'avisSinistre', label: 'Avis sinistre', type: 'number', helpText: 'Délais (jours) de notification du sinistre' }
+  );
 
-]
+  // 4. On retourne le résultat
+  return fields;
+});
 // ==================== LOGIQUE FORMULAIRE ====================
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
@@ -87,7 +99,7 @@ const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : '
 function initializeFormData(): TempQuittanceFormData {
   if (!currentTempQuittance) {
     return Object.fromEntries(
-      tempQuittanceFields
+      tempQuittanceFields.value
         .filter((f) => 'key' in f)  // ✅ Garde uniquement les objets avec une propriété 'key'
         .map((f) => [f.key, f.type === 'checkbox' ? true : ''])
     ) as unknown as TempQuittanceFormData

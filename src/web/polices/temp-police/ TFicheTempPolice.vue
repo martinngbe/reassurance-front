@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
-import type { TempPolice } from '@/services/temp-police/temp-police';
+import type { TempPolice } from '@/services/polices/temp-police/temp-police';
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -27,6 +27,12 @@ const fields = computed<FormField[]>(() => [
   {
     key: 'isCession',
     label: 'Cession',
+    size:'xl',
+    type: 'checkbox',
+  },
+    {
+    key: 'isIard',
+    label: 'IARD',
     size:'xl',
     type: 'checkbox',
   },

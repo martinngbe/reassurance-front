@@ -7,8 +7,8 @@ import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-s
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useTempPoliceStore } from './temp-police.store'
 import { tempPoliceApi } from './temp-police.api'
-import { useAssureStore } from '../acteurs/assure/assure.store'
-import { useEcransStore } from '../ecrans/ecrans.store'
+import { useAssureStore } from '../../acteurs/assure/assure.store'
+import { useEcransStore } from '../../ecrans/ecrans.store'
 
 const KEY = 'temp-tempPolices';
 export function useTempPolices(params: ComputedRef<PaginationParams>) {
@@ -17,7 +17,7 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const ecranStore = useEcransStore()
   const assureStore = useAssureStore()
 
-  const isFAC = computed(()=> ecranStore.currenteFormeEcran)
+  const isFAC = computed(()=> ecranStore.currentEcran)
   const currentAssure = computed(()=> assureStore.currentAssure)
   const watchKeys = computed(() => ({
     search: params.value.search,
@@ -50,17 +50,22 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     mutationFn: async (data: TempPolice) => {
      const tPolice= await  tempPoliceApi.create(data)
      console.log("__________________________________")
-     console.log("const createTempPolice = useMutation")
+     console.warn("const createTempPolice = useMutation")
      console.log("__________________________________")
      console.log("tPolice:",tPolice)
      console.log("tempPoliceStore.currentTempPoliceId :",tempPoliceStore.currentTempPoliceId )
      console.log("__________________________________")
      // dès la création d'une TempPolice, on la selectionne
      // ⭐ Synchroniser le store si c'est l'police sélectionné
-      if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
-        console.log("Stockage  useTempPolice.ts tPolice:",tPolice)
-        tempPoliceStore.selectTempPolice(tPolice)
-      }
+     tempPoliceStore.setCurrentTempPolice(tPolice)
+     // le reload recharge avec toutes les relations car 
+     // tPolice ne possede que les clés étrangeres
+     reloadCurrentTempPolice()
+     
+      // if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
+      //   console.log("Stockage  useTempPolice.ts tPolice:",tPolice)
+      //   tempPoliceStore.selectTempPolice(tPolice)
+      // }
      return tPolice
     },
     onSuccess: () => {
@@ -127,7 +132,9 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     if (!currentId) return
     // On recharge la 
     try {
+      console.warn("  Rechargement de cuurentTempPolice depuis la BD")
       const tempPol = await tempPoliceApi.getById(currentId)
+      // Affectation apres rechargement
       tempPoliceStore.setCurrentTempPolice(tempPol)
     } catch (err) {
       console.error('Erreur lors du rechargement de la tempPolice', err)
@@ -138,17 +145,31 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       console.log(" --------------------------------------------  ")
       console.log(" ------- On Lance l'éxécution de l' AFN -----  ")
       console.log(" ------- tempPoliceStore.isAffaireNouvelleExecutee:  ",
-        tempPoliceStore.isAffaireNouvelleExecutee)
+      tempPoliceStore.isAffaireNouvelleExecutee)
       
       console.log(" --------------------------------------------  ") 
       tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(true)
   }
+  // ==================== TRANSFERT TEMP -> DÉFINITIF ====================
+  const transfererPolice = useMutation({
+    mutationFn: (tempPoliceId: number) => tempPoliceApi.transfererDepuisTemp(tempPoliceId),
+    onSuccess: (police) => {
+      console.log(" --------------- transfererPolice  police:", police) 
+      tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(true)
+      // La nouvelle police devient la police courante
+      queryClient.invalidateQueries({ queryKey: [KEY] })
+      // Si tu as un cache pour les polices temporaires, invalide-le aussi :
+      queryClient.invalidateQueries({ queryKey: ['temp-polices'] })
+      tempPolices.refresh()
+    },
+  })
 
   return {
     tempPolices,
     createTempPolice,
     updateTempPolice,
     deleteTempPolice,
+    transfererPolice,
     reloadCurrentTempPolice,
     refresh: tempPolices.refresh,
     executeAffaireNouvelle

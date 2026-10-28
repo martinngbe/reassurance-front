@@ -3,7 +3,7 @@ import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TTitreModule from '@/composants/utilitaire/TTitreModule.vue';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import MenuCession from './MenuCession.vue';
-import { FORME_ECRAN_TABLEAU_DE_BORD, useEcransStore } from '@/services/ecrans/ecrans.store.ts';
+import { ECRAN_TABLEAU_DE_BORD, useEcransStore } from '@/services/ecrans/ecrans.store.ts';
 
 
 // Chargement dynamique des modules
@@ -14,14 +14,14 @@ const moduleComponents: Record<string, any> = {
 
 }
 
-const activeMenu = ref(FORME_ECRAN_TABLEAU_DE_BORD)
+const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
 const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
 
 ////////////////////////  ECRANS  //////////////////
 const ecransStore = useEcransStore()
-//ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+//ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
 const currentModuleEcran = computed(()=> ecransStore.currenteModule)
-const currenteFormeEcran = computed(()=> ecransStore.currenteFormeEcran)
+const currentEcran = computed(()=> ecransStore.currentEcran)
 ////////////////////////
 function selectMenu(moduleId: string) {
   activeMenu.value = moduleId
@@ -31,12 +31,12 @@ function selectMenu(moduleId: string) {
   //console.log('_____________________________________')
   //console.log(" _______ ECRANS : CESSION_MODULE ______ ")
   //console.log(" ___ currentModuleEcran    :",currentModuleEcran.value)
-  //console.log(" ___ currenteFormeEcran:",currenteFormeEcran.value)
+  //console.log(" ___ currentEcran:",currentEcran.value)
 }
 onMounted(()=>{
   //console.log('_____________________________________')
   //console.log(" _______ ECRANS : CESSION_MODULE onMounted ______ ")
-    ecransStore.setFormeEcran(FORME_ECRAN_TABLEAU_DE_BORD)
+    ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
 })
 </script>
 
