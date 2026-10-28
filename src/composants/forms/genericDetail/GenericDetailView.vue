@@ -29,13 +29,13 @@ const props = withDefaults(
     gap: 'md',
   },
 )
-
+/*
 defineEmits<{
   edit: []
   delete: []
   back: []
 }>()
-
+*/
 /* ---------- helpers grille ---------- */
 const gridClasses = computed(() => {
   const gapMap = { sm: 'gap-3', md: 'gap-4', lg: 'gap-6' }
@@ -194,17 +194,17 @@ const getDisplayValue = (field: FieldConfig): string =>
     <!-- Header -->
     <div
       v-if="showHeader && (title || subtitle)"
-      class="px-6 py-5 border-b border-gray-200 dark:border-neutral-800"
+      class="px-6 py-5 border-b border-gray-200 dark:border-neutral-800 rounded-xl dark:bg-neutral-700/60 bg-neutral-300/10 shadow-lg shadow-primary-700 dark:shadow-primary-500/50"
     >
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-start gap-4 flex-1 min-w-0">
-          <div v-if="avatar" class="flex-shrink-0">
+          <!--div v-if="avatar" class="flex-shrink-0">
             <img
               :src="avatar"
               :alt="title"
               class="w-16 h-16 rounded-full object-cover border-2 border-primary-100 dark:border-primary-900"
             />
-          </div>
+          </div-->
 
           <div class="flex-1 min-w-0">
             <h2
@@ -237,7 +237,7 @@ const getDisplayValue = (field: FieldConfig): string =>
           <!-- Section -->
           <div
             v-if="isSection(field)"
-            class="col-span-full pt-2 pb-1"
+            class="col-span-full pt-1 pb-1"
           >
             <h3
               class="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wide"

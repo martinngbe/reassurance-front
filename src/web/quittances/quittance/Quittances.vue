@@ -10,16 +10,20 @@ import { useQuittances } from '@/services/quittances/quittance/useQuittance'
 import type { Quittance } from '@/services/quittances/quittance/quittance'
 import { formatDecimal } from '@/utilitaire/number'
 import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
-import type { Police } from '@/services/polices/police/police'
 import { useQuittancesByPolice } from '@/services/quittances/quittance/useQuittancesByPolice'
 import { usePoliceStore } from '@/services/polices/police/police.store'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import TModal from '@/composants/display/TModal.vue'
+import QuittanceVentillee from './QuittanceVentillee.vue'
+import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
 
 const props = defineProps<{
-  //currentPolice: Police
   forAllConsultation?: boolean 
 }>()
 const policeStore = usePoliceStore()
 const currentPolice = computed(()=> policeStore.currentPolice)
+const quittanceStore = useQuittanceStore()
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -27,7 +31,7 @@ const sortState = ref<SortState>({ key: null, direction: null })
 const emit = defineEmits<{ 
   (e: 'row-click',  quittance: any): void
 }>()
-
+const showModal = ref(false)
 
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -53,11 +57,13 @@ const quittanceColumns: TableColumn[] = [
   { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
   { key: 'numero',       label: 'N°Quittance',  width: 20,   minWidth: 80 },
   { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isIard',       label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
+ 
   { key: 'isSinistree',  label: 'Sinistrée',    width: 50,   minWidth: 80,  align: 'center' },
   { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 100, align: 'center' },
-  { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 500,  },
+  { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 500,  align: 'center' },
   { key: 'devise',       label: 'Devise',       width: 80,  minWidth: 80,  },
-  { key: 'coursDevise',  label: 'Cours Devise', width: 200,  minWidth: 80,  },
+  { key: 'coursDevise',  label: 'Cours Devise', width: 200,  minWidth: 80,  align:'right' },
   { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
   { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
   { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
@@ -90,8 +96,13 @@ async function handleLoadMore() {
 }
 
 // ==================== MODALES ====================
-const onRowClick = ( row: any, index: number)=>{       
+const onRowClick = ( row: any, index: number)=>{
+    quittanceStore.selectQuittance(row as Quittance)       
     emit('row-click',row as Quittance)
+}
+const onRowDoubleClick = ( row: any, index: number)=>{       
+    //emit('row-click',row as Quittance)
+    showModal.value=true
 }
 // Debounce recherche
 let searchTimeout: number | undefined
@@ -129,6 +140,7 @@ watch(tableSearch, () => {
     
     @sort="onSort"
     @row-click="onRowClick"
+    @row-double-click="onRowDoubleClick"
     @load-more="handleLoadMore"
   >
     <template #caption-extra>
@@ -155,22 +167,38 @@ watch(tableSearch, () => {
         </TButton>
 
     </template>
+   <template #cell-isCession="{  row }">       
+               <IconeValider  v-if="row.police.isCession" />
+               <IconeNonValider  v-else />
+       
+    </template>
+   <template #cell-isIard="{  row }">       
+               <IconeValider  v-if="row.police.isIard" />
+               <IconeNonValider  v-else />
+       
+    </template>    
+   <template #cell-isSinistree="{ value , row }">
+        
+               <!-- TAF Charger NB Sinsitre ou IsSinistree-->              
+               <IconeNonValider  />
+        
+    </template>
     <template #cell-mouvement="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.code }}</span>
+      <span class="font-mono  uppercase" >{{ value.code }}</span>
     </template>
     <template #cell-dateEffet="{ value }">
-      <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
-       <span class="font-mono text-xl uppercase" v-else="value">TBA</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value.code }}</span>
+       <span class="font-mono  uppercase" v-else="value">TBA</span>
     </template>
     <template #cell-dateEcheance="{ value }">
-      <span class="font-mono text-xl uppercase" v-if="value">{{ value.code }}</span>
-       <span class="font-mono text-xl uppercase" v-else="value">TBA</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value.code }}</span>
+       <span class="font-mono  uppercase" v-else="value">TBA</span>
     </template>
     <template #cell-devise="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.code }}</span>
+      <span class="font-mono  uppercase" >{{ value.code }}</span>
     </template>   
     <template #cell-coursDevise="{ value }">      
-       <span class="font-mono text-xl uppercase" >{{formatDecimal(value,)  }}</span>
+       <span class="font-mono  uppercase" >{{formatDecimal(value,)  }}</span>
     </template>
     <template #cell-capitaux="{ value }">      
        <TDisplayNumber :value="value" />
@@ -184,7 +212,32 @@ watch(tableSearch, () => {
 
   </TTable>
 
- 
+    <TModal v-model="showModal" 
+      width="98%"  
+      height="98%"
+     
+   >
+           <template #header>
+               <div class="h-[1vh] w-full">Quittance Ventillée</div>
+          </template>
+         
+          <template #default>
+                <QuittanceVentillee  />
+          </template>
+                  
+          <template #footer>
+               
+            <TButton
+                type="button"
+                variant="solid" 
+                size="2xl"
+                @click="showModal=false"
+              > 
+                <span class="text-xl font-bold uppercase cursor-pointer">Ferme</span> 
+              </TButton>
+          </template>
+
+  </TModal>
 
  
 </template>

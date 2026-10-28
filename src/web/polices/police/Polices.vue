@@ -10,17 +10,18 @@ import TButton from '@/composants/forms/TButton.vue'
 import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
-import {  ECRAN_TRAITE,  MODULE_ACCEPTATION,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
+import {  ECRAN_FACULTATIVE, ECRAN_TRAITE,  MODULE_ACCEPTATION,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import { usePolicesByAssure } from '@/services/polices/police/usePolicesByAssure'
-import type { Assure } from '@/services/acteurs/assure/assure'
 import { usePoliceStore } from '@/services/polices/police/police.store'
+import { useAssureStore } from '@/services/acteurs/assure/assure.store'
 
 
 const ecransStore = useEcransStore()
 const currentEcran = computed(()=> ecransStore.currentEcran)
 const isEcranTraite = computed(()=> currentEcran.value=== ECRAN_TRAITE)
+const isEcranFacultative = computed(()=> currentEcran.value=== ECRAN_FACULTATIVE)
 const isModuleCession = computed(()=> ecransStore.currentModule === MODULE_CESSION)
 //const currenteModule = computed(()=> ecransStore.currenteModule)
 // ==================== ÉTAT LOCAL ====================
@@ -28,10 +29,8 @@ const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
 
-const props = defineProps<{
-  currentAssure?: Assure | null | undefined
-}>()
-
+const assureStore = useAssureStore()
+const currentAssure = computed(()=> assureStore.currentAssure)
 
 const emit = defineEmits<{ 
   (e: 'row-click',  police: any): void
@@ -47,11 +46,37 @@ const params = computed<PaginationParams>(() => ({
 }))
 // ==================== API + CRUD ====================
 // Ne pas destructurer polices
-const store = props.currentAssure?
-      usePolicesByAssure( props.currentAssure.id , isModuleCession.value ,params) :
-      usePolicesByAssure( "null" , isModuleCession.value ,params) ; 
-       
-const { polices  } = store
+/*
+const store =  isEcranFacultative.value ?
+      //En FAC, on affiche toutes les polices du module (ACC ou CESS) 
+      // pour l'assuré en cours sinon assureId=0 
+      usePolicesByAssure(
+          currentAssure.value? currentAssure.value.id : 0 ,
+          isModuleCession.value ,params) :
+      //En Traité, on affiche toutes les polices du module (ACC ou CESS)  dont assureId=null    
+      usePolicesByAssure( "null" , isModuleCession.value ,params) ;
+      */
+const store = computed(()=>{
+    console.log(" _________________________________________ ")
+    console.warn(" Nous sommes dans le composant Polices.vue")
+    console.log(" currentAssure.value:",currentAssure.value)
+    console.log(" isModuleCession.value:",isModuleCession.value)
+    console.log(" _________________________________________ ")
+    console.log(" isEcranFacultative.value:",isEcranFacultative.value)
+    console.log(" isEcranTraite.value:",isEcranTraite.value)
+    console.log(" _________________________________________ ")
+    console.log(" params.value:",params.value)
+    if(isEcranFacultative.value){
+      // lecture assureId
+      const assureId =  currentAssure.value?.id || 0
+      return  usePolicesByAssure(assureId ,isModuleCession.value ,params) 
+    } 
+    
+    return  usePolicesByAssure("null" ,isModuleCession.value ,params)
+   
+
+})       
+const { polices  } = store.value
 type PoliceRow = Police & { [key: string]: any }
 const tempPoliceStore = useTempPoliceStore()
 
@@ -62,6 +87,7 @@ const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvell
 const policeColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isIard',                label: 'IARD',       width: 50,   minWidth: 80,  align: 'center' },
   { key: 'natureOffre',           label: 'Nature Offre',    width: 400,  minWidth: 200, },
   
 
@@ -69,7 +95,7 @@ const policeColumns: TableColumn[] = [
   { key: 'isResiliee',            label: 'Résiliée',    width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
   
-  { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 100,  minWidth: 100, align: 'center' },
+  { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 200,  minWidth: 200, align: 'center' },
   { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
   { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
   { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
@@ -80,18 +106,22 @@ const policeColumns: TableColumn[] = [
 
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.polices
-const policeRows = computed(() => store.polices.items.value)
-const tableLoading = computed(() => store.polices.isLoading.value)
-const loadingMore = computed(() => store.polices.loadingMore.value)
-const hasMore = computed(() => store.polices.hasMore.value)
+const policeRows = computed(() => store.value.polices.items.value)
+const tableLoading = computed(() => store.value.polices.isLoading.value)
+const loadingMore = computed(() => store.value.polices.loadingMore.value)
+const hasMore = computed(() => store.value.polices.hasMore.value)
 // ✅ Correction ici : on utilise .value?.total
 const totalItems = computed(() => polices.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
 //const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
-const selectedPolices = ref<(string | number)[]>([])
-
+//const selectedPolices = ref<(string | number)[]>([])
+// ✅ REMPLACER le ref local par un computed lié au store
+const selectedPolices = computed({
+  get: () => policeStore.selectedPolices,
+  set: (value) => policeStore.setSelectedPolices(value)
+})
 // ==================== TRI ====================
 function onSort(state: SortState): void {
   sortState.value = state
@@ -105,8 +135,8 @@ async function handleLoadMore() {
 
 // ==================== MODALES ====================
 const showModal = ref(false)
-const titleModal = ref( props.currentAssure?
- `AFFAIRE NOUVELLE : ${props.currentAssure.raisonSociale.toUpperCase()}` :
+const titleModal = ref( currentAssure.value?
+ `AFFAIRE NOUVELLE : ${currentAssure.value.raisonSociale.toUpperCase()}` :
  'AFFAIRE NOUVELLE')
 //const policeToEdit = ref<Police | null>(null)
 const onRowClick = ( row: any, index: number)=>{ 
@@ -196,19 +226,19 @@ watch(tableSearch, () => {
             </TButton>
     </template>
     <template #cell-natureOffre="{ value }">
-      <span class="font-mono  text-xl uppercase" >{{ value.code }}</span>
+      <span class="font-mono   uppercase" >{{ value.code }}</span>
     </template>
     <template #cell-assure="{ value }">
-      <span class="font-mono text-xl uppercase" v-if="value" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" v-if="value" >{{ value.raisonSociale }}</span>
     </template>
     <template #cell-sousBranche="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.libelle }}</span>
+      <span class="font-mono  uppercase" >{{ value.libelle }}</span>
     </template>
     <template #cell-acteurCedante="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" >{{ value.raisonSociale }}</span>
     </template>
     <template #cell-acteurCourtier="{ value }">
-      <span class="font-mono text-xl uppercase" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" >{{ value.raisonSociale }}</span>
     </template>    
 
     
@@ -216,7 +246,12 @@ watch(tableSearch, () => {
         <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
     </template>
 
-
+    <template #cell-isCession="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
+    <template #cell-isIard="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
 
 
   </TTable>

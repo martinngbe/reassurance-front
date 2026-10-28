@@ -264,18 +264,7 @@ const handleSubmit = async (data: Record<string, any>) => {
     if (isEditing.value && currentTempPolice.value?.id) {
       await updateTempPolice.mutateAsync({
               id: currentTempPolice.value.id,
-              data: {            
-                  numero: data.numero,
-                  isCession: data.isCession,
-                  isIard: data.isIard,
-                  isReconductionTacite: data.isReconductionTacite,                  
-                  // Relations
-                  natureOffreId: extractId(data.natureOffreId),
-                  sousBrancheId: extractId(data.sousBrancheId),
-                  acteurCedanteId: extractId(data.acteurCedanteId),
-                  acteurCourtierId: extractId(data.acteurCourtierId),
-                  assureId: data.assureId,
-              },
+              data: buildPayload(data),
             })
       /* 
         Lors de la MAJ, on dois vérifier si le  acteurCourtier.sigle ===AUCUN
@@ -300,20 +289,7 @@ const handleSubmit = async (data: Record<string, any>) => {
       }   
       emit('success', 'TempPolice modifiée avec succès')
     } else {
-      await createTempPolice.mutateAsync({
-            numero: data.numero,
-            isCession: data.isCession,
-            isIard: data.isIard,
-            isReconductionTacite: data.isReconductionTacite,
-           
-            // Relations
-            natureOffreId: extractId(data.natureOffreId),
-            sousBrancheId: extractId(data.sousBrancheId),
-            acteurCedanteId: extractId(data.acteurCedanteId),
-            acteurCourtierId: extractId(data.acteurCourtierId),
-            assureId: data.assureId,
-
-      } as TempPolice)
+      await createTempPolice.mutateAsync( buildPayload(data) as TempPolice)
         
       emit('success', 'TempPolice créé avec succès')
     }

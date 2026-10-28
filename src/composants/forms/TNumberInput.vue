@@ -21,10 +21,14 @@ const props = withDefaults(
     decimals?: number
     formatOptions?: FormatNumberOptions
     returnType?: 'string' | 'number'
+    min?: number // 👈 NOUVEAU
+    max?: number // 👈 NOUVEAU
   }>(),
   {
     modelValue: '', id: undefined, label: '', placeholder: '', hint: '', error: '',
     size: 'md', decimals: 0, returnType: 'number',
+     min: undefined,
+    max: undefined,
   },
 )
 
@@ -114,7 +118,7 @@ function onFocus(event: FocusEvent): void {
   draft.value = toEditable(props.modelValue) // retire les espaces de milliers
   emit('focus', event)
 }
-
+/*
 function onBlur(event: FocusEvent): void {
   const n = parseNumber(draft.value)
   draft.value = Number.isNaN(n) ? '' : n.toFixed(options.value.maximumFractionDigits ?? 0)
@@ -122,6 +126,38 @@ function onBlur(event: FocusEvent): void {
   publish()
   emit('blur', event)
 }
+*/
+function onBlur(event: FocusEvent): void {
+  let n = parseNumber(draft.value)
+  
+  if (!Number.isNaN(n)) {
+    // 👇 APPLICATION DE LA PLAGE (MIN / MAX)
+    if (props.min !== undefined && n < props.min) {
+      n = props.min
+    }
+    if (props.max !== undefined && n > props.max) {
+      n = props.max
+    }
+    draft.value = n.toFixed(options.value.maximumFractionDigits ?? 0)
+  } else {
+    draft.value = ''
+  }
+  
+  focused.value = false
+  publish() // publish() va émettre la valeur déjà corrigée par le min/max
+  emit('blur', event)
+}
+const rangeError = computed(() => {
+  const n = parseNumber(draft.value)
+  if (Number.isNaN(n)) return ''
+  if (props.min !== undefined && n < props.min) {
+    return `La valeur minimale est ${props.min}`
+  }
+  if (props.max !== undefined && n > props.max) {
+    return `La valeur maximale est ${props.max}`
+  }
+  return ''
+})
 </script>
 
 <template>
@@ -132,7 +168,7 @@ function onBlur(event: FocusEvent): void {
     :label="label"
     :placeholder="placeholder"
     :hint="hint"
-    :error="error"
+    :error="error || rangeError"
     :required="required"
     :disabled="disabled"
     :readonly="readonly"

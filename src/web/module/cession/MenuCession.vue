@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { ECRAN_FACULTATIVE, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
 import { useTheme } from '@/theme/useTheme';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 const { theme, toggleMode } = useTheme()
 
 
@@ -13,21 +14,22 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref('ecranTableauDeBord')
-
+//const activeMenu = ref('ecranTableauDeBord')
+const ecranStore = useEcransStore()
+const activeMenu = computed(()=> ecranStore.currentEcran)
 const menus: MenuItem[] = [
   {
-    id: 'ecranTableauDeBord',
+    id: ECRAN_TABLEAU_DE_BORD,
     label: 'Tableau de bord',
     icon: 'pi pi-home', // ou 'pi pi-th-large'
   },
   {
-    id: 'ecranFacultative',
+    id: ECRAN_FACULTATIVE,
     label: 'Facultative',
     icon: 'pi pi-file', // ou 'pi pi-clipboard' pour l'analyse de dossier
   },
   {
-    id: 'ecranTraite',
+    id: ECRAN_TRAITE,
     label: 'Traité',
     icon: 'pi pi-shield', // ou 'pi pi-sync' pour le côté automatique, ou 'pi pi-arrows-h'
   },
@@ -37,7 +39,8 @@ const menus: MenuItem[] = [
 // Gestion sélection menu
 function selectMenu(menuId: string) {
   //console.log("AppMenu selectMenu("+menuId+")")
-  activeMenu.value = menuId
+ 
+  ecranStore.setFormeEcran(menuId)
   emit('select', menuId)
 }
 </script>

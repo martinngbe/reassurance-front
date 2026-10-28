@@ -41,7 +41,7 @@ watch(currentAssure, () => {
 // ////////////////////////////////////////
 let policeTimeout: number | undefined
 watch(currentPolice, () => {
-  console.log(" ------- watch(currentPolice la police a changé ")
+  console.warn(" EcranFacultative.watch(currentPolice) la police a changé ")
   isChangemementPoliceTerminee.value=false
   window.clearTimeout(policeTimeout)
 
@@ -68,7 +68,7 @@ watch(currentPolice, () => {
                     <Assures />
                 </template>
                 <template  #default>
-                    <Polices :current-assure="currentAssure" v-if="currentAssure && isChangemementAssureTermine" />                   
+                    <Polices  v-if="isChangemementAssureTermine" />                   
                     <div  class="flex w-full  p-24 h-full items-center justify-center" v-else>
                           <TPatientez v-if="!isChangemementAssureTermine" />
                           <TAlert variant="info" v-else>

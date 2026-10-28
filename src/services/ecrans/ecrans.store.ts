@@ -22,38 +22,30 @@ export const ECRAN_AUTRE = 'XXX'
 
 export const useEcransStore = defineStore('ecransStore', () => {
   const assuresStore = useAssureStore()
-  const policesStore = usePoliceStore()
   // ==================== STATE ====================
   const currentModule = ref<string>(MODULE_AUTRE)
   const currentEcran = ref<string>(ECRAN_AUTRE)
   
   // ==================== GETTERS ==================== 
   const setModule = (b: string) => {
-    if( currentModule.value === b) return
+    console.warn("__________ CHANGEMENT MODULE __________")
     currentModule.value = b
-    // Le Changement d'un module initialise toutes les select
-    ///  assuresStore.clearSelection() appelle
-    //  policesStore.clearSelection() qui lui appelle
-    // quittancesStore.clearSelection() qui lui appelle
-    assuresStore.clearSelection()
+    clearEcranSelection()
   }
   
   const setFormeEcran = (b: string) => {
     console.warn("__________ CHANGEMENT ECRAN __________")
     console.log("ANCIEN : ",currentEcran.value.toUpperCase())
     console.log("NOUVEAU :",b.toUpperCase())
-    //if( currentEcran.value === b) return
-  
-    // Le Changement d'écran antraine l'initialisation
-    // des selections
-    //if(b===ECRAN_FACULTATIVE){
-        assuresStore.clearSelection()
-    // }else if(b===ECRAN_FACULTATIVE){
-    //     policesStore.clearSelection()
-    // }
     currentEcran.value =b
+    assuresStore.clearSelection()
+    
   }
- 
+   const clearEcranSelection = () => {
+    console.warn("__________ INITIALISATION ECRAN __________")
+    assuresStore.clearSelection()
+    currentEcran.value =ECRAN_TABLEAU_DE_BORD
+  }
 
 
   return {

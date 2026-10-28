@@ -59,7 +59,7 @@ async function fetchSousBranche(query: string, page: number) {
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 // ✅ Helper pour éviter de répéter la configuration des champs numériques
-const createNumberField = (key: string, label: string): FormField => ({
+const createNumberField = (key: string, label: string ): FormField => ({
   key,
   label,
   type: 'number',
@@ -74,39 +74,30 @@ const createNumberField = (key: string, label: string): FormField => ({
 // 1. Configuration commune pour les nombres (déclarée en dehors du computed pour optimiser les performances)
 const baseNumberOptions = {
   decimals: 2,
-  formatOptions: { style: 'decimal' as const },
+  formatOptions: { style: 'decimal' as const }, 
   returnType: 'number' as const,
 }
-const baseFieldsConfig = computed(()=>{
-         
+
+const tempQuittanceFields = computed(()=>{
+          // ✅ Configuration des champs optimisée et lisible
+          const fields: FormField[] = [
+            createNumberField('tauxCedante', 'Taux Cédente',),
+            createNumberField('tauxAccepte', 'Taux Accepté',),
+            createNumberField('taxeSurPrime', 'Taxe sur prime'),
+
+          ]
+          return fields
+})
+
+/*
+const baseFieldsConfig = computed(()=>{         
              // 1. Champs de base (toujours présents)
           const fields: FormField[] = [
             createNumberField('primeBrute', 'Prime Brute'),
             createNumberField('primeNette','Prime Nette'),
           //  createNumberField('estimationPrime',  'Estimation Prime'),
           ]
-         
- /*        
-        if(currentNatureOffre.value)  {
-             
-              if ( currentNatureOffre.value.isXs) {
-                fields.push(
-                  createNumberField('capacite', 'Portée'),
-                  createNumberField('retention', 'Franchise'),
-                )
-              }
-              if (
-                currentNatureOffre.value.isFacObligatoire || 
-                currentNatureOffre.value.isQuotePart
-              ) {
-                fields.push(
-                  createNumberField('aliment', 'Aliment'),
-                  createNumberField('capacite', 'Capacité'),
-                )
-              }
-
-        }//if(currentNatureOffre.value) 
-*/
+   
           return fields
 })
 // 3. Génération dynamique de tes FormField
@@ -120,10 +111,12 @@ const tempQuittanceFields = computed<FieldConfig[]  >(() =>
     numberOptions: baseNumberOptions,
   }))
 )
+*/
+
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
-
+/*
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
   if (!currentTempQuittance) {
@@ -135,7 +128,19 @@ function initializeFormData(): TempQuittanceFormData {
   const data = { ...currentTempQuittance.value } as TempQuittanceFormData
   return data as TempQuittanceFormData
 }
+*/
+// ✅ Fonction pour initialiser le formData avec le bon mapping
+function initializeFormData(): TempQuittanceFormData {
+  if (!currentTempQuittance.value) {
+    return Object.fromEntries(
+      tempQuittanceFields.value
+        .filter((f): f is Extract<FormField, { key: string }> => 'key' in f)
+        .map((f) => [f.key, f.type === 'checkbox' ? true : ''])
+    ) as unknown as TempQuittanceFormData
+  }
 
+  return { ...currentTempQuittance.value } as TempQuittanceFormData
+}
 const formData = ref<TempQuittanceFormData>(initializeFormData())
 
 // ✅ Watcher pour gérer les changements de props.currentTempQuittance

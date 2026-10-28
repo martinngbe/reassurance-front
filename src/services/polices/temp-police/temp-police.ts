@@ -27,8 +27,8 @@ export interface TempPolice extends BaseEntity {
   acteurCourtier?: Acteur
   acteurCourtierId?: number;
 
-  assure?: Assure
-  assureId?: number
+  assure?: Assure  | null
+  assureId?: number | null
 
   quittances: TempQuittance[]
 }

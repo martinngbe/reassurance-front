@@ -26,7 +26,7 @@ const props = withDefaults(
     closable: true,
     closeOnOverlay: true,
     persistent: false,
-    bodyMaxHeight: '70vh',
+    bodyMaxHeight: '90vh',
   },
 )
 

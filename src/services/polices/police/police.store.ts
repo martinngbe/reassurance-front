@@ -5,14 +5,21 @@ import { useQuittanceStore } from '../../quittances/quittance/quittance.store'
 
 export const usePoliceStore = defineStore('policeStore', () => {
 
-   const quittanceStore = useQuittanceStore()
+  const quittanceStore = useQuittanceStore()
   // ==================== STATE ====================
   const currentPolice = ref<Police | null>(null)
   // ==================== GETTERS ====================
   const isSelected = computed(() => currentPolice.value !== null)
   const currentPoliceId = computed(() => currentPolice.value?.id ?? null)
-
+  // 2. Sélection multiple (pour les checkboxes de la table)
+  const selectedPolices = ref<(string | number)[]>([])
+  const hasSelectedPolices = computed(() => selectedPolices.value.length > 0)
+ 
   // ==================== ACTIONS ====================
+    // --- Actions pour la sélection multiple (Table) ---
+  const setSelectedPolices = (ids: (string | number)[]) => {
+    selectedPolices.value = ids
+  }
   const selectPolice = (police: Police | null) => {
     console.warn("__________ SELECTION POLICE __________")
     console.log("ID AVANT:", currentPolice.value?.id)
@@ -21,10 +28,19 @@ export const usePoliceStore = defineStore('policeStore', () => {
     // la selection d'une police, réinitialise les quittances rattachées
     quittanceStore.clearSelection()
   }
-
+  const toggleAssureSelection = (id: string | number) => {
+    const index = selectedPolices.value.indexOf(id)
+    if (index === -1) {
+      selectedPolices.value.push(id)
+    } else {
+      selectedPolices.value.splice(index, 1)
+    }
+  }
   const clearSelection = () => {
-    currentPolice.value = null
     console.warn("__________ INITIALISTAION POLICE __________")
+    currentPolice.value = null
+    selectedPolices.value = []
+   
     quittanceStore.clearSelection()
     
   }
@@ -53,8 +69,11 @@ export const usePoliceStore = defineStore('policeStore', () => {
     currentPolice,
     isSelected,
     currentPoliceId,
+    selectedPolices,
+    hasSelectedPolices,
     setCurrentPolice,
     selectPolice,
+    setSelectedPolices,
     clearSelection,
     updateCurrentPolice,
     removeIfCurrent,

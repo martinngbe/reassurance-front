@@ -17,7 +17,7 @@ import { MOUVEMENT_AFN } from '@/services/common/constantes.ts'
 
 const assureStore = useAssureStore()
 const assureEnCours = computed(() => assureStore.currentAssure)
-
+const showTopHeader = computed(()=>  assureStore.currentAssure? true : false)
 // ✅ 1. Définir l'ordre des étapes
 const etapesOrdre = [
   'historiqueSaisie',
@@ -73,7 +73,7 @@ const tempPoliceStore = useTempPoliceStore()
 const ecransStore = useEcransStore()
 const mouvementsStore = useMouvementStore()
 const  {getMouvementByCode} = useMouvements()
-const currenteModuleDisplay = computed(() => ecransStore.currenteModule)
+const currenteModuleDisplay = computed(() => ecransStore.currentModule)
 const currentEcran = computed(() => ecransStore.currentEcran)
 const natureOffre = computed(()=>tempPoliceStore.currentTempPolice?.natureOffre)
 
@@ -110,6 +110,7 @@ watch(mouvement  , (newData ) => {
       topSize="80px" 
       leftSize="20%" 
       bottom-size="85px"
+      :show-top="showTopHeader"
       >
     <template #header>
       <div class="flex flex-col p-1">

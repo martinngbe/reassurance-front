@@ -14,16 +14,18 @@ const moduleComponents: Record<string, any> = {
 
 }
 
-const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
-const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
+//const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
+const ecranStore = useEcransStore()
+const activeMenu = computed(()=>ecranStore.currentEcran)
+const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.ecranTableauDeBord)
 
 ////////////////////////  ECRANS  //////////////////
 const ecransStore = useEcransStore()
 ////////////////////////
-function selectMenu(moduleId: string) {
-  activeMenu.value = moduleId
+function selectMenu(menuId: string) {
+  ecranStore.setFormeEcran(menuId)
   console.log("AcceptationModule.selectMenu",activeMenu.value)
-  ecransStore.setFormeEcran(moduleId)
+  
   ///////////////////////////////////////////////////
 }
 

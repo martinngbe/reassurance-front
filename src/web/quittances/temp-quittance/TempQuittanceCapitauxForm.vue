@@ -47,6 +47,8 @@ const createNumberField = (key: string, label: string): FormField => ({
     decimals: 2,
     formatOptions: { style: 'decimal' },
     returnType: 'number',
+    min: 0,        // 👈 Prix minimum = 0
+    max: 999999999999999.99, // 👈 Prix maximum
   },
 })
 

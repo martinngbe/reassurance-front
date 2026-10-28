@@ -39,6 +39,8 @@ export interface FieldConfig {
     decimals?: number
     formatOptions?: FormatNumberOptions
     returnType?: 'string' | 'number'
+    min?: number   // 👈 NOUVEAU
+    max?: number   // 👈 NOUVEAU
   }
 
   // Props spécifiques calendar

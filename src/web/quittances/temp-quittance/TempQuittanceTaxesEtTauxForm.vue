@@ -38,6 +38,8 @@ console.log('==================================')
 // ✅ Configuration commune pour les nombres
 const numberConfig = {
   decimals: 2,
+  min: 0,        // 👈 Prix minimum = 0
+  max: 100, // 👈 Prix maximum
   returnType: 'number' as const,
 }
 

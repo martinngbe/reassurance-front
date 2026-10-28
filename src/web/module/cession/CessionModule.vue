@@ -14,30 +14,17 @@ const moduleComponents: Record<string, any> = {
 
 }
 
-const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
-const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.accueil)
+const ecranStore = useEcransStore()
+const activeMenu = computed(()=>ecranStore.currentEcran)
+const currentModule = computed(() => moduleComponents[activeMenu.value] || moduleComponents.ecranTableauDeBord)
 
 ////////////////////////  ECRANS  //////////////////
-const ecransStore = useEcransStore()
-//ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
-const currentModuleEcran = computed(()=> ecransStore.currenteModule)
-const currentEcran = computed(()=> ecransStore.currentEcran)
 ////////////////////////
-function selectMenu(moduleId: string) {
-  activeMenu.value = moduleId
+function selectMenu(menuId: string) {
   console.log(activeMenu.value)
-  ecransStore.setFormeEcran(moduleId)
-  ///////////////////////////////////////////////////
-  //console.log('_____________________________________')
-  //console.log(" _______ ECRANS : CESSION_MODULE ______ ")
-  //console.log(" ___ currentModuleEcran    :",currentModuleEcran.value)
-  //console.log(" ___ currentEcran:",currentEcran.value)
+  ecranStore.setFormeEcran(menuId)
+ 
 }
-onMounted(()=>{
-  //console.log('_____________________________________')
-  //console.log(" _______ ECRANS : CESSION_MODULE onMounted ______ ")
-    ecransStore.setFormeEcran(ECRAN_TABLEAU_DE_BORD)
-})
 </script>
 
 <template>

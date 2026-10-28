@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ECRAN_FACULTATIVE, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 
 const emit = defineEmits<{
@@ -12,7 +12,9 @@ interface MenuItem {
   label: string
   icon: string
 }
-const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)
+//const activeMenu = ref('ecranTableauDeBord')
+const ecranStore = useEcransStore()
+const activeMenu = computed(()=> ecranStore.currentEcran)
 const menus: MenuItem[] = [
   {
     id: ECRAN_TABLEAU_DE_BORD,
@@ -35,7 +37,7 @@ const menus: MenuItem[] = [
 // Gestion sélection menu
 function selectMenu(menuId: string) {
   console.log("AppMenu selectMenu("+menuId+")")
-  activeMenu.value = menuId
+  ecranStore.setFormeEcran(menuId)
   emit('select', menuId)
 }
 const ecransStore = useEcransStore()

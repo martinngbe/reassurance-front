@@ -152,6 +152,8 @@ const handleUpdate = (key: string, value: any) => {
             :decimals="(field as FieldConfig).numberOptions?.decimals ?? 0"
             :format-options="(field as FieldConfig).numberOptions?.formatOptions"
             :return-type="(field as FieldConfig).numberOptions?.returnType ?? 'number'"
+            :min="(field as FieldConfig).numberOptions?.min" 
+            :max="(field as FieldConfig).numberOptions?.max"  
             @update:model-value="(v) => updateField((field as FieldConfig).key, v)"
           />
 

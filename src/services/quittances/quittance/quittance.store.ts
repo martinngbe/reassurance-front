@@ -15,7 +15,7 @@ export const useQuittanceStore = defineStore('quittanceStore', () => {
   }
 
   const clearSelection = () => {
-    console.warn("___________ INITIALISATION QUITTANCE _____________")
+    console.warn("__________ INITIALISATION QUITTANCE _____________")
     currentQuittance.value = null
    
   }

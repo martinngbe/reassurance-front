@@ -17,10 +17,7 @@ export const useAssureStore = defineStore('assureStore', () => {
   const isSelected = computed(() => currentAssure.value !== null)
   const currentAssureId = computed(() => currentAssure.value?.id ?? null)
   const hasSelectedAssures = computed(() => selectedAssures.value.length > 0)
-  
-  // Getter utile : récupérer les objets complets si besoin (nécessite la liste des assurés)
-  // const selectedAssuresData = computed(() => ...)
-
+ 
   // ==================== ACTIONS ====================
   
   // --- Actions pour la sélection unique ---
@@ -33,11 +30,6 @@ export const useAssureStore = defineStore('assureStore', () => {
     policeStore.clearSelection()
   }
   const clearCurrentAssure = () => {
-    // console.warn("__________  ASSUREE  __________")
-    // console.log("ANCIEN : ",currentAssure.value?.raisonSociale.toUpperCase())
-    // console.log("NOUVEAU :",assure? assure.raisonSociale.toUpperCase() : null)
-    // currentAssure.value = null
-    // policeStore.clearSelection()
     clearSelection()
   }
 
@@ -47,8 +39,9 @@ export const useAssureStore = defineStore('assureStore', () => {
   }
   
   const clearSelection = () => {
-    console.warn("__________ INITIALISTAION ASSURE __________")
+    console.warn("__________ INITIALISTAION ASSURES __________")
     selectedAssures.value = []
+    currentAssure.value = null
     policeStore.clearSelection()
   }
   

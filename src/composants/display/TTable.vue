@@ -142,6 +142,7 @@ function selectRow(row: T, index: number) {
   const key = getRowKey(row, index)
   selectedKeys.value = [key]
 }
+
 function isSelected(row: T, index: number): boolean {
   const isOk = selectedKeys.value.includes(getRowKey(row, index))
   return isOk
@@ -604,7 +605,8 @@ watch(
                 'hover:bg-primary-500/5 dark:hover:bg-primary-500/10',
             ]"
             @click="selectRow(row, rowIndex); emit('row-click', row, rowIndex)"
-          >
+            @dblclick="emit('row-double-click', row, rowIndex)"
+            >
             <!-- ✨ Cellule d'index -->
             <td
               v-if="showIndex"

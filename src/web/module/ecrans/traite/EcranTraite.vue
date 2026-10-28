@@ -16,7 +16,7 @@ const currentPolice = computed(() => policeStore.currentPolice)
 const isChangemementPoliceTerminee = ref(true)
 let policeTimeout: number | undefined
 watch(currentPolice, () => {
-  console.log(" ------- watch(currentPolice la police a changé ")
+  console.warn(" EcranTraite.watch(currentPolice) la police a changé ")
   isChangemementPoliceTerminee.value=false
   window.clearTimeout(policeTimeout)
 
@@ -54,7 +54,7 @@ watch(currentPolice, () => {
           </TLayoutModule>
     </template>
     <template #footer>
-          <Quittances :current-police="currentPolice" v-if="currentPolice && isChangemementPoliceTerminee" />
+          <Quittances  v-if="currentPolice && isChangemementPoliceTerminee" />
     
               <div  class="flex w-full  p-24 h-full items-center justify-center" v-else>
                   <TAlert variant="info"  v-if="!currentPolice">
