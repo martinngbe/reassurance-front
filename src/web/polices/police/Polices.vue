@@ -87,14 +87,13 @@ const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvell
 const policeColumns: TableColumn[] = [
   { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isIard',                label: 'IARD',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'natureOffre',           label: 'Nature Offre',    width: 400,  minWidth: 200, },
-  
-
+  { key: 'isIard',                label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isResiliee',            label: 'Résiliée',    width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isAnnulee',             label: 'Annullée',    width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
-  
+  { key: 'natureOffre',           label: 'Nature Offre',width: 400,  minWidth: 200, },
+ 
+
   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 200,  minWidth: 200, align: 'center' },
   { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
   { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
@@ -238,7 +237,7 @@ watch(tableSearch, () => {
       <span class="font-mono  uppercase" >{{ value.raisonSociale }}</span>
     </template>
     <template #cell-acteurCourtier="{ value }">
-      <span class="font-mono  uppercase" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value.raisonSociale }}</span>
     </template>    
 
     
@@ -252,8 +251,15 @@ watch(tableSearch, () => {
     <template #cell-isIard="{ value }">
         <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
     </template>
-
-
+    <template #cell-isCouverte="{ value }">
+        <IconeValider  v-if="!value" /> <IconeNonValider  v-else="value" />
+    </template>
+    <template #cell-isAnnulee="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
+    <template #cell-isSinistree="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
   </TTable>
 
    <TModal v-model="showModal" 

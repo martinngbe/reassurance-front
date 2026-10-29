@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ECRAN_FACULTATIVE, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
+import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
 import { computed, onMounted, ref } from 'vue';
 
 
@@ -10,27 +10,20 @@ const emit = defineEmits<{
 interface MenuItem {
   id: string
   label: string
-  icon: string
+ // icon: string
 }
 //const activeMenu = ref('ecranTableauDeBord')
 const ecranStore = useEcransStore()
 const activeMenu = computed(()=> ecranStore.currentEcran)
 const menus: MenuItem[] = [
-  {
-    id: ECRAN_TABLEAU_DE_BORD,
-    label: 'Tableau de bord',
-    icon: 'pi pi-home', // ou 'pi pi-th-large'
-  },
-  {
-    id: ECRAN_FACULTATIVE,
-    label: 'Facultative',
-    icon: 'pi pi-file', // ou 'pi pi-clipboard' pour l'analyse de dossier
-  },
-  {
-    id: ECRAN_TRAITE,
-    label: 'Traité',
-    icon: 'pi pi-shield', // ou 'pi pi-sync' pour le côté automatique, ou 'pi pi-arrows-h'
-  },
+  { id: ECRAN_TABLEAU_DE_BORD,      label: 'Tableau de bord'},
+  { id: ECRAN_FACULTATIVE,          label: 'Facultative'},
+  { id: ECRAN_TRAITE,               label: 'Traité',},
+  { id: ECRAN_PLACEMENT,            label: 'Placement' },
+  { id: ECRAN_BORDEREAU,            label: 'Borderau réçu' },
+  { id: ECRAN_ECHEANCE_PMD,         label: 'Echéance PMD'},
+  { id: ECRAN_COMPTE,               label: 'Compte' }
+
 ];
 
 
@@ -70,7 +63,7 @@ onMounted(()=>{
         >
             <!-- Remplacement du SVG par une balise <i> avec les classes PrimeIcon -->
           <i 
-            :class="[menu.icon, 'h-5 w-5 flex-shrink-0 text-lg text-center']"
+            :class="[ 'h-5 w-5 flex-shrink-0 text-lg text-center']"
           ></i>
           
           <span 

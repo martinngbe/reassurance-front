@@ -65,6 +65,11 @@ const menus: MenuItem[] = [
     label: 'Dévise',
     icon: 'pi pi-dollar',
   },
+  {
+    id: 'compteRubrique',
+    label: 'Compte Rubrique',
+    icon: 'pi pi-dollar',
+  },
     {
     id: 'natureOffre',
     label: 'Nature Offre',

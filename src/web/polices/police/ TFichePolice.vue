@@ -2,27 +2,12 @@
 import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
 import { usePoliceStore } from '@/services/polices/police/police.store';
-import type { TempPolice } from '@/services/polices/temp-police/temp-police';
 import { computed } from 'vue'
-/*
-const props = defineProps<{
-  police: TempPolice
-  loading?: boolean
-  showHeader?: boolean
-  colums?: 1 | 2 | 3 | 4 | undefined
-}>()
-
-const emit = defineEmits<{
-  edit: []
-  delete: []
-  back: []
-}>()
-*/
 
 const policeStore = usePoliceStore()
 const currentPolice = computed(()=> policeStore.currentPolice)
 
-const curentNatureOffre = computed(()=> currentPolice.value?.natureOffre)
+//const curentNatureOffre = computed(()=> currentPolice.value?.natureOffre)
 // Configuration des champs pour l'affichage
 const fields = computed<FormField[]>(() => [
   // Section Informations générales
@@ -151,7 +136,7 @@ const status = computed(() => {
     :show-header="true"
     :loading="false"
     :columns="3"
-    title="Police"
+    title="Police N° PAF-26-000001"
     gap="md"
   
   />

@@ -80,7 +80,7 @@ watch(currentPolice, () => {
           </TLayoutModule>
     </template>
     <template #footer>
-            <Quittances :current-police="currentPolice" v-if="currentAssure && currentPolice && isChangemementPoliceTerminee" />
+            <Quittances  v-if="currentAssure && currentPolice && isChangemementPoliceTerminee" />
            
             <div  class="flex w-full  p-24 h-full items-center justify-center" v-else>
                                  

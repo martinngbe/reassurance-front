@@ -14,9 +14,6 @@ import TFichePolice from '@/web/polices/police/ TFichePolice.vue';
 
 
 const active = ref('accueil')
-// lecture de la quittance en cours
-const quittanceStore = useQuittanceStore()
-const currentQuittance = computed(()=> quittanceStore.currentQuittance)
 </script>
 
 
@@ -33,14 +30,15 @@ const currentQuittance = computed(()=> quittanceStore.currentQuittance)
 
                 <TTab v-model="active" variant="underline" size="md">
                 <TTabItem value="accueil"      label="Accueil"        />
-                 <TTabItem value="placement"   label="Placement" />
                 <TTabItem value="bordereau"    label="Bordereau"      />
-                <TTabItem value="echeancePmd"    label="Echeance Pmd"      />
-                <TTabItem value="compte"      label="Compte"        />
+                <TTabItem value="placement"    label="Placement" />
                
-                <TTabItem value="sinistre"    label="Sinistre"      />
+                <TTabItem value="echeancePmd"  label="Echeance Pmd"      />
+                <TTabItem value="compte"       label="Compte"        />
+               
+                <TTabItem value="sinistre"      label="Sinistre"      />
                 <TTabItem value="noteDebitCredit"  label="Note Débit Crédit"    />
-                <TTabItem value="reglement"  label="Règlemenet"    />
+                <TTabItem value="reglement"     label="Règlemenet"    />
 
                 <template #panels>
                     <TTabPanel value="accueil">

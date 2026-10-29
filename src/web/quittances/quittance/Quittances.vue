@@ -17,6 +17,7 @@ import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import TModal from '@/composants/display/TModal.vue'
 import QuittanceVentillee from './QuittanceVentillee.vue'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
+import TAction from '@/composants/utilitaire/TAction.vue'
 
 const props = defineProps<{
   forAllConsultation?: boolean 
@@ -81,7 +82,7 @@ const totalItems = computed(() => quittances.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-//const isLigneSelectionnee = computed(() => selectedQuittances.value.length > 0)
+const isLigneSelectionnee = computed(() => selectedQuittances.value.length > 0)
 const selectedQuittances = ref<(string | number)[]>([])
 
 // ==================== TRI ====================
@@ -165,6 +166,12 @@ watch(tableSearch, () => {
             variant="soft" > 
               <span class="text-lg font-extrabold uppercase cursor-pointer">Avenant</span> 
         </TButton>
+        <TAction
+          :masque-nouveau="true"
+          :masque-supprimer="true"
+          :active-modifier="isLigneSelectionnee"
+          :active-impression="isLigneSelectionnee"
+        />
 
     </template>
    <template #cell-isCession="{  row }">       
@@ -218,7 +225,10 @@ watch(tableSearch, () => {
      
    >
            <template #header>
-               <div class="h-[1vh] w-full">Quittance Ventillée</div>
+               <div class="flex gap-4 h-[1vh] w-full text-2xl">
+                 <p>Police    <span class="font-extrabold">N°PAF-26-00004</span></p>
+                 <p>Quittance <span class="font-extrabold">N°QAF-26-000425</span></p>
+              </div>
           </template>
          
           <template #default>

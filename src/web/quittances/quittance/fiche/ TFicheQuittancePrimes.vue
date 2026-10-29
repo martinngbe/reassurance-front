@@ -58,14 +58,15 @@ const fields = computed<FormField[]>(() => [
 ])
 
 // Données formatées pour l'affichage
-const formattedQuittance = computed(() => {
+/*const formattedQuittance = computed(() => {
   return {
-    ...currentQuittance,
+    ...currentQuittance.value,
     // Formater les relations pour l'affichage
     //deviseId: currentQuittance.devise,
   }
 })
-
+*/
+const formattedQuittance = computed(() =>{return {...currentQuittance.value} })
 </script>
 
 <template>

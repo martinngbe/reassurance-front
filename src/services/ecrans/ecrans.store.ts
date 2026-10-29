@@ -16,6 +16,12 @@ export const MODULE_AUTRE = 'autre'
 
 export const ECRAN_FACULTATIVE = 'ecranFacultative'
 export const ECRAN_TRAITE = 'ecranTraite'
+export const ECRAN_PLACEMENT = 'ecranPlacement'
+export const ECRAN_BORDEREAU = 'ecranBordereau'
+export const ECRAN_ECHEANCE_PMD = 'ecranEcheancePmd'
+export const ECRAN_COMPTE = 'ecranCompte'
+
+
 export const ECRAN_TABLEAU_DE_BORD = 'ecranTableauDeBord'
 export const ECRAN_AUTRE = 'XXX'
 

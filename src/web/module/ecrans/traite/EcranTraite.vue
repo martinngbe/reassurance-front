@@ -3,6 +3,7 @@ import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
 import { usePoliceStore } from '@/services/polices/police/police.store';
+import TFichePolice from '@/web/polices/police/ TFichePolice.vue';
 import Polices from '@/web/polices/police/Polices.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
 import { computed, ref, watch } from 'vue';
@@ -45,11 +46,7 @@ watch(currentPolice, () => {
                    <Polices  />
                 </template>
                 <template  #default>
-                      <div  class="flex w-full  p-24 h-full items-center justify-center"  v-if="!currentPolice">
-                          <TAlert variant="info" >
-                              <p class="text-2xl font-bold">Détail des informations</p> 
-                          </TAlert> 
-                    </div> 
+                     <TFichePolice />
                 </template>
           </TLayoutModule>
     </template>
