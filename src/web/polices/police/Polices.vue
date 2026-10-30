@@ -16,6 +16,7 @@ import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import { usePolicesByAssure } from '@/services/polices/police/usePolicesByAssure'
 import { usePoliceStore } from '@/services/polices/police/police.store'
 import { useAssureStore } from '@/services/acteurs/assure/assure.store'
+import TFichePolice from './ TFichePolice.vue'
 
 
 const ecransStore = useEcransStore()
@@ -85,8 +86,10 @@ const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvell
 
 // ==================== COLONNES ====================
 const policeColumns: TableColumn[] = [
-  { key: 'numero',                label: 'N°Police',    width: 20,   minWidth: 80 },
+  { key: 'numero',                label: 'N°Police',    width: 200,   minWidth: 80 },
   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
+ 
   { key: 'isIard',                label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isAnnulee',             label: 'Annullée',    width: 50,   minWidth: 80,  align: 'center' },
@@ -134,6 +137,7 @@ async function handleLoadMore() {
 
 // ==================== MODALES ====================
 const showModal = ref(false)
+const showModalPolice = ref(false)
 const titleModal = ref( currentAssure.value?
  `AFFAIRE NOUVELLE : ${currentAssure.value.raisonSociale.toUpperCase()}` :
  'AFFAIRE NOUVELLE')
@@ -147,7 +151,9 @@ const openAffaireNouvelle =()=>{
   tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(false)
 }
 
-
+const openFichePolice =()=>{  
+  showModalPolice.value=true
+}
 
 watch(
   isAffaireNouvelleExecutee,
@@ -196,6 +202,7 @@ watch(tableSearch, () => {
     
     @sort="onSort"
     @row-click="onRowClick"
+    @row-double-click="openFichePolice"
     @load-more="handleLoadMore"
   >
     <template #caption-extra>
@@ -260,14 +267,35 @@ watch(tableSearch, () => {
     <template #cell-isSinistree="{ value }">
         <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
     </template>
+    <template #cell-isFac="{ value }">
+        <IconeValider  v-if="value" /> <IconeNonValider  v-else="value" />
+    </template>
+
   </TTable>
 
    <TModal v-model="showModal" 
       width="70%"  
-      height="85%" 
+      height="20%" 
       :title="titleModal" 
    >
       <AffaireNouvelle  />
   </TModal>
  
+
+   <TModal v-model="showModalPolice" 
+      width="50%"  
+      height="98%"
+   >
+          
+         
+          <template #default>
+                <!--QuittanceVentillee  /-->
+                <TFichePolice/>
+          </template>
+                  
+         
+
+  </TModal>
+
+
 </template>

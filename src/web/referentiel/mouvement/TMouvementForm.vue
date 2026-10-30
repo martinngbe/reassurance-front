@@ -2,12 +2,12 @@
 import { computed, ref } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import type { NatureOffre } from '@/services/referentiel/nature-offre/nanture-offre';
-import { useNatureOffres } from '@/services/referentiel/nature-offre/useNatureOffre';
+import type { Mouvement } from '@/services/referentiel/mouvement/mouvement';
+import { useMouvements } from '@/services/referentiel/mouvement/useMouvement';
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps<{
-  natureOffre?: NatureOffre | null
+  natureOffre?: Mouvement | null
 }>()
 
 const emit = defineEmits<{
@@ -39,40 +39,34 @@ const formData = ref<Record<string, any>>(
 const errorMessage = ref<string | null>(null)
 
 // ==================== API ====================
-const { createNatureOffre, updateNatureOffre } = useNatureOffres()
+const { createMouvement, updateMouvement } = useMouvements()
 
 const loading = computed(
   () =>
-    createNatureOffre.isPending.value || updateNatureOffre.isPending.value,
+    createMouvement.isPending.value || updateMouvement.isPending.value,
 )
 
 // ==================== HANDLERS ====================
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  console.info(" ----- TNatureOffreForm.handleSubmit  data:",data)
+  console.info(" ----- TMouvementForm.handleSubmit  data:",data)
   console.info("data:",data)
   try {
     if (isEditing.value && props.natureOffre?.id) {
-      await updateNatureOffre.mutateAsync({
+      await updateMouvement.mutateAsync({
         id: props.natureOffre.id,
         data: {
           code: data.code,
           libelle: data.libelle,
-          isProportionnelle: data.isProportionnelle,
-          isFacultative: data.isFacultative,
-          isFacObligatoire: data.isFacObligatoire,
         },
       })
-      emit('success', 'NatureOffre modifié avec succès')
+      emit('success', 'Mouvement modifié avec succès')
     } else {
-      await createNatureOffre.mutateAsync({
+      await createMouvement.mutateAsync({
         code: data.code,
-        libelle: data.libelle,
-        isProportionnelle: data.isProportionnelle,
-        isFacultative: data.isFacultative,
-        isFacObligatoire: data.isFacObligatoire,        
+        libelle: data.libelle,       
       })
-      emit('success', 'NatureOffre créé avec succès')
+      emit('success', 'Mouvement créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)

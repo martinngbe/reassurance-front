@@ -165,17 +165,6 @@ function initializeFormData(): TempPoliceFormData {
   const data = { ...currentTempPolice.value } as TempPoliceFormData
   console.log("_____ TempPoliceForm.initializeFormData _____")
   console.log("currentTempPolice.value:",currentTempPolice.value)
-/* 
-
-    //  En FAC il faut absolument un assuré
-  if( isEcranFac && 
-      currentAssure && !currentTempPolice.value?.assure){
-    data.assureId = currentAssure.id
-  } else {
-    data.assureId = null
-  }
-
-*/
 
   // ✅ Mapper les objets COMPLETS vers les clés attendues par le formulaire
   // Le composant TAsyncSelect a besoin de l'objet complet pour afficher le libellé
@@ -230,12 +219,14 @@ function extractId(value: any): number | undefined {
 function buildPayload(data: Record<string, any>) {
  // // EN Facultative il faut absolument un assuré
  const isCession = !isModuleAcceptation.value
- const assureId =  isEcranFac &&  // On est FAC et
+ const isFac = isEcranFac.value
+ const assureId =  isFac &&  // On est FAC et
       currentAssure && // Existe un assure et 
       !currentTempPolice.value?.assure ?  // la police n'a pas d'assure
        currentAssure.id : null 
   return {
     assureId,
+    isFac,
     isCession,
     numero: data.numero,
     isIard: data.isIard,

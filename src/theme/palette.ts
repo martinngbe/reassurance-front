@@ -7,7 +7,7 @@ export interface Rgb {
 export type Shade = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950
 export type Palette = Record<Shade, string>
 
-const WHITE: Rgb = { r: 255, g: 255, b: 255 }
+const WHITE: Rgb = { r: 175, g: 175, b: 175 } // { r: 255, g: 255, b: 255 }
 const BLACK: Rgb = { r: 23, g: 23, b: 23 }
 
 export function hexToRgb(hex: string): Rgb {

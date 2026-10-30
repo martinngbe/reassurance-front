@@ -18,6 +18,7 @@ import TModal from '@/composants/display/TModal.vue'
 import QuittanceVentillee from './QuittanceVentillee.vue'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
+import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 
 const props = defineProps<{
   forAllConsultation?: boolean 
@@ -56,20 +57,46 @@ type QuittanceRow = Quittance & { [key: string]: any }
 // ==================== COLONNES ====================
 const quittanceColumns: TableColumn[] = [
   { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
-  { key: 'numero',       label: 'N°Quittance',  width: 20,   minWidth: 80 },
+  { key: 'numero',       label: 'N°Quittance',  width: 200,   minWidth: 80 , resizable:true},
   { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isIard',       label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
  
   { key: 'isSinistree',  label: 'Sinistrée',    width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 100, align: 'center' },
-  { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 500,  align: 'center' },
-  { key: 'devise',       label: 'Devise',       width: 80,  minWidth: 80,  },
-  { key: 'coursDevise',  label: 'Cours Devise', width: 200,  minWidth: 80,  align:'right' },
+  { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 200, align: 'center' },
+  { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 200,  align: 'center' },
+  { key: 'devise',       label: 'Devise',       width: 80,   minWidth: 80,   align:'center'},
+  { key: 'coursDevise',  label: 'Cours Devise', width: 150,  minWidth: 80,  align:'right' },
   { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
   { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
   { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
+  { key: 'limite',       label: 'Limite',       width: 200,  minWidth: 200,  align:'right' },
+  { key: 'retention',    label: 'Retention',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'conservation',    label: 'Conservation',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'estimationPrime',    label: 'Estimation Prime',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'nombreEcheancePmd',    label: 'Nb. Echéeance PMD',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'sinistreAuComptant',    label: 'Sinistre Au Comptant',    width: 200,  minWidth: 200,  align:'right' },
   
+  { key: 'primeBrute',    label: 'Prime Brute',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'taxeSurPrime',    label: 'Taxe sur Prime',    width: 200,  minWidth: 200,  align:'right' },
+ 
+  { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },
+  
+  { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
+  
+  { key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
+  { key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
+ 
+
+
 ]
+
+
+
+
 
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.quittances
@@ -194,12 +221,12 @@ watch(tableSearch, () => {
       <span class="font-mono  uppercase" >{{ value.code }}</span>
     </template>
     <template #cell-dateEffet="{ value }">
-      <span class="font-mono  uppercase" v-if="value">{{ value.code }}</span>
-       <span class="font-mono  uppercase" v-else="value">TBA</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
+       <span class="font-mono  uppercase" v-else>TBA</span>
     </template>
     <template #cell-dateEcheance="{ value }">
-      <span class="font-mono  uppercase" v-if="value">{{ value.code }}</span>
-       <span class="font-mono  uppercase" v-else="value">TBA</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
+       <span class="font-mono  uppercase" v-else>TBA</span>
     </template>
     <template #cell-devise="{ value }">
       <span class="font-mono  uppercase" >{{ value.code }}</span>
@@ -216,37 +243,71 @@ watch(tableSearch, () => {
     <template #cell-smp="{ value }">
         <TDisplayNumber :value="value" />
     </template>
+    <template #cell-limite="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+   <template #cell-retention="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+       <template #cell-conservation="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+    <template #cell-estimationPrime="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+    <template #cell-sinistreAuComptant="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+     <template #cell-primeBrute="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+     <template #cell-primeNette="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+      <template #cell-taxeSurPrime="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+         <template #cell-tauxCedante="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+         <template #cell-tauxAccepte="{ value }">
+        <TDisplayNumber :value="value" />
+    </template> 
+  
+  <template #cell-tauxCession="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+    <template #cell-tauxCommission="{ value }">
+        <TDisplayNumber :value="value" />
+    </template> 
+         <template #cell-tauxRetention="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+         <template #cell-taxeSurCommission="{ value }">
+        <TDisplayNumber :value="value" />
+    </template> 
+         <template #cell-taxeSurCommissionFixe="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+ 
+
+
+
 
   </TTable>
 
     <TModal v-model="showModal" 
-      width="98%"  
+      width="50%"  
       height="98%"
      
    >
-           <template #header>
-               <div class="flex gap-4 h-[1vh] w-full text-2xl">
-                 <p>Police    <span class="font-extrabold">N°PAF-26-00004</span></p>
-                 <p>Quittance <span class="font-extrabold">N°QAF-26-000425</span></p>
-              </div>
-          </template>
+          
          
           <template #default>
-                <QuittanceVentillee  />
+                <!--QuittanceVentillee  /-->
+                <TFicheQuittance/>
           </template>
-                  
-          <template #footer>
-               
-            <TButton
-                type="button"
-                variant="solid" 
-                size="2xl"
-                @click="showModal=false"
-              > 
-                <span class="text-xl font-bold uppercase cursor-pointer">Ferme</span> 
-              </TButton>
-          </template>
-
+   
   </TModal>
 
  

@@ -8,9 +8,10 @@ import type { NatureOffre } from "../../referentiel/nature-offre/nanture-offre";
 
 export interface Police extends BaseEntity {
   numero: string;
-  isCession: boolean;
+  isCession: boolean; // ACCEPTATION | CESSION 
+  isIard?: boolean // IARD | VIE
+  isFac?: boolean // FAC | TRAITE 
   isReconductionTacite: boolean;
-  isIard?: boolean // IARD | VIE 
   // Relations
 
   natureOffre: NatureOffre

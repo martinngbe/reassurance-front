@@ -2,12 +2,12 @@
 import { computed, ref } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import type { NatureOffre } from '@/services/referentiel/nature-offre/nanture-offre';
-import { useNatureOffres } from '@/services/referentiel/nature-offre/useNatureOffre';
+import type { NatureCession } from '@/services/referentiel/nature-cession/nanture-cession';
+import { useNatureCessions } from '@/services/referentiel/nature-cession/useNatureCession';
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps<{
-  natureOffre?: NatureOffre | null
+  natureCession?: NatureCession | null
 }>()
 
 const emit = defineEmits<{
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 }>()
 
 // ==================== SCHÉMA DU FORMULAIRE ====================
-const natureOffreFields: FieldConfig[] = [
+const natureCessionFields: FieldConfig[] = [
   { key: 'code',              label: 'Code',        type: 'text', required: true, placeholder: 'code ...' },
   { key: 'libelle',           label: 'Libellé',     type: 'text', required: true, placeholder: '...' },
   { key: 'isProportionnelle', label: 'Proportionnelle',               type: 'checkbox',  },
@@ -25,54 +25,48 @@ const natureOffreFields: FieldConfig[] = [
 ]
 
 // ==================== ÉTAT ====================
-const isEditing = computed(() => !!props.natureOffre?.id)
+const isEditing = computed(() => !!props.natureCession?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 const formData = ref<Record<string, any>>(
-  props.natureOffre
-    ? { ...props.natureOffre }
+  props.natureCession
+    ? { ...props.natureCession }
     : Object.fromEntries(
-        natureOffreFields.map((f) => [f.key, f.type === 'checkbox' ? true : '']),
+        natureCessionFields.map((f) => [f.key, f.type === 'checkbox' ? true : '']),
       ),
 )
 
 const errorMessage = ref<string | null>(null)
 
 // ==================== API ====================
-const { createNatureOffre, updateNatureOffre } = useNatureOffres()
+const { createNatureCession, updateNatureCession } = useNatureCessions()
 
 const loading = computed(
   () =>
-    createNatureOffre.isPending.value || updateNatureOffre.isPending.value,
+    createNatureCession.isPending.value || updateNatureCession.isPending.value,
 )
 
 // ==================== HANDLERS ====================
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  console.info(" ----- TNatureOffreForm.handleSubmit  data:",data)
+  console.info(" ----- TNatureCessionForm.handleSubmit  data:",data)
   console.info("data:",data)
   try {
-    if (isEditing.value && props.natureOffre?.id) {
-      await updateNatureOffre.mutateAsync({
-        id: props.natureOffre.id,
+    if (isEditing.value && props.natureCession?.id) {
+      await updateNatureCession.mutateAsync({
+        id: props.natureCession.id,
         data: {
           code: data.code,
           libelle: data.libelle,
-          isProportionnelle: data.isProportionnelle,
-          isFacultative: data.isFacultative,
-          isFacObligatoire: data.isFacObligatoire,
         },
       })
-      emit('success', 'NatureOffre modifié avec succès')
+      emit('success', 'NatureCession modifié avec succès')
     } else {
-      await createNatureOffre.mutateAsync({
+      await createNatureCession.mutateAsync({
         code: data.code,
-        libelle: data.libelle,
-        isProportionnelle: data.isProportionnelle,
-        isFacultative: data.isFacultative,
-        isFacObligatoire: data.isFacObligatoire,        
+        libelle: data.libelle,      
       })
-      emit('success', 'NatureOffre créé avec succès')
+      emit('success', 'NatureCession créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
@@ -101,7 +95,7 @@ const handleCancel = () => {
 
     <GenericCrudForm
       v-model="formData"
-      :fields="natureOffreFields"
+      :fields="natureCessionFields"
       :mode="formMode"
       :show-delete="false"
       :loading="loading"

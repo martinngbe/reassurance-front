@@ -8,7 +8,8 @@ const props = defineProps<{
 
 
 <template #empty>
-        <span class="block w-full font-mono text-xl text-right">
+        <span class="block w-full font-mono text-xl text-right" v-if="props.value!=0">
           {{ formatInteger(value) }}
         </span>
+        <span v-else>...</span>
 </template>

@@ -9,9 +9,10 @@ import type { TempQuittance } from "../../quittances/temp-quittance/temp-quittan
 
 export interface TempPolice extends BaseEntity {
   numero: string;
-  isCession?: boolean;
+  isCession?: boolean; // CESSION | ACCEPTATION
   isReconductionTacite?: boolean;
   isIard?: boolean // IARD | VIE 
+  isFac?: boolean // FAC | TRAITE 
 
   // Relations
 

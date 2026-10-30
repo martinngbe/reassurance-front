@@ -296,7 +296,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
     <!-- ================= LEFT ================= -->
     <aside
       v-if="zones.left.enabled"
-      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900/50 dark:border-neutral-800"
+      class="relative overflow-hidden bg-neutral-200 dark:bg-neutral-900/50 dark:border-neutral-800"
       :class="{ 'opacity-50': !zones.left.visible }"
       :style="`grid-row: ${gridConfig.left.row}; grid-column: ${gridConfig.left.col}`"
     >
@@ -327,7 +327,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
 
     <!-- ================= MAIN ================= -->
     <main
-      class="relative min-h-0 min-w-0 bg-neutral-100 dark:bg-neutral-900"
+      class="relative min-h-0 min-w-0 bg-neutral-200 dark:bg-neutral-900"
       :class="[mainPadding, mainOverflow === 'auto' ? 'overflow-auto' : 'overflow-hidden']"
       :style="`grid-row: ${gridConfig.main.row}; grid-column: ${gridConfig.main.col}`"
     >
