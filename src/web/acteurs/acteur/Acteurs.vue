@@ -45,6 +45,8 @@ type ActeurRow = Acteur & { [key: string]: any }
 // ==================== COLONNES ====================
 const acteurColumns: TableColumn[] = [
   { key: 'pays',                 label: 'Pays',       width: 80,   minWidth: 80 , sortable: true},
+  { key: 'isNous',              label: 'NOUS',      width: 80,   minWidth: 80,  align: 'center' , sortable: true},
+ 
   { key: 'isReassureur',         label: 'Réass',      width: 80,   minWidth: 80,  align: 'center' , sortable: true},
   { key: 'isCourtier',           label: 'Courtier',   width: 100,  minWidth: 100, align: 'center' , sortable: true},
   { key: 'isCompagnieAssurance', label: 'Cie',        width: 80,   minWidth: 80,  align: 'center' , sortable: true},
@@ -227,7 +229,10 @@ watch(tableSearch, () => {
         <IconeValider v-if="value==true"/>
         <IconeNonValider v-else />
     </template>
-
+    <template #cell-isNous="{ value }">
+        <IconeValider v-if="value==true"/>
+        <IconeNonValider v-else />
+    </template>
     <template #cell-numero="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>

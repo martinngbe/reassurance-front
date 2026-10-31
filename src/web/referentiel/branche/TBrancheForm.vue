@@ -19,6 +19,8 @@ const emit = defineEmits<{
 const brancheFields: FieldConfig[] = [
   { key: 'code',      label: 'Code',        type: 'text', required: true, placeholder: 'code branche' },
   { key: 'libelle',   label: 'Libellé',     type: 'text', required: true, placeholder: '...' },
+  { key: 'isRetroConventionnelle',   label: 'Retro. Conv',     type: 'checkbox', helpText : 'Pour identifier les branches de la retro cenventionnelle' },
+
 ]
 
 // ==================== ÉTAT ====================
@@ -55,6 +57,7 @@ const handleSubmit = async (data: Record<string, any>) => {
         data: {
           code: data.code,
           libelle: data.libelle,
+          isRetroConventionnelle: data.isRetroConventionnelle,
         },
       })
       emit('success', 'Branche modifié avec succès')
@@ -62,6 +65,7 @@ const handleSubmit = async (data: Record<string, any>) => {
       await createBranche.mutateAsync({
         code: data.code,
         libelle: data.libelle,
+        isRetroConventionnelle: data.isRetroConventionnelle,
       })
       emit('success', 'Branche créé avec succès')
     }

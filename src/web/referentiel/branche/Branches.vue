@@ -12,6 +12,8 @@ import { useToast } from '@/composants/toast/useToast.ts'
 import { useBranches } from '@/services/referentiel/branche/useBranche.ts'
 import type { Branche } from '@/services/referentiel/branche/branche.ts'
 import TBrancheForm from './TBrancheForm.vue'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 
 // ==================== PAGINATION ====================
 const page = ref(1)
@@ -40,8 +42,10 @@ type BrancheRow = Branche & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const brancheColumns: TableColumn[] = [ 
+  { key: 'isRetroConventionnelle',    
+  label: 'Rero. Conv.',    width: '10%',  minWidth: 150 , sortable: true , align:'center'}, 
   { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 , sortable: true},
-  { key: 'libelle',    label: 'Libellé',    width: '75%',  minWidth: 150 , sortable: true},
+  { key: 'libelle',    label: 'Libellé',    width: '65%',  minWidth: 150 , sortable: true},
  
 ]
 const emit = defineEmits<{ 
@@ -213,6 +217,9 @@ watch(tableSearch, () => {
     <template #cell-libelle="{ value }">
       <span class="font-mono text-xl uppercase">{{ value }}</span>
     </template>
+    <template #cell-isRetroConventionnelle="{ value }">
+      <IconeValider v-if="value" /><IconeNonValider v-else/>
+    </template>   
    
   
   </TTable>

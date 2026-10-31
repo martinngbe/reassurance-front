@@ -103,7 +103,7 @@ const onFormSuccess = (message: string) => {
 const handleNouveau = () => openCreate()
 const handleModifier = () => {
   if (selectedCampagnes.value.length === 0) {
-    alert('Veuillez sélectionner un campagne')
+    info('Veuillez sélectionner un campagne', 'Information')
     return
   }
   const campagneId = selectedCampagnes.value[0]
@@ -113,7 +113,7 @@ const handleModifier = () => {
 
 const handleSupprimer = async () => {
   if (selectedCampagnes.value.length === 0) {
-    alert('Veuillez sélectionner un campagne')
+    info('Veuillez sélectionner un campagne', 'Information')
     return
   }
   const campagneId = selectedCampagnes.value[0]

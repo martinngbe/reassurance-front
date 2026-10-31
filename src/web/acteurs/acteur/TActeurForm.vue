@@ -59,7 +59,7 @@ const acteurFields: FieldConfig[] = [
   { key: 'raisonSociale', label: 'Raison sociale',type: 'text',   required: true,  placeholder: '...' },
   { key: 'email',         label: 'Email',         type: 'text',   required: false },
 
-
+  { key: 'isNous',        label: 'Nous',       type: 'checkbox' , helpText:'Pour Nous différencier des autres acteurs'},
   { key: 'isReassureur',  label: 'Réasseur',   type: 'checkbox' },
   { key: 'isCourtier',    label: 'Courtier',   type: 'checkbox' },
   { key: 'isCompagnieAssurance',    label:'Cie assurance' ,   type: 'checkbox' },
@@ -135,6 +135,7 @@ const handleSubmit = async (data: Record<string, any>) => {
           isCompagnieAssurance: data.isCompagnieAssurance,
           isReassureur: data.isReassureur,
           isCourtier: data.isCourtier,
+          isNous: data.isNous
         },
       })
       emit('success', 'Assuré modifié avec succès')
@@ -151,6 +152,7 @@ const handleSubmit = async (data: Record<string, any>) => {
         isCompagnieAssurance: data.isCompagnieAssurance,
         isReassureur: data.isReassureur,
         isCourtier: data.isCourtier,
+        isNous: data.isNous
       } as Acteur)
       emit('success', 'Assuré créé avec succès')
     }

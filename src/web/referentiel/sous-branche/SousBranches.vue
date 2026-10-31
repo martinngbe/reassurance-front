@@ -49,9 +49,9 @@ type SousBrancheRow = SousBranche & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const sousBrancheColumns: TableColumn[] = [ 
-  { key: 'branche',    label: 'Branche',    width: '15',  minWidth: 150 },
-  { key: 'code',       label: 'Code',       width: '20%',  minWidth: 150 },
-  { key: 'libelle',    label: 'Libellé',    width: '65%',  minWidth: 150 }, 
+  { key: 'branche',    label: 'Branche',    width: '15%',  minWidth: 150 , sortable:true , resizable:true},
+  { key: 'code',       label: 'Code',       width: '25%',  minWidth: 150 , sortable:true , resizable:true},
+  { key: 'libelle',    label: 'Libellé',    width: '60%',  minWidth: 150 , sortable:true , resizable:true}, 
 ]
 
 

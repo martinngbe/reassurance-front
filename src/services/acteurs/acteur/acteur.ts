@@ -14,7 +14,8 @@ export interface Acteur extends BaseEntity {
 
   isCourtier: boolean ;
   isCompagnieAssurance: boolean;
-  isReassureur: boolean;  
+  isReassureur: boolean;
+  isNous: boolean;  
     // Relations
   pays?: Pays;
   paysId: number;

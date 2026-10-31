@@ -26,14 +26,29 @@ export interface Police extends BaseEntity {
   acteurCourtier?: Acteur
   acteurCourtierId?: number;
 
-  assure?: Assure
-  assureId?: number
+  assure?: Assure  | null
+  assureId?: number | null
 }
 
 export type CreatePoliceDto = Omit<Police, keyof BaseEntity>;
 export type UpdatePoliceDto = Partial<CreatePoliceDto>;
 
 // ✅ Type pour les données du formulaire (paysId et domaineActiviteId peuvent être des objets)
-export type PoliceFormData = Partial<Omit<Police, 'paysId' >> & {
-  paysId: number | Pays;
+// export type PoliceFormData = Partial<Omit<Police, 'paysId' >> & {
+//   paysId: number | Pays;
+// };
+
+
+// ✅ Type pour les données du formulaire (paysId et domaineActiviteId peuvent être des objets)
+export type PoliceFormData = Partial<Omit<Police, 
+    'assureId' | 
+    'natureOffreId' | 
+    'acteurCourtierId' | 
+    'acteurCedanteId' | 
+    'sousBrancheId' >> & {
+  assureId?: number | Assure  |  null  ;
+  natureOffreId: number | NatureOffre;
+  acteurCourtierId: number | Acteur;
+  acteurCedanteId: number | Acteur;
+  sousBrancheId: number | SousBranche;
 };

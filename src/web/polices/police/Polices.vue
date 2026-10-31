@@ -7,16 +7,22 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import type { PaginationParams } from '@/type/pagination.ts'
 import type { Police } from '@/services/polices/police/police'
 import TButton from '@/composants/forms/TButton.vue'
-import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
-import {  ECRAN_FACULTATIVE, ECRAN_TRAITE,  MODULE_ACCEPTATION,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
+import {  ECRAN_FACULTATIVE, ECRAN_TRAITE,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import { usePolicesByAssure } from '@/services/polices/police/usePolicesByAssure'
 import { usePoliceStore } from '@/services/polices/police/police.store'
-import { useAssureStore } from '@/services/acteurs/assure/assure.store'
 import TFichePolice from './ TFichePolice.vue'
+import AffaireNouvelle from '@/web/module/ecrans/affaire-nouvelle/AffaireNouvelle.vue'
+import { usePolices } from '@/services/polices/police/usePolice.ts'
+import { useToast } from '@/composants/toast/useToast.ts'
+import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
+import TAction from '@/composants/utilitaire/TAction.vue'
+import TempPoliceForm from '../temp-police/TempPoliceForm.vue'
+import TPoliceForm from './TPoliceForm.vue'
+import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
 
 
 const ecransStore = useEcransStore()
@@ -29,14 +35,24 @@ const isModuleCession = computed(()=> ecransStore.currentModule === MODULE_CESSI
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
-
+const { success, error, warning, info } = useToast()
 const assureStore = useAssureStore()
 const currentAssure = computed(()=> assureStore.currentAssure)
-
+const showModalConfirmation = ref(false)
 const emit = defineEmits<{ 
   (e: 'row-click',  police: any): void
 }>()
+const closeModal = () => {
+  showModal.value = false
+  policeToEdit.value = null
+}
 
+// ==================== HANDLERS CRUD ====================
+const onFormSuccess = (message: string) => {
+  closeModal()
+  success(message, 'Succès')
+ policesStore.value.polices.refresh()
+}
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
   page: 1,
@@ -57,7 +73,7 @@ const store =  isEcranFacultative.value ?
       //En Traité, on affiche toutes les polices du module (ACC ou CESS)  dont assureId=null    
       usePolicesByAssure( "null" , isModuleCession.value ,params) ;
       */
-const store = computed(()=>{
+const policesStore = computed(()=>{
     console.log(" _________________________________________ ")
     console.warn(" Nous sommes dans le composant Polices.vue")
     console.log(" currentAssure.value:",currentAssure.value)
@@ -76,8 +92,10 @@ const store = computed(()=>{
     return  usePolicesByAssure("null" ,isModuleCession.value ,params)
    
 
-})       
-const { polices  } = store.value
+}) 
+     
+const {updatePolice , deletePolice } = usePolices(params)
+
 type PoliceRow = Police & { [key: string]: any }
 const tempPoliceStore = useTempPoliceStore()
 
@@ -107,19 +125,19 @@ const policeColumns: TableColumn[] = [
 
 
 // ==================== DONNÉES TABLE ====================
-// Accéder via store.polices
-const policeRows = computed(() => store.value.polices.items.value)
-const tableLoading = computed(() => store.value.polices.isLoading.value)
-const loadingMore = computed(() => store.value.polices.loadingMore.value)
-const hasMore = computed(() => store.value.polices.hasMore.value)
+// Accéder via policesStore.polices
+const policeRows = computed(() => policesStore.value.polices.items.value)
+const tableLoading = computed(() => policesStore.value.polices.isLoading.value)
+const loadingMore = computed(() => policesStore.value.polices.loadingMore.value)
+const hasMore = computed(() => policesStore.value.polices.hasMore.value)
 // ✅ Correction ici : on utilise .value?.total
-const totalItems = computed(() => polices.pageInfo.value?.total ?? 0)
+const totalItems = computed(() => policesStore.value.polices.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-//const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
+const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
 //const selectedPolices = ref<(string | number)[]>([])
-// ✅ REMPLACER le ref local par un computed lié au store
+// ✅ REMPLACER le ref local par un computed lié au policesStore
 const selectedPolices = computed({
   get: () => policeStore.selectedPolices,
   set: (value) => policeStore.setSelectedPolices(value)
@@ -132,7 +150,7 @@ function onSort(state: SortState): void {
 // ==================== INFINITE SCROLL ====================
 async function handleLoadMore() { 
   if (loadingMore.value || !hasMore.value) return
-  await polices.loadMore()
+  await policesStore.value.polices.loadMore()
 }
 
 // ==================== MODALES ====================
@@ -141,7 +159,7 @@ const showModalPolice = ref(false)
 const titleModal = ref( currentAssure.value?
  `AFFAIRE NOUVELLE : ${currentAssure.value.raisonSociale.toUpperCase()}` :
  'AFFAIRE NOUVELLE')
-//const policeToEdit = ref<Police | null>(null)
+const policeToEdit = ref<Police | null | undefined>(null)
 const onRowClick = ( row: any, index: number)=>{ 
    policeStore.setCurrentPolice(row as Police)      
     emit('row-click',row as Police)
@@ -151,6 +169,53 @@ const openAffaireNouvelle =()=>{
   tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(false)
 }
 
+const openEdit = (police: PoliceRow) => {
+  policeToEdit.value = police
+  titleModal.value = 'Modifier police'
+  showModal.value = true
+}
+const handleSupprimer = async () => {
+  console.log("----- Polices.handleSupprimer ------")
+  console.log("selectedPolices.value.length:",selectedPolices.value.length)
+  if (selectedPolices.value.length === 0) {
+    warning('Veuillez sélectionner un domaineActivite',"Attention")
+    return
+  }
+  
+  const policeId = selectedPolices.value[0]
+    console.log("policeId:",policeId)
+  policeToEdit.value = policeRows.value.find((u:any) => u.id === policeId)
+   console.log("policeToEdit.value:",policeToEdit.value)
+  if (!policeToEdit.value) return
+  showModalConfirmation.value=true 
+  
+}
+
+const handleModifier = () => {
+  if (selectedPolices.value.length === 0) {
+    info('Veuillez sélectionner une police', 'Info')
+    return
+  }
+  const policeId = selectedPolices.value[0]
+  const police = policeRows.value.find((u: any) => u.id === policeId)
+  if (police) openEdit(police)
+}
+const handleConfirmeSuppression = async () => {
+  const police = policeToEdit.value
+  if (!police) return
+  try {
+    await deletePolice.mutateAsync(police.id)
+    showModalConfirmation.value = false
+    success('Opération effectuée avec succès', 'Succès')
+    selectedPolices.value = selectedPolices.value.filter((id) => id !== police.id)
+    policesStore.value.refresh()
+  } catch (err: any) {
+    error(
+      err?.response?.data?.message || err?.message || 'Erreur lors de la suppression.',
+      'Erreur',
+    )
+  }
+}
 const openFichePolice =()=>{  
   showModalPolice.value=true
 }
@@ -161,7 +226,7 @@ watch(
      console.warn("isAffaireNouvelleExecutee newValue:",newValue)
      if (newValue) {
       showModal.value=false
-      polices.refresh()      
+      policesStore.value.polices.refresh()      
      } 
   },
   { immediate: true }
@@ -230,18 +295,27 @@ watch(tableSearch, () => {
                 > 
                         <span class="text-lg font-bold uppercase cursor-pointer">Affaire Nouvelle</span> 
             </TButton>
+             <TAction
+                  :active-modifier="isLigneSelectionnee"
+                  :active-supprimer="isLigneSelectionnee"                
+                  :masque-impression="true"
+                  :masque-nouveau="true"
+                  @modifier="handleModifier"
+                  @supprimer="handleSupprimer"
+                
+                />
     </template>
     <template #cell-natureOffre="{ value }">
       <span class="font-mono   uppercase" >{{ value.code }}</span>
     </template>
     <template #cell-assure="{ value }">
-      <span class="font-mono  uppercase" v-if="value" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" v-if="value" >{{ value?.raisonSociale }}</span>
     </template>
     <template #cell-sousBranche="{ value }">
       <span class="font-mono  uppercase" >{{ value.libelle }}</span>
     </template>
     <template #cell-acteurCedante="{ value }">
-      <span class="font-mono  uppercase" >{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase"  v-if="value">{{ value.raisonSociale }}</span>
     </template>
     <template #cell-acteurCourtier="{ value }">
       <span class="font-mono  uppercase" v-if="value">{{ value.raisonSociale }}</span>
@@ -275,27 +349,44 @@ watch(tableSearch, () => {
 
    <TModal v-model="showModal" 
       width="70%"  
-      height="20%" 
+      height="98%" 
       :title="titleModal" 
    >
-      <AffaireNouvelle  />
+      <template #header>
+                <p>{{ titleModal }}</p>
+      </template>
+      <template #default>
+                <AffaireNouvelle  />
+      </template>
   </TModal>
  
 
-   <TModal v-model="showModalPolice" 
-      width="50%"  
-      height="98%"
-   >
-          
-         
+   <TModal v-model="showModalPolice" width="50%" >
           <template #default>
-                <!--QuittanceVentillee  /-->
                 <TFichePolice/>
           </template>
-                  
-         
-
   </TModal>
 
+  <TModal v-model="showModal" :title="titleModal" width="40%">
+    <TPoliceForm
+      :police="policeToEdit"
+      :loading="updatePolice.isPending.value"
+      @success="onFormSuccess"
+      @cancel="closeModal"
+    />
+  </TModal>
+    <TModal v-model="showModalConfirmation" title="Demande de confirmation">
+    <TDemandeConfirmation
+      @annuler="showModalConfirmation = false"
+      @confirmer="handleConfirmeSuppression"
+    >
+      <template #message>
+        <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4">
+          Voulez-vous supprimer la police
+          <span class="font-extrabold">{{ policeToEdit?.numero }}</span>
+        </p>
+      </template>
+    </TDemandeConfirmation>
+  </TModal>
 
 </template>

@@ -456,7 +456,7 @@ watch(
       <div class="flex min-w-0 items-center gap-3">
         <h3
           v-if="title"
-          class="truncate uppercase text-xl font-semibold text-neutral-800 dark:text-neutral-100"
+          class="truncate uppercase text-xl  font-mono font-semibold text-neutral-800 dark:text-neutral-100"
         >
           {{ title }}
         </h3>

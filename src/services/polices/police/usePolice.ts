@@ -55,6 +55,38 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
     },
   })
  // ==================== UPDATE ====================
+  // const updatePolice = useMutation({
+  //   mutationFn: ({ id, data }: { id: number; data: Partial<Police> }) =>
+  //     policeApi.update(id, data),
+  //   onMutate: async ({ id, data }) => {
+  //     const previousItems = [...polices.items.value]
+  //     const index = polices.items.value.findIndex((d) => d.id === id)
+  //     if (index !== -1) {
+  //       polices.items.value[index] = { ...polices.items.value[index], ...data } as Police
+  //     }
+  //     if (policeStore.currentPoliceId === id) {
+  //       policeStore.updateCurrentPolice(data)
+  //     }
+  //     return { previousItems, index }
+  //   },
+  //   onError: (_err, _vars, context) => {
+  //     if (context?.previousItems) {
+  //       polices.items.value = context.previousItems
+  //     }
+  //   },
+  //   onSuccess: async (_data, { id }) => {
+  //     // ⭐ Si c'est la police courante, on la recharge complètement depuis le serveur
+  //     if (policeStore.currentPoliceId === id) {
+  //       await reloadCurrentPolice()
+  //     }
+  //   },
+  //   onSettled: () => {
+  //     queryClient.invalidateQueries({ queryKey: [KEY] })
+  //     polices.refresh()
+  //   },
+  // })
+  
+ // ==================== UPDATE ====================
   const updatePolice = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Police> }) =>
       policeApi.update(id, data),
@@ -79,13 +111,14 @@ export function usePolices(params: ComputedRef<PaginationParams>) {
       if (policeStore.currentPoliceId === id) {
         await reloadCurrentPolice()
       }
+   
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [KEY] })
       polices.refresh()
     },
   })
-  
+
   // ==================== DELETE ====================
   const deletePolice = useMutation({
     mutationFn: (id: number) => policeApi.delete(id),
