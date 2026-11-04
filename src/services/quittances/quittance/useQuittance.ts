@@ -1,5 +1,5 @@
 // /referentiel/quittance/useQuittance.ts
-import { computed, ref, toRefs, toValue, type ComputedRef } from 'vue'
+import { computed, ref, toRefs, toValue, type ComputedRef, type Ref } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { Quittance } from './quittance'
 import { quittanceApi } from './quittance.api'
@@ -9,27 +9,39 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useQuittanceStore } from './quittance.store'
 
 const KEY = 'quittances';
-export function useQuittances(params: ComputedRef<PaginationParams>) {
+export function useQuittances(
+  policeId: Ref<number> | number | null,
+  isCession: Ref<boolean> | boolean | null,
+  params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
   const quittanceStore = useQuittanceStore() // ⭐ 
+  /// //////////////////////////////////////////////////  
+  /// RECHARGEMENT AUTOMATIQUE EN CAS DE CHANGEMENT ////
+  /// ////////////////////////////////////////////////// 
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
+    policeId,
+    isCession
   }))
   //////////////////////////////
   const quittances = useInfiniteList<Quittance>({
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      //console.warn(" -- useQuittance quittances = useInfiniteList<Quittance> ")
-      // const response = await quittanceApi.getAll(params.value)
-        // ✅ Utiliser page et limit du queryFn, pas ceux de params
-        const response = await quittanceApi.getAll({
+          // ✅ Utiliser page et limit du queryFn, pas ceux de params
+          console.log(' >>>>>>>>>>>>>>>>>>>>>>')
+          console.log(' >>>>  useQuittance.ts.')
+          console.log(' >>>>  policeId:',policeId)
+          console.log(' >>>>  isCession:',isCession)
+          const response = await quittanceApi.getAll({
           ...toValue(params),
-          page,      // ← page dynamique (1, 2, 3...)
-          limit,     // ← limit dynamique
-        })
+          ...(policeId  != null && { policeId: toValue(policeId) }),
+          ...(isCession != null && { isCession: toValue(isCession) }),
+          page,
+          limit,
+        });
       // ✅ Retourner l'objet IResponse complet, pas response.data
       console.log(" -- useQuittance response:",response)
       return response as PaginatedResponse<Quittance>

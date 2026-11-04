@@ -76,8 +76,8 @@ const menus: MenuItem[] = [
     icon: 'pi pi-dollar',
   },
      {
-    id: 'natureCession',
-    label: 'Nature Cession',
+    id: 'naturePlacement',
+    label: 'Nature Placement',
     icon: 'pi pi-dollar',
   },
  

@@ -26,6 +26,9 @@ export interface Police extends BaseEntity {
   acteurCourtier?: Acteur
   acteurCourtierId?: number;
 
+  acteurReassureur?: Acteur
+  acteurReassureurrId?: number;
+
   assure?: Assure  | null
   assureId?: number | null
 }
@@ -44,11 +47,13 @@ export type PoliceFormData = Partial<Omit<Police,
     'assureId' | 
     'natureOffreId' | 
     'acteurCourtierId' | 
-    'acteurCedanteId' | 
+    'acteurCedanteId' |
+    'acteurReassureurrId' |
     'sousBrancheId' >> & {
   assureId?: number | Assure  |  null  ;
   natureOffreId: number | NatureOffre;
   acteurCourtierId: number | Acteur;
   acteurCedanteId: number | Acteur;
+  acteurReassureurrId: number | Acteur;
   sousBrancheId: number | SousBranche;
 };

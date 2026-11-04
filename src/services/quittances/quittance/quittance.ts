@@ -4,6 +4,7 @@ import type { Devise } from "@/services/referentiel/devise/devise";
 import type { Mouvement } from "@/services/referentiel/mouvement/mouvement";
 import type { Pays } from "@/services/referentiel/pays/pays";
 import type { BaseEntity } from "@/type/base-entity";
+import type { QuittancePlacement } from "../quittance-placement/quittance-placement";
 
 export interface Quittance extends BaseEntity {
  numero: string;
@@ -26,7 +27,6 @@ export interface Quittance extends BaseEntity {
   ////// Capitaux 
   /////////////////////////////
   capitaux: number; 
-  //limiteCapitauxImpliques: number;
   lci: number;
   smp: number;
   limite: number;
@@ -39,7 +39,9 @@ export interface Quittance extends BaseEntity {
   /////////////////////////////
   estimationPrime: number; 
   primeBrute: number;
-  primeNette: number;  
+  primeNette: number;
+  primeCedee: number;
+  primeAcceptee: number;  
   ///////////////////////////// 
   ////// Taux et Taxes 
   /////////////////////////////
@@ -65,6 +67,8 @@ export interface Quittance extends BaseEntity {
 
   devise: Devise
   deviseId: number;
+
+  quittancePlacements: QuittancePlacement[]
  
 }
 
@@ -72,6 +76,18 @@ export type CreateQuittanceDto = Omit<Quittance, keyof BaseEntity>;
 export type UpdateQuittanceDto = Partial<CreateQuittanceDto>;
 
 // ✅ Type pour les données du formulaire (paysId et domaineActiviteId peuvent être des objets)
-export type QuittanceFormData = Partial<Omit<Quittance, 'paysId' >> & {
-  paysId: number | Pays;
+// export type QuittanceFormData = Partial<Omit<Quittance, 'paysId' >> & {
+//   paysId: number | Pays;
+// };
+
+// ✅ Type pour les données du formulaire (paysId et domaineActiviteId peuvent être des objets)
+export type QuittanceFormData = Partial<Omit<Quittance, 
+    'mouvementId' | 
+    'policeId' | 
+    'deviseId'
+     >> & {
+  mouvementId?: number | Mouvement  |  null  ;
+  policeId: number | Police;
+  deviseId: number | Devise;
 };
+

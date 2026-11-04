@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
-import NatureCessions from './NatureCessions.vue';
+import NaturePlacements from './NaturePlacements.vue';
 
 </script>
 
@@ -13,7 +13,7 @@ import NatureCessions from './NatureCessions.vue';
     >
 
     <template #default>
-          <NatureCessions/>
+          <NaturePlacements/>
     </template>
   
   </TLayoutModule>

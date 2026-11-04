@@ -15,11 +15,11 @@ export const policeApi = {
   },
 
   getById: (id: number) =>
-    apiClient.get<Police>(`${BASE}/${id}`).then((r) => r.data),
+    apiClient.get<IResponse>(`${BASE}/${id}`).then((r) => r.data.data),
   create: (data: CreatePoliceDto) =>
-    apiClient.post<Police>(BASE, data).then((r) => r.data),
+    apiClient.post<IResponse>(BASE, data).then((r) => r.data.data),
   update: (id: number, data: UpdatePoliceDto) =>
-    apiClient.patch<Police>(`${BASE}/${id}`, data).then((r) => r.data),
+    apiClient.patch<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),
 }

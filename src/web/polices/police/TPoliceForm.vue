@@ -5,33 +5,28 @@ import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
 import type {  IResponse, PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
-import { useAssureStore } from '@/services/acteurs/assure/assure.store'
-import { ECRAN_FACULTATIVE, MODULE_ACCEPTATION, useEcransStore } from '@/services/ecrans/ecrans.store'
-import { AUCUN } from '@/services/common/constantes'
 import { usePoliceStore } from '@/services/polices/police/police.store'
 import { usePolices } from '@/services/polices/police/usePolice'
-import type { Police, PoliceFormData } from '@/services/polices/police/police'
-import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store'
-import { useQuittances } from '@/services/quittances/quittance/useQuittance'
+import type {  PoliceFormData } from '@/services/polices/police/police'
 
+//////////////////////////////////////////////////////////////////
+/////  FORMULAIE DE MODIFICACTION DE POLICE UNIQUEMENT
+//////////////////////////////////////////////////////////////////
+
+// // POLICE
+const errorMessage = ref<string | null>(null)
 const policeStore = usePoliceStore()
+// lecture de la police en cours
 const currentPolice = computed(()=> policeStore.currentPolice)
-// // QUITTANCE
-const quittanceeStore = useQuittanceStore()
-const currentQuittance = computed(()=> quittanceeStore.currentQuittance)
-const paramsQUittance = computed<PaginationParams>(() => ({}))
-const {updateQuittance} = useQuittances(paramsQUittance)
+const natureOffre =computed(()=> currentPolice.value?.natureOffre)
+const params = computed<PaginationParams>(() => ({}))
+  // API
+const { updatePolice } = usePolices(null ,
+ currentPolice.value? currentPolice.value.isCession: null,
+  params)
 
-// on recupere l'assure en cours
-const assureStore = useAssureStore()  
-const currentAssure =assureStore.currentAssure
-// on recupére l'cran sur lequel nous sommes
-const {currentEcran , currentModule}  = useEcransStore()
-const isEcranFac = computed(() => currentEcran === ECRAN_FACULTATIVE)
-const isModuleAcceptation = computed(() => currentModule === MODULE_ACCEPTATION)
-const isAucunCourtier = computed(()=>currentPolice.value && 
-         currentPolice.value.acteurCourtier && 
-         currentPolice.value.acteurCourtier.sigle ===AUCUN)
+const loading = computed(() =>  updatePolice.isPending.value)
+
 
 
 const emit = defineEmits<{
@@ -41,10 +36,8 @@ const emit = defineEmits<{
 
 console.log(' ================================== ')
 console.log(' PoliceForm.vue')
-console.log(' isEcranFac:',isEcranFac)
 console.log(' ================================== ')
 
-// ✅ REMPLACER le ref local par un computed lié au store
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
@@ -70,7 +63,9 @@ async function fetchActeurCourtier(query: string, page: number) {
   }
 }
 async function fetchNatureOffre(query: string, page: number) {
-  const params = { search: query, page, limit: 20 , ...(isEcranFac.value && { isFacultative: true }) }
+  const params = { search: query, page, limit: 20 , ...(
+    natureOffre.value && 
+    natureOffre.value.isFacultative && { isFacultative: true } ) }
 
   const res = await apiClient.get('/nature-offre', {params}) as IResponse
 
@@ -192,7 +187,7 @@ function initializeFormData(): PoliceFormData {
 const formData = ref<PoliceFormData>(initializeFormData())
 
 // ✅ Watcher pour gérer les changements de props.currentPolice
-watch(() => currentPolice, (newPolice) => {
+watch(() => currentPolice.value, (newPolice) => {
   console.log("_____ PoliceForm.watch.currentPolice _____")
   console.log("newPolice:",newPolice)
   if (newPolice) {
@@ -200,11 +195,6 @@ watch(() => currentPolice, (newPolice) => {
   }
 }, { deep: true })
 
-const errorMessage = ref<string | null>(null)
-const params = computed<PaginationParams>(() => ({}))
-const { createPolice, updatePolice } = usePolices(params)
-
-const loading = computed(() => createPolice.isPending.value || updatePolice.isPending.value)
 
 // ✅ Fonction helper pour extraire l'ID d'un objet ou retourner la valeur telle quelle
 function extractId(value: any): number | undefined {
@@ -217,18 +207,13 @@ function extractId(value: any): number | undefined {
 
 // ✅ Helper pour construire le payload commun (évite la duplication)
 function buildPayload(data: Record<string, any>) {
- // // EN Facultative il faut absolument un assuré
- const isCession = !isModuleAcceptation.value
- const isFac = isEcranFac.value
- const assureId =  isFac &&  // On est FAC et
-      currentAssure && // Existe un assure et 
-      !currentPolice.value?.assure ?  // la police n'a pas d'assure
-       currentAssure.id : null 
+
   return {
-    assureId,
-    isFac,
-    isCession,
     numero: data.numero,
+    assureId:data.assureId,
+    
+    isFac:data.isFac,
+    isCession:data.isCession,
     isIard: data.isIard,
     isReconductionTacite: data.isReconductionTacite,                  
     // Relations
@@ -236,62 +221,29 @@ function buildPayload(data: Record<string, any>) {
     sousBrancheId: extractId(data.sousBrancheId),
     acteurCedanteId: extractId(data.acteurCedanteId),
     acteurCourtierId: extractId(data.acteurCourtierId),
+    acteurReassureurId : data.acteurReassureurId
    
   }
 }
 const handleSubmit = async (data: Record<string, any>) => {
   errorMessage.value = null
-  console.log('____________ PoliceForm.handleSubmit __________________')
-  console.log('data: ',data)
- 
-  /**
-   * La création ou la mise à jour de Police antraine automatiquement
-   * sa sélection comme currentPolice.
-   * NB: La mise à jour recharge depuis le serveur et la
-   * sélectionne comme currentPolice. 
-   */
-    
   try {
     if (isEditing.value && currentPolice.value?.id) {
-      await updatePolice.mutateAsync({
-              id: currentPolice.value.id,
-              data: buildPayload(data),
-            })
-      /* 
-        Lors de la MAJ, on dois vérifier si le  acteurCourtier.sigle ===AUCUN
-        afin de réinitialiser le taux de courtage
-      */     
-      if(isAucunCourtier.value){
-        console.log(" _________________ MAJ AUCUN COURTIER _____________ ")
-        // Initialisation du taux de courtage
-        if(currentQuittance.value) {
-                   console.log(" AVANT currentTempQuittance.value:",currentQuittance.value)
-                    // La currentTempQuittance existe donc MAJ
-                   await updateQuittance.mutateAsync({
-                          id:currentQuittance.value.id,
-                          data:{
-                            tauxCommission:0,
-                            taxeSurCommission:0
-                          } 
-                      })
-                      
-                  console.log(" APRES currentQuittance.value:",currentQuittance.value)
-        }
-           
-      }   
+      const resultat = await updatePolice.mutateAsync({
+        id: currentPolice.value.id,
+        data: buildPayload(data),
+      })
+      
+      // ✅ Mettre à jour le store avec les nouvelles données
+      policeStore.updateCurrentPolice(resultat)
+      
       emit('success', 'Police modifiée avec succès')
-    } else {
-      await createPolice.mutateAsync( buildPayload(data) as Police)
-        
-      emit('success', 'Police créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)
-    errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue lors de la sauvegarde.'
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Une erreur est survenue.'
   }
-      
 }
-
 
 
 const handleCancel = () => {

@@ -77,7 +77,7 @@ const baseNumberOptions = {
   formatOptions: { style: 'decimal' as const }, 
   returnType: 'number' as const,
 }
-
+/*
 const tempQuittanceFields = computed(()=>{
           // ✅ Configuration des champs optimisée et lisible
           const fields: FormField[] = [
@@ -88,47 +88,50 @@ const tempQuittanceFields = computed(()=>{
           ]
           return fields
 })
-
-/*
-const baseFieldsConfig = computed(()=>{         
-             // 1. Champs de base (toujours présents)
-          const fields: FormField[] = [
-            createNumberField('primeBrute', 'Prime Brute'),
-            createNumberField('primeNette','Prime Nette'),
-          //  createNumberField('estimationPrime',  'Estimation Prime'),
-          ]
-   
-          return fields
-})
-// 3. Génération dynamique de tes FormField
-const tempQuittanceFields = computed<FieldConfig[]  >(() => 
-  baseFieldsConfig.value.map(({ key, label }) => ({
-    key,
-    label,
-    type: 'number',
-    size: '2xl',
-    helpText: `${label} à 100%`,
-    numberOptions: baseNumberOptions,
-  }))
-)
 */
+const tempQuittanceFields = computed<FormField[]>(() => {
+  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+  const allFields: FormField[] = [
+  
+   
+    { section: 'Primes' },
+    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } },
+   // { key: 'primeNette', label: 'Prime nette', type: 'number', numberOptions: { min: 0 } },
+    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } },
+
+   
+  ]
+
+  // 2. Champs à retirer selon l'état courant
+  // ✅ Utiliser policeQuittance.value (maintenant réactif)
+  const isOffreProportionnelle = currentTempPolice.value
+    ? currentTempPolice.value.natureOffre?.isProportionnelle === true
+    : false
+
+  const excludedKeys = new Set<string>()
+  if (isOffreProportionnelle) {
+    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+    excludedKeys.add('estimationPrime')
+   
+  } else {
+    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
+    excludedKeys.add('primeBrute')
+   // excludedKeys.add('primeNette')
+    
+  }
+
+  // 3. Application du filtre
+  if (excludedKeys.size === 0) return allFields
+
+  return allFields.filter(
+    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+  )
+})
 
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
-/*
-// ✅ Fonction pour initialiser le formData avec le bon mapping
-function initializeFormData(): TempQuittanceFormData {
-  if (!currentTempQuittance) {
-    return Object.fromEntries(
-      tempQuittanceFields.value.map((f) => [f.key, f.type === 'checkbox' ? true : ''])
-    ) as  unknown as TempQuittanceFormData
-  }
 
-  const data = { ...currentTempQuittance.value } as TempQuittanceFormData
-  return data as TempQuittanceFormData
-}
-*/
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
   if (!currentTempQuittance.value) {

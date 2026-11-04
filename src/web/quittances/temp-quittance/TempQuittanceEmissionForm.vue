@@ -70,7 +70,6 @@ const tempQuittanceFields = computed((): FormField[] => {
     { section: 'Autres informations' },
     { key: 'avisEcheance', label: 'Avis Echéance', type: 'number', helpText: "Délais (jours) de notification avant échéance" },  
   ];
-
   // 2. On ajoute les champs conditionnels avec de simples 'if'
   if (curentNatureOffre.value && !curentNatureOffre.value.isProportionnelle) {
     // Offre Non proportionnelle
@@ -79,14 +78,11 @@ const tempQuittanceFields = computed((): FormField[] => {
       //{ key: 'autreChampPmd', label: 'Autre champ PMD', type: 'text' }
     );
   }
-
-
   // 3. On finit par les champs toujours présents
   fields.push(
     { key: 'sinistreAuComptant', label: 'Sinistre au Comptant', type: 'number', helpText: 'Montant min à payer sans attendre' }, 
     { key: 'avisSinistre', label: 'Avis sinistre', type: 'number', helpText: 'Délais (jours) de notification du sinistre' }
   );
-
   // 4. On retourne le résultat
   return fields;
 });

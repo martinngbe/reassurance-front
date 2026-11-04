@@ -118,15 +118,31 @@ function onFocus(event: FocusEvent): void {
   draft.value = toEditable(props.modelValue) // retire les espaces de milliers
   emit('focus', event)
 }
-/*
 function onBlur(event: FocusEvent): void {
-  const n = parseNumber(draft.value)
-  draft.value = Number.isNaN(n) ? '' : n.toFixed(options.value.maximumFractionDigits ?? 0)
+  let n = parseNumber(draft.value) 
+
+  if (Number.isNaN(n)) {
+    // 👇 VALEUR PAR DÉFAUT SI LE CHAMP EST VIDE
+    // On prend la valeur min si définie, sinon 0
+    n = props.min !== undefined ? props.min : 0
+  } else {
+    // 👇 APPLICATION DE LA PLAGE (MIN / MAX)
+    if (props.min !== undefined && n < props.min) {
+      n = props.min
+    }
+    if (props.max !== undefined && n > props.max) {
+      n = props.max
+    }
+  }
+
+  // On formate la valeur finale (qui est maintenant garantie d'être un nombre valide)
+  draft.value = n.toFixed(options.value.maximumFractionDigits ?? 0)
+
   focused.value = false
-  publish()
+  publish() // publish() va émettre la valeur déjà corrigée par le min/max ou la valeur par défaut
   emit('blur', event)
 }
-*/
+/*
 function onBlur(event: FocusEvent): void {
   let n = parseNumber(draft.value)
   
@@ -147,6 +163,9 @@ function onBlur(event: FocusEvent): void {
   publish() // publish() va émettre la valeur déjà corrigée par le min/max
   emit('blur', event)
 }
+*/
+
+
 const rangeError = computed(() => {
   const n = parseNumber(draft.value)
   if (Number.isNaN(n)) return ''

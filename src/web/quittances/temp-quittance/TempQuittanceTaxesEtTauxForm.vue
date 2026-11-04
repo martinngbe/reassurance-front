@@ -52,7 +52,7 @@ const createNumberField = (key: string, label: string, helpText?: string): FormF
   helpText,
   numberOptions: numberConfig,
 })
-
+/*
 const tempQuittanceFields = computed(()=>{
           // ✅ Configuration des champs optimisée et lisible
           const fields: FormField[] = [
@@ -63,7 +63,47 @@ const tempQuittanceFields = computed(()=>{
           ]
           return fields
 })
+*/
+const tempQuittanceFields = computed<FormField[]>(() => {
+  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+  const allFields: FormField[] = [
 
+    { section: 'Taux et Taxes' },
+    { key: 'tauxCedante', label: 'Taux Cédante', type: 'number', numberOptions: { min: 0 } },
+    { key: 'tauxAccepte', label: 'Taux Accepté', type: 'number', numberOptions: { min: 0 } },
+    { key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
+    { key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
+    { key: 'tauxCommission', label: 'Taux commission', type: 'number', numberOptions: { min: 0 } },
+    { key: 'taxeSurPrime', label: 'Taxe sur prime', type: 'number', numberOptions: { min: 0 } },
+    { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', numberOptions: { min: 0 } },
+
+  ]
+
+  // 2. Champs à retirer selon l'état courant
+  // ✅ Utiliser policeQuittance.value (maintenant réactif)
+  const isOffreProportionnelle = currentTempPolice.value
+    ? currentTempPolice.value.natureOffre?.isProportionnelle === true
+    : false
+
+  const excludedKeys = new Set<string>()
+  if (isOffreProportionnelle) {
+    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+    excludedKeys.add('tauxRetention')
+    excludedKeys.add('tauxCession')
+   
+  } else {
+    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
+    excludedKeys.add('tauxCedante')
+    excludedKeys.add('tauxAccepte')
+  }
+
+  // 3. Application du filtre
+  if (excludedKeys.size === 0) return allFields
+
+  return allFields.filter(
+    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+  )
+})
 
 // ==================== LOGIQUE FORMULAIRE ====================
 

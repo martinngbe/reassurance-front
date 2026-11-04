@@ -8,12 +8,9 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import TModal from '@/composants/display/TModal.vue'
 import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
-import IconeValider from '@/composants/icone/IconeValider.vue'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
-import { useNatureCessions } from '@/services/referentiel/nature-cession/useNatureCession'
-import type { NatureCession } from '@/services/referentiel/nature-cession/nanture-cession'
-import TNatureCessionForm from './TNatureCessionForm.vue'
+import type { NaturePlacement } from '@/services/referentiel/nature-placement/nature-placement'
+import { useNaturePlacements } from '@/services/referentiel/nature-placement/useNaturePlacement'
 
 
 // ==================== PAGINATION ====================
@@ -35,27 +32,27 @@ const params = computed(() => ({
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 
-const { natureCessions ,deleteNatureCession } = useNatureCessions(params)
+const { naturePlacements ,deleteNaturePlacement } = useNaturePlacements(params)
 const { success, error, warning, info, add } = useToast()
 
 // Type local pour satisfaire TTable (signature d'index)
-type NatureCessionRow = NatureCession & { [key: string]: any }
+type NaturePlacementRow = NaturePlacement & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
-const natureCessionColumns: TableColumn[] = [ 
+const naturePlacementColumns: TableColumn[] = [ 
   { key: 'code',              label: 'Code',        width: '25%',  minWidth: 150 , sortable: true},
   { key: 'libelle',           label: 'Libellé',     width: '75%',  minWidth: 150 , sortable: true},
  
 ]
 const emit = defineEmits<{ 
-  (e: 'row-click',  natureCession: any): void
+  (e: 'row-click',  naturePlacement: any): void
 }>()
 
 const totalItems = ref(0)
 const totalPages = ref(0)
 
-const natureCessionRows = computed(() => {
-  const resultat  = natureCessions.data.value
+const naturePlacementRows = computed(() => {
+  const resultat  = naturePlacements.data.value
   if(!resultat) return []
   if(!resultat.success) return []
   const pageInfo  = resultat.pageInfo
@@ -66,10 +63,10 @@ const natureCessionRows = computed(() => {
   return resultat.data;
 })
 // État de chargement exposé au TTable
-const tableLoading = computed(() => natureCessions.isLoading.value || natureCessions.isFetching.value)
+const tableLoading = computed(() => naturePlacements.isLoading.value || naturePlacements.isFetching.value)
 const isAfficheSearch = computed(() => totalItems.value> PAGE_SIZE)
-const isLigneSelectionnee = computed(()=> selectedNatureCessions.value.length > 0)
-const selectedNatureCessions = ref<(string | number)[]>([])
+const isLigneSelectionnee = computed(()=> selectedNaturePlacements.value.length > 0)
+const selectedNaturePlacements = ref<(string | number)[]>([])
 
 function onSort(state: SortState): void {
   sortState.value = state
@@ -80,23 +77,23 @@ function onSort(state: SortState): void {
 const showModal = ref(false)
 const showModalfirmation= ref(false)
 const titleModal = ref('')
-const natureCessionToEdit = ref<NatureCession | null>(null)
+const naturePlacementToEdit = ref<NaturePlacement | null>(null)
 
 const openCreate = () => {
-  natureCessionToEdit.value = null
-  titleModal.value = 'Nouvel natureCession'
+  naturePlacementToEdit.value = null
+  titleModal.value = 'Nouvel naturePlacement'
   showModal.value = true
 }
 
-const openEdit = (natureCession: NatureCessionRow) => {
-  natureCessionToEdit.value = natureCession
-  titleModal.value = 'Modifier natureCession'
+const openEdit = (naturePlacement: NaturePlacementRow) => {
+  naturePlacementToEdit.value = naturePlacement
+  titleModal.value = 'Modifier naturePlacement'
   showModal.value = true
 }
 
 const closeModal = () => {
   showModal.value = false
-  natureCessionToEdit.value = null
+  naturePlacementToEdit.value = null
 }
 // ==================== HANDLERS ====================
 const onFormSuccess = (message: string) => {
@@ -105,36 +102,36 @@ const onFormSuccess = (message: string) => {
 }
 const handleNouveau = () => openCreate()
 const handleModifier = () => {
-  if (selectedNatureCessions.value.length === 0) {
-    info('Veuillez sélectionner un natureCession', 'Info')
+  if (selectedNaturePlacements.value.length === 0) {
+    info('Veuillez sélectionner un naturePlacement', 'Info')
     return
   }
-  const natureCessionId = selectedNatureCessions.value[0]
-  const natureCession = natureCessionRows.value.find((u:any) => u.id === natureCessionId)
-  if (natureCession) openEdit(natureCession)
+  const naturePlacementId = selectedNaturePlacements.value[0]
+  const naturePlacement = naturePlacementRows.value.find((u:any) => u.id === naturePlacementId)
+  if (naturePlacement) openEdit(naturePlacement)
 }
 
 const handleSupprimer = async () => {
-  if (selectedNatureCessions.value.length === 0) {
-    warning('Veuillez sélectionner un natureCession',"Attention")
+  if (selectedNaturePlacements.value.length === 0) {
+    warning('Veuillez sélectionner un naturePlacement',"Attention")
     return
   }
-  const natureCessionId = selectedNatureCessions.value[0]
-  natureCessionToEdit.value = natureCessionRows.value.find((u:any) => u.id === natureCessionId)
-  if (!natureCessionToEdit.value) return
+  const naturePlacementId = selectedNaturePlacements.value[0]
+  naturePlacementToEdit.value = naturePlacementRows.value.find((u:any) => u.id === naturePlacementId)
+  if (!naturePlacementToEdit.value) return
   showModalfirmation.value=true 
   
 }
 
 const handlConfirmeSuppression = async ()=>{
-  const natureCession = natureCessionToEdit.value?? null
-  if (!natureCession ) return
+  const naturePlacement = naturePlacementToEdit.value?? null
+  if (!naturePlacement ) return
     try {
-        await deleteNatureCession.mutateAsync(natureCession.id)
+        await deleteNaturePlacement.mutateAsync(naturePlacement.id)
         showModalfirmation.value=false 
         success("Opération effectuée avec succès", 'Succès')
-        selectedNatureCessions.value = selectedNatureCessions.value.filter(
-          (id) => id !== natureCession.id,
+        selectedNaturePlacements.value = selectedNaturePlacements.value.filter(
+          (id) => id !== naturePlacement.id,
         )
       } catch (err: any) {
         console.error('Erreur suppression:', err)
@@ -146,7 +143,7 @@ const handlConfirmeSuppression = async ()=>{
       }
 }
 const onRowClick = ( row: any, index: number)=>{       
-    emit('row-click',row as NatureCession)
+    emit('row-click',row as NaturePlacement)
 }
 // Reset page quand la recherche change (avec debounce idéalement)
 let searchTimeout: number | undefined
@@ -161,20 +158,20 @@ watch(tableSearch, () => {
 </script>
 <template>
   <TTable
-    v-model:selected-keys="selectedNatureCessions"
+    v-model:selected-keys="selectedNaturePlacements"
 
     :show-index="true"
     index-label="N°"
     :index-width="60"
 
-    :columns="natureCessionColumns"
-    :rows="natureCessionRows"
+    :columns="naturePlacementColumns"
+    :rows="naturePlacementRows"
     :loading="tableLoading"
     :density="tableDensity"
    
     height="h-full"
     width="w-full"
-    title="Nature Cession"
+    title="Nature Placement"
     row-key="id"
     striped
 
@@ -222,8 +219,8 @@ watch(tableSearch, () => {
   </TTable>
     <!-- Modale du formulaire -->
   <TModal v-model="showModal" :title="titleModal" >
-    <TNatureCessionForm  
-      :natureCession="natureCessionToEdit"
+    <TNaturePlacementForm  
+      :naturePlacement="naturePlacementToEdit"
       @success="onFormSuccess"
       @cancel="closeModal"
     />
@@ -237,8 +234,8 @@ watch(tableSearch, () => {
             > 
               <template #message>
               <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4"
-              >Voulez-vous supprimer la natureCession <span class ="font-extrabold"
-                  >{{ natureCessionToEdit?.code }}</span>
+              >Voulez-vous supprimer la naturePlacement <span class ="font-extrabold"
+                  >{{ naturePlacementToEdit?.code }}</span>
                 </p>
               </template>
           </TDemandeConfirmation>   

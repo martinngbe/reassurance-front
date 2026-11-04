@@ -380,7 +380,7 @@ function onGridTransitionEnd(e: TransitionEvent) {
     <!-- ================= FOOTER ================= -->
     <footer
       v-if="zones.footer.enabled"
-      class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
+      class="relative overflow-hidden bg-neutral-200 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-sm"
       :class="{ 'opacity-50': !zones.footer.visible }"
       :style="`grid-row: ${gridConfig.footer.row}; grid-column: ${gridConfig.footer.col}`"
     >

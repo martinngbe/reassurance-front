@@ -19,7 +19,7 @@ const moduleComponents: Record<string, any> = {
   compteRubrique: defineAsyncComponent(() => import('@//web/flux-financier/compte-rubrique/TCompteRubrique.vue')),
   
   natureOffre: defineAsyncComponent(() => import('@/web/referentiel/nature-offre/TNatureOffre.vue')),
-  natureCession: defineAsyncComponent(() => import('@/web/referentiel/nature-cession/TNatureCession.vue')),
+  naturePlacement: defineAsyncComponent(() => import('@/web/referentiel/nature-placement/TNaturePlacement.vue')),
 
   acteur: defineAsyncComponent(() => import('@//web/acteurs/acteur/TActeur.vue')),
   assure: defineAsyncComponent(() => import('@//web/acteurs/assure/TAssure.vue')),

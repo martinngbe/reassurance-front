@@ -49,8 +49,8 @@ export const useEcransStore = defineStore('ecransStore', () => {
   }
    const clearEcranSelection = () => {
     console.warn("__________ INITIALISATION ECRAN __________")
-    assuresStore.clearSelection()
     currentEcran.value =ECRAN_TABLEAU_DE_BORD
+    assuresStore.clearSelection()   
   }
 
 

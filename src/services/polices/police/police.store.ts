@@ -21,10 +21,12 @@ export const usePoliceStore = defineStore('policeStore', () => {
     selectedPolices.value = ids
   }
   const selectPolice = (police: Police | null) => {
-    console.warn("__________ SELECTION POLICE __________")
+    console.warn("__________ SELECT POLICE __________")
     console.log("ID AVANT:", currentPolice.value?.id)
     console.log("ID APRES:", police?.id)
+     console.log("police:", police)
     currentPolice.value = police
+ 
     // la selection d'une police, réinitialise les quittances rattachées
     quittanceStore.clearSelection()
   }
@@ -40,7 +42,6 @@ export const usePoliceStore = defineStore('policeStore', () => {
     console.warn("__________ INITIALISTAION POLICE __________")
     currentPolice.value = null
     selectedPolices.value = []
-   
     quittanceStore.clearSelection()
     
   }
@@ -60,6 +61,7 @@ export const usePoliceStore = defineStore('policeStore', () => {
     }
   }
   const setCurrentPolice = (police: Police) => {
+    console.warn(" -->>>>>> usePolicesStore.setCurrentPolice police:",police)
     selectPolice(police)
   }
 

@@ -6,18 +6,21 @@ defineProps<{
   activeNouveau?: boolean
   activeModifier?: boolean
   activeSupprimer?: boolean
+  activeActualiser?: boolean
 
   // /////////////////
   masqueImpression?: boolean
   masqueNouveau?: boolean
   masqueModifier?: boolean
   masqueSupprimer?: boolean
+  masqueActualiser?: boolean
 }>()
 const emit = defineEmits<{
   (e: 'nouveau'): void
   (e: 'modifier'): void
   (e: 'supprimer'): void
   (e: 'imprimer'): void
+  (e: 'actualiser') : void
 }>()
 
 </script>
@@ -38,13 +41,13 @@ const emit = defineEmits<{
       
     <TToolTip content="Modifier" position="bottom"  v-if="!masqueModifier">
             <i v-if="activeModifier" class="pi pi-pencil  pl-3 pr-3  
-            cursor-pointer  transition-transform duration-200 hover:scale-225" style="color: blue;"
+            cursor-pointer  transition-transform duration-200 hover:scale-225 text-blue-500"
              @click="emit('modifier')"
-             >
-
-            </i>
+             />
+          
             <i v-else class="pi pi-pencil  pl-3 pr-3 " style="color: gray;"></i>
     </TToolTip>
+
       <TToolTip content="Suppimer" position="bottom"  v-if="!masqueSupprimer">
           <i v-if="activeSupprimer" class="pi pi-trash  pl-3 pr-3  
           cursor-pointer  transition-transform duration-200 hover:scale-225"  style="color: red ;"
@@ -52,14 +55,22 @@ const emit = defineEmits<{
           ></i>
           <i v-else class="pi pi-trash  pl-3 pr-3 "  style="color: gray;"></i>
       </TToolTip>
+
       <TToolTip content="Imprimer" position="bottom"  v-if="!masqueImpression">
         <i  v-if="activeImpression" 
            class="pi pi-print pl-3 pr-3 cursor-pointer transition-transform duration-200 hover:scale-225" 
            @click="emit('imprimer')"
         ></i>
         <i v-else class="pi pi-print  pl-3 pr-3  "  style="color: gray;"></i>
-      </TToolTip>  
-   
+      </TToolTip>
+
+    <TToolTip content="Actualiser" position="bottom"  v-if="!masqueActualiser">
+        <i  v-if="activeActualiser" 
+           class="pi pi-refresh pl-3 pr-3 cursor-pointer text-primary-600  dark:text-primary-400 transition-transform duration-200 hover:scale-225" 
+           @click="emit('actualiser')"
+        ></i>
+        <i v-else class="pi pi-refresh  pl-3 pr-3  text-gray-500" ></i>
+      </TToolTip> 
   </div>
 </template>
 

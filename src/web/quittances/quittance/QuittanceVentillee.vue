@@ -1,16 +1,6 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue';
-import TTab from '@/composants/tab/TTab.vue';
-import TTabItem from '@/composants/tab/TTabItem.vue';
-import TTabPanel from '@/composants/tab/TTabPanel.vue';
-import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store';
-import { computed, ref } from 'vue'
-import TFicheQuittanceCapitaux from './fiche/ TFicheQuittanceCapitaux.vue';
-import TFicheQuittanceCourtage from './fiche/ TFicheQuittanceCourtage.vue';
-import TFicheQuittanceEmission from './fiche/ TFicheQuittanceEmission.vue';
-import TFicheQuittancePrimes from './fiche/ TFicheQuittancePrimes.vue';
-import TFicheQuittanceTaxesEtTaux from './fiche/ TFicheQuittanceTaxesEtTaux.vue';
-import TFichePolice from '@/web/polices/police/ TFichePolice.vue';
+import { ref } from 'vue'
 
 
 const active = ref('accueil')
@@ -26,7 +16,7 @@ const active = ref('accueil')
     >
     
 
-         <template #default>
+         <!--template #default>
 
                 <TTab v-model="active" variant="underline" size="md">
                 <TTabItem value="accueil"      label="Accueil"        />
@@ -76,7 +66,7 @@ const active = ref('accueil')
 
                 </template>
                 </TTab>
-           </template>
+           </template -->
 
   </TLayoutModule>
 

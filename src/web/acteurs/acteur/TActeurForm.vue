@@ -28,15 +28,6 @@ async function fetchPays(query: string, page: number) {
   }
 }
 
-async function fetchDomaineActivite(query: string, page: number) {
-  const res = await apiClient.get('/domaine-activite', {
-    params: { search: query, page, limit: 20 }
-  })
-  return {
-    options: res.data.items || res.data.data || [],
-    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
-  }
-}
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 

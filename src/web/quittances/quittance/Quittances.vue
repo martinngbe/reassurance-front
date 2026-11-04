@@ -10,19 +10,21 @@ import { useQuittances } from '@/services/quittances/quittance/useQuittance'
 import type { Quittance } from '@/services/quittances/quittance/quittance'
 import { formatDecimal } from '@/utilitaire/number'
 import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
-import { useQuittancesByPolice } from '@/services/quittances/quittance/useQuittancesByPolice'
 import { usePoliceStore } from '@/services/polices/police/police.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import TModal from '@/composants/display/TModal.vue'
-import QuittanceVentillee from './QuittanceVentillee.vue'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
-
+import { useToast } from '@/composants/toast/useToast.ts'
+import { MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import TQuittanceForm from './TQuittanceForm.vue'
 const props = defineProps<{
-  forAllConsultation?: boolean 
+  isPlacementQuittance?: boolean 
 }>()
+const { success, error, warning, info } = useToast()
+const ecranStore = useEcransStore()
 const policeStore = usePoliceStore()
 const currentPolice = computed(()=> policeStore.currentPolice)
 const quittanceStore = useQuittanceStore()
@@ -33,7 +35,8 @@ const sortState = ref<SortState>({ key: null, direction: null })
 const emit = defineEmits<{ 
   (e: 'row-click',  quittance: any): void
 }>()
-const showModal = ref(false)
+const showModalFicheQuittance = ref(false)
+const showModalModification = ref(false)
 
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -43,61 +46,112 @@ const params = computed<PaginationParams>(() => ({
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
+
+const policeId = currentPolice.value? currentPolice.value.id : null
+const isCession = ecranStore.currentModule ===MODULE_CESSION
+console.log(" ----- currentPolice.value:",currentPolice.value)
+console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
+console.log(" ----- policeId:",policeId)
+console.log(" ----- isCession:",isCession)
 // ==================== API + CRUD ====================
-// Ne pas destructurer quittances
-// Les quittances sont par defaut liées à une police
-// Toute il peut y arriver que l'on souhaite faire une consultation générale
-// de toutes les quittances
-  const store = props.forAllConsultation? useQuittances(params):
-      useQuittancesByPolice( 
-       currentPolice.value? currentPolice.value.id : 0 ,params) ;
-const { quittances } = store      
+
+const store = useQuittances(
+  props.isPlacementQuittance ? null : policeId,
+  props.isPlacementQuittance ? isCession : null,
+  params
+)
+
+// ✅ Destructurer les mutations dont tu as besoin
+const { quittances, updateQuittance, deleteQuittance } = store
+
 type QuittanceRow = Quittance & { [key: string]: any }
+const quittanceToEdit = ref<Quittance | null | undefined>(null)
 
 // ==================== COLONNES ====================
-const quittanceColumns: TableColumn[] = [
-  { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
-  { key: 'numero',       label: 'N°Quittance',  width: 200,   minWidth: 80 , resizable:true},
-  { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isIard',       label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
- 
-  { key: 'isSinistree',  label: 'Sinistrée',    width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 200, align: 'center' },
-  { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 200,  align: 'center' },
-  { key: 'devise',       label: 'Devise',       width: 80,   minWidth: 80,   align:'center'},
-  { key: 'coursDevise',  label: 'Cours Devise', width: 150,  minWidth: 80,  align:'right' },
-  { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
-  { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
-  { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
-  { key: 'limite',       label: 'Limite',       width: 200,  minWidth: 200,  align:'right' },
-  { key: 'retention',    label: 'Retention',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'conservation',    label: 'Conservation',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'estimationPrime',    label: 'Estimation Prime',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'nombreEcheancePmd',    label: 'Nb. Echéeance PMD',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'sinistreAuComptant',    label: 'Sinistre Au Comptant',    width: 200,  minWidth: 200,  align:'right' },
-  
-  { key: 'primeBrute',    label: 'Prime Brute',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'taxeSurPrime',    label: 'Taxe sur Prime',    width: 200,  minWidth: 200,  align:'right' },
- 
-  { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },
-  
-  { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
-  
-  { key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
- 
+const quittanceColumns = computed(()=>{
+    const allColumns: TableColumn[] = [
+                    { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
+                    { key: 'numero',       label: 'N°Quittance',  width: 200,   minWidth: 80 , resizable:true},
+                    { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
+                    { key: 'isIard',       label: 'IARD',         width: 50,   minWidth: 80,  align: 'center' },
+                  
+                    { key: 'isSinistree',  label: 'Sinistrée',    width: 50,   minWidth: 80,  align: 'center' },
+                    { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 200, align: 'center' },
+                    { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 200,  align: 'center' },
+                    { key: 'devise',       label: 'Devise',       width: 80,   minWidth: 80,   align:'center'},
+                    { key: 'coursDevise',  label: 'Cours Devise', width: 150,  minWidth: 80,  align:'right' },
+                  
+                    { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
+                    { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'limite',       label: 'Limite',       width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'retention',    label: 'Retention',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'conservation',         label: 'Conservation',        width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'estimationPrime',      label: 'Estimation Prime',    width: 200,  minWidth: 200,  align:'right' },
+                  
+                    { key: 'nombreEcheancePmd',    label: 'Nb. Echéeance PMD',   width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'sinistreAuComptant',   label: 'Sinistre Au Comptant',width: 200,  minWidth: 200,  align:'right' },
+                    
+                    { key: 'primeBrute',    label: 'Prime Brute',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'primeCedee',    label: 'Prime Cédée',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'primeAcceptee', label: 'Prime Acceptée',    width: 200,  minWidth: 200,  align:'right' },
 
+                    { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
 
-]
+                    { key: 'taxeSurPrime',  label: 'Taxe sur Prime', width: 200,  minWidth: 200,  align:'right' }, 
+                    { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },  
+                    { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
+                    
+                    { key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
 
+                  ]
+  console.warn("---- QUITTANCES allColumns:",allColumns )
+   // 2. Champs à retirer selon l'état courant
+  // ✅ Utiliser policeQuittance.value (maintenant réactif)
+  const isOffreProportionnelle = currentPolice.value
+    ? currentPolice.value.natureOffre?.isProportionnelle === true
+    : false
+  console.log("isOffreProportionnelle:",isOffreProportionnelle )
+  const excludedKeys = new Set<string>()
+  if (isOffreProportionnelle) {
+    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+    excludedKeys.add('limite')
+    excludedKeys.add('retention')
+    excludedKeys.add('conservation')
+    excludedKeys.add('capacite')
+    excludedKeys.add('estimationPrime')
+    excludedKeys.add('nombreEcheancePmd')
+    excludedKeys.add('tauxCession')
+    excludedKeys.add('tauxRetention')
+    excludedKeys.add('aliment')
+  } else {
+    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
+    excludedKeys.add('capitaux')
+    excludedKeys.add('lci')
+    excludedKeys.add('smp')
+    excludedKeys.add('primeBrute')
+    excludedKeys.add('primeNette')
+    excludedKeys.add('primeCedee')
+    excludedKeys.add('primeAcceptee')
+    excludedKeys.add('tauxCedante')
+    excludedKeys.add('tauxAccepte')
+    excludedKeys.add('taxeSurPrime')
+  }
+   console.log("excludedKeys:",excludedKeys )
+  // 3. Application du filtre
+  if (excludedKeys.size === 0) return allColumns
 
+  return allColumns.filter(
+    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+  )
 
-
-
+})
+             
+console.log("quittanceColumns.value:",quittanceColumns.value )
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.quittances
 const quittanceRows = computed(() => store.quittances.items.value)
@@ -110,8 +164,13 @@ const totalItems = computed(() => quittances.pageInfo.value?.total ?? 0)
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
 const isLigneSelectionnee = computed(() => selectedQuittances.value.length > 0)
-const selectedQuittances = ref<(string | number)[]>([])
+//const selectedQuittances = ref<(string | number)[]>([])
+const selectedQuittances = computed({
+  get: () => quittanceStore.selectedQuittances,
+  set: (value) => quittanceStore.setSelectedQuittances(value)
+})
 
+const titleModal = ref('')
 // ==================== TRI ====================
 function onSort(state: SortState): void {
   sortState.value = state
@@ -125,13 +184,49 @@ async function handleLoadMore() {
 
 // ==================== MODALES ====================
 const onRowClick = ( row: any, index: number)=>{
+    console.log(" --- Quittances.onRowClick  --- ")
     quittanceStore.selectQuittance(row as Quittance)       
     emit('row-click',row as Quittance)
 }
 const onRowDoubleClick = ( row: any, index: number)=>{       
     //emit('row-click',row as Quittance)
-    showModal.value=true
+    showModalFicheQuittance.value=true
 }
+const closeModal = () => {
+  showModalModification.value = false
+  // ✅ Optionnel : effacer la sélection à la fermeture
+  // quittanceStore.clearSelection()
+}
+
+// ==================== HANDLERS CRUD ====================
+const onFormSuccess = async (message: string) => {
+  closeModal()
+  success(message, 'Succès')
+  // ✅ La quittance courante est déjà à jour via updateCurrentQuittance
+  await quittances.refresh()
+}
+// ✅ APRÈS
+const openEdit = (quittance: QuittanceRow) => {
+  // ✅ Sélectionner via le store
+  quittanceStore.selectQuittance(quittance as Quittance)
+  titleModal.value = 'Modifier quittance'
+  showModalModification.value = true
+}
+const handleModifier = () => {
+  if (selectedQuittances.value.length === 0) {
+    info('Veuillez sélectionner une quittance svp...', 'Info')
+    return
+  }
+  console.log(" ---- Quittances.handleModifier ------")
+  console.log(" selectedQuittances.value:",selectedQuittances.value)
+  const quittanceId = selectedQuittances.value[0]
+  const quittance = quittanceRows.value.find((u: any) => u.id === quittanceId)
+  console.log(" quittanceId:",quittanceId)
+  console.log(" quittance:",quittance)
+ 
+  if (quittance) openEdit(quittance)
+}
+
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -188,16 +283,17 @@ watch(tableSearch, () => {
           >
             {{ currentPolice.natureOffre.libelle }}
           </p>
-        <TButton  
+        <TButton  v-if="!props.isPlacementQuittance"
             type="button"
             variant="soft" > 
               <span class="text-lg font-extrabold uppercase cursor-pointer">Avenant</span> 
         </TButton>
-        <TAction
+        <TAction  v-if="!props.isPlacementQuittance"
           :masque-nouveau="true"
           :masque-supprimer="true"
           :active-modifier="isLigneSelectionnee"
           :active-impression="isLigneSelectionnee"
+          @modifier="handleModifier"
         />
 
     </template>
@@ -264,6 +360,15 @@ watch(tableSearch, () => {
      <template #cell-primeNette="{ value }">
         <TDisplayNumber :value="value" />
     </template>
+
+   <template #cell-primeCedee="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+     <template #cell-primeAcceptee="{ value }">
+        <TDisplayNumber :value="value" />
+    </template>
+
+
       <template #cell-taxeSurPrime="{ value }">
         <TDisplayNumber :value="value" />
     </template>
@@ -296,19 +401,19 @@ watch(tableSearch, () => {
 
   </TTable>
 
-    <TModal v-model="showModal" 
-      width="50%"  
-      height="98%"
-     
-   >
-          
-         
+  <TModal v-model="showModalFicheQuittance" width="50%" >
           <template #default>
                 <!--QuittanceVentillee  /-->
                 <TFicheQuittance/>
           </template>
-   
   </TModal>
-
+    <TModal v-model="showModalModification" :title="titleModal"
+     width="60%" >
+      <TQuittanceForm
+        :loading="updateQuittance.isPending.value"
+        @success="onFormSuccess"
+        @cancel="closeModal"
+      />
+    </TModal>
  
 </template>
