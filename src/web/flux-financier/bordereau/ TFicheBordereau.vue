@@ -1,0 +1,197 @@
+<script setup lang="ts">
+
+import { useBordereauStore } from '@/services/flux-financiers/bordereau/bordereau.store';
+import { computed } from 'vue';
+
+const bordereauStore = useBordereauStore();
+const bordereau = computed(() => bordereauStore.currentBordereau);
+// lecture de la quittance rattaché à la bordereau
+const quittance = computed(()=> bordereau.value?.quittance)
+// lecture de la nature de l'offre rattaché à la quittance
+//const natureOffre = computed(()=> quittance.value? quittance.value.natureOffre : null)
+//const isProportionnelle = computed(()=> natureOffre.value?.isProportionnelle )
+
+const props = 
+  defineProps<{
+    masqueEntete?: boolean
+    masqueEmission?: boolean
+    masqueCapitaux?: boolean
+    masquePrime?: boolean
+    masqueTauxEtTaxes?: boolean
+    masqueAutreRelations?: boolean
+  }>()
+// --- Helpers de formatage ---
+const formatNumber = (value: number | undefined | null, decimals = 2) => {
+  if (value === undefined || value === null) return '—';
+  return new Intl.NumberFormat('fr-FR', { 
+    minimumFractionDigits: decimals, 
+    maximumFractionDigits: decimals 
+  }).format(value);
+};
+
+const formatDate = (dateStr: string |null | undefined) => {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('fr-FR', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+};
+
+const formatPercent = (value: number | undefined | null) => {
+  if (value === undefined || value === null) return '—';
+  return `${formatNumber(value, 2)} %`;
+};
+</script>
+
+<template>
+  <!-- Conteneur principal avec support Dark/Light -->
+  <div class="max-w-5xl mx-auto p-6 sm:p-8 bg-[#fdfbf7] dark:bg-stone-900 border-2 border-[#d6d3d1] dark:border-stone-700 rounded-sm shadow-lg font-sans text-stone-800 dark:text-stone-200 transition-colors duration-300">
+    
+    <!-- État vide ou chargement -->
+    <div v-if="!bordereau" class="text-center py-12 font-mono text-stone-500 dark:text-stone-400">
+      Aucune donnée de bordereau disponible.
+    </div>
+
+    <template v-else>
+      <!-- En-tête -->
+      <div v-if="!masqueEntete" class="mb-8 border-b-2 border-[#a8a29e] dark:border-stone-600 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#44403c] dark:text-stone-100 tracking-widest uppercase">Bordereau</h1>
+          <p class="text-sm font-mono text-[#78716c] dark:text-stone-400 mt-1">
+            N° <span class="text-[#44403c] dark:text-stone-200 font-bold">{{ bordereau.numero }}</span>
+          </p>
+        </div>
+        <div class="text-right text-sm font-mono text-[#57534e] dark:text-stone-400 space-y-1">
+          <p>Devise : <span class="font-bold text-[#44403c] dark:text-stone-200">{{ bordereau.devise?.code || 'N/A' }}</span></p>
+          <p>Cours : <span class="font-bold text-[#44403c] dark:text-stone-200">{{ formatNumber(bordereau.coursDevise, 4) }}</span></p>
+        </div>
+      </div>
+
+      <!-- Tableau principal -->
+      <table class="w-full text-sm border-collapse">
+        
+        <!-- SECTION: ÉMISSION -->
+        <tbody v-if="!props.masqueEmission" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+          <tr>
+            <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
+              Émission
+            </th>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400 w-1/4">Période début</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200 w-1/4">{{ formatDate(bordereau.periodeDebut) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400 w-1/4">Période fin</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200 w-1/4">{{ formatDate(bordereau.periodeFin) }}</td>
+          </tr>
+         
+        </tbody>
+
+        <!-- SECTION: CAPITAUX -->
+        <!--tbody v-if="!props.masqueCapitaux" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+          <tr>
+            <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
+              Capitaux
+            </th>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Capitaux</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.capitaux) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">LCI</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.lci) }}</td>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" >
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400" >SMP</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.smp) }}</td>
+            
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400"></td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200"></td>
+            
+           
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Rétention</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.retention) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Conservation</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.conservation) }}</td>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Capacité</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.capacite) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Limite</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.limite) }}</td>
+          </tr>
+        </tbody-->
+
+        <!-- SECTION: PRIMES -->
+        <tbody v-if="!props.masquePrime" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+          <tr>
+            <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
+              Primes
+            </th>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Prime Brute</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold">{{ formatNumber(bordereau.primeBrute) }}</td>
+            
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Prime Cédée</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold">{{ formatNumber(bordereau.primeCedee) }}</td>
+          
+          </tr>
+
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" >
+             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Prime Acceptéé</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold">{{ formatNumber(bordereau.primeAcceptee) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Prime Nette</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold">{{ formatNumber(bordereau.primeNette) }}</td>
+         </tr>
+        </tbody>
+
+        <!-- SECTION: TAUX ET TAXES -->
+        <tbody  v-if="!props.masqueTauxEtTaxes" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+          <tr>
+            <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
+              Taux et Taxes
+            </th>
+          </tr>
+          <!--tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Cession</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(bordereau.tauxCession) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Rétention</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(bordereau.tauxRetention) }}</td>
+          </tr-->
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" >
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Cédante</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(bordereau.tauxCedante) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Accepté</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(bordereau.tauxAccepte) }}</td>
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Commission</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(bordereau.tauxCommission) }}</td>
+           
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taxe sur Commission</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.taxeSurCommission) }}</td>
+
+            
+          </tr>
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors"  >
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400" >Taxe sur Prime</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(bordereau.taxeSurPrime) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400"></td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200"></td>
+          </tr>
+        </tbody>
+
+      
+      </table>
+      
+      <!-- Pied de page -->
+      <div class="mt-8 pt-4 border-t border-[#d6d3d1] dark:border-stone-700 text-center">
+        <p class="text-xs font-serif italic text-[#78716c] dark:text-stone-500 tracking-wide">
+          Document généré électroniquement — Ce tableau récapitulatif a valeur de présentation.
+        </p>
+      </div>
+    </template>
+  </div>
+</template>

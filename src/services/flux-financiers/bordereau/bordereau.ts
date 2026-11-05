@@ -7,9 +7,9 @@ export interface Bordereau extends BaseEntity {
     
     numero?: string  | null
     reference? : string  | null
-    dateReception?: Date | null;
-    periodeDebut?: Date | null;
-    periodeFin?: Date | null;
+    dateReception?: string | null;
+    periodeDebut?: string | null;
+    periodeFin?: string | null;
     ///Information Bordereau
    
     coursDevise: number 

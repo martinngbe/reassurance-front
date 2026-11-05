@@ -151,6 +151,7 @@ function extractId(value: any): number | undefined {
 function buildPayload(data: Record<string, any>) {
   return {
     numero: data.numero,
+    reference: data.reference,
     dateReception: data.dateReception,
     periodeDebut: data.periodeDebut,
     periodeFin: data.periodeFin,

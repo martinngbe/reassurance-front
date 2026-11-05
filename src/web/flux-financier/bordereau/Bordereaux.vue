@@ -16,6 +16,10 @@ import { useBordereaux } from '@/services/flux-financiers/bordereau/useBordereau
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TBordereauForm from './TBordereauForm.vue'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
+import TFicheBordereau from './ TFicheBordereau.vue'
 
 
 const titreFenetre = ref('BORDEREAU')
@@ -34,6 +38,7 @@ const emit = defineEmits<{
 }>()
 const showModalFicheBordereau = ref(false)
 const showModal = ref(false)
+const showModalConfirmation = ref(false)
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=>quittanceStore.currentQuittance)
 const isCession = ecranStore.currentModule ===MODULE_CESSION
@@ -59,25 +64,28 @@ const bordereauToEdit = ref<Bordereau | null | undefined>(null)
 // ==================== COLONNES ====================
 const borderauColumns = computed(()=>{
     const allColumns: TableColumn[] = [
+                    { key: 'isAnnule',       label: 'Actif',  width: 80,   minWidth: 80 , resizable:true},
+                   
                     { key: 'numero',       label: 'N°Bordereau',  width: 200,   minWidth: 80 , resizable:true},
-                    { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
-                    { key: 'periodeDebut',    label: 'Date Effet',   width: 200,  minWidth: 200, align: 'center' },
-                    { key: 'periodeFin', label: 'Date Echéance',width: 200,  minWidth: 200,  align: 'center' },
+                    { key: 'reference',    label: 'N° Référence',        width: 200,   minWidth: 80,  align: 'center' },
+                    { key: 'periodeDebut',    label: 'Période début',   width: 200,  minWidth: 200, align: 'center' },
+                    { key: 'periodeFin', label: 'Période fin',width: 200,  minWidth: 200,  align: 'center' },
                     { key: 'devise',       label: 'Devise',       width: 80,   minWidth: 80,   align:'center'},
                     { key: 'coursDevise',  label: 'Cours Devise', width: 150,  minWidth: 80,  align:'right' },
                    
                     { key: 'primeBrute',    label: 'Prime Brute',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'tauxCedante',    label: 'Taux Cédante %',    width: 100,  minWidth: 100,  align:'right' },  
+                    { key: 'tauxAccepte',    label: 'Taux Accepté %',    width: 100,  minWidth: 100,  align:'right' },
+                    { key: 'tauxCommission',    label: 'Taux Cie %',    width: 100,  minWidth: 100,  align:'right' },
+                   
                     { key: 'primeCedee',    label: 'Prime Cédée',    width: 200,  minWidth: 200,  align:'right' },
                     { key: 'primeAcceptee', label: 'Prime Acceptée',    width: 200,  minWidth: 200,  align:'right' },
 
                     { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
 
-                    { key: 'taxeSurPrime',  label: 'Taxe sur Prime', width: 200,  minWidth: 200,  align:'right' }, 
-                    { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },  
-                    { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
-                    
-                    { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'taxeSurPrime',  label: 'Taxe sur Prime %', width: 200,  minWidth: 200,  align:'right' }, 
+                  
+                    { key: 'taxeSurCommission',    label: 'Taxe sur Cie %',    width: 200,  minWidth: 200,  align:'right' },
                   
                   ]
   console.warn("---- BORDEREAU allColumns:",allColumns )
@@ -171,6 +179,34 @@ const handleModifier = () => {
   if (borderau) openEdit(borderau)
 }
 
+const handleSupprimer = () => {
+  if (selectedBordereaux.value.length === 0) {
+    warning('Veuillez sélectionner un bordereau', 'Attention')
+    return
+  }
+  const bordereauId = selectedBordereaux.value[0]
+  bordereauToEdit.value = borderauRows.value.find((u: any) => u.id === bordereauId) ?? null
+  if (bordereauToEdit.value) showModalConfirmation.value = true
+}
+
+const handleConfirmeSuppression = async () => {
+  const bordereau = bordereauToEdit.value
+  if (!bordereau) return
+  try {
+    await deleteBordereau.mutateAsync(bordereau.id)
+    showModalConfirmation.value = false
+    success('Opération effectuée avec succès', 'Succès')
+    selectedBordereaux.value = selectedBordereaux.value.filter((id) => id !== bordereau.id)
+  } catch (err: any) {
+    error(
+      err?.response?.data?.message || err?.message || 'Erreur lors de la suppression.',
+      'Erreur',
+    )
+  }
+}
+const handelActualise=()=>{
+  bordereaux.refresh()
+}
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -226,13 +262,19 @@ watch(tableSearch, () => {
           :active-nouveau="true"
           content-nouveau="Générer manuellement"
           :active-modifier="isLigneSelectionnee"
+          :active-supprimer="isLigneSelectionnee"
           :active-impression="isLigneSelectionnee"
+          :active-actualiser="totalItems>0"
+          @supprimer="handleSupprimer"
           @modifier="handleModifier"
           @nouveau="handleNouveau"
+          @actualiser="handelActualise"
         />
 
     </template>
-  
+    <template #cell-isAnnule="{ value }">
+      <IconeValider v-if="!value"/><IconeNonValider v-else/>
+    </template>  
     <template #cell-periodeDebut="{ value }">
       <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
        <span class="font-mono  uppercase" v-else>TBA</span>
@@ -294,16 +336,31 @@ watch(tableSearch, () => {
 
   <TModal v-model="showModalFicheBordereau" width="50%" >
           <template #default>
-                <!--TFicheBordereau/-->
+                <TFicheBordereau />
           </template>
   </TModal>
-    <TModal v-model="showModal" :title="titleModal"
-     width="60%" >
-      <TBordereauForm
-        :loading="updateBordereau.isPending.value"
-        @success="onFormSuccess"
-        @cancel="closeModal"
-      />
-    </TModal>
+  <TModal v-model="showModal" :title="titleModal"
+    width="60%" >
+    <TBordereauForm
+      :loading="updateBordereau.isPending.value"
+      @success="onFormSuccess"
+      @cancel="closeModal"
+    />
+  </TModal>
+  <TModal v-model="showModalConfirmation" title="Demande de confirmation">
+    <TDemandeConfirmation
+      @annuler="showModalConfirmation = false"
+      @confirmer="handleConfirmeSuppression"
+    >
+      <template #message>
+        <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4">
+          Voulez-vous supprimer le bordereau N°
+          <span class="font-extrabold">{{ bordereauToEdit?.numero }}</span>
+        </p>
+      </template>
+    </TDemandeConfirmation>
+  </TModal>
+
+
  
 </template>
