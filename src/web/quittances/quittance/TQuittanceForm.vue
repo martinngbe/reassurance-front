@@ -22,8 +22,12 @@ const currentQuittance = computed(() => quittanceStore.currentQuittance)
 const policeQuittance = computed(() => currentQuittance.value?.police ?? null)
 
 // ✅ Instance useQuittances pour avoir accès à updateQuittance
-const paramsQuittance = computed<PaginationParams>(() => ({}))
-const { updateQuittance } = useQuittances(null, null, paramsQuittance)
+//onst paramsQuittance = computed<PaginationParams>(() => ({}))
+
+
+
+//const paramsQuittance = {}  
+const { updateQuittance } = useQuittances({})
 
 const emit = defineEmits<{
   success: [message: string]
@@ -100,8 +104,8 @@ const quittanceFields = computed<FormField[]>(() => {
     { section: 'Taux et Taxes' },
     { key: 'tauxCedante', label: 'Taux Cédante', type: 'number', numberOptions: { min: 0 } },
     { key: 'tauxAccepte', label: 'Taux Accepté', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
+    //{ key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
+    //{ key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
     { key: 'tauxCommission', label: 'Taux commission', type: 'number', numberOptions: { min: 0 } },
     { key: 'taxeSurPrime', label: 'Taxe sur prime', type: 'number', numberOptions: { min: 0 } },
     { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', numberOptions: { min: 0 } },
@@ -125,8 +129,8 @@ const quittanceFields = computed<FormField[]>(() => {
     excludedKeys.add('capacite')
     excludedKeys.add('estimationPrime')
     excludedKeys.add('nombreEcheancePmd')
-    excludedKeys.add('tauxCession')
-    excludedKeys.add('tauxRetention')
+    //excludedKeys.add('tauxCession')
+    //excludedKeys.add('tauxRetention')
     excludedKeys.add('aliment')
   } else {
     // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
@@ -242,8 +246,8 @@ function buildPayload(data: Record<string, any>) {
     /////////////////////////////
     ////// Taux et Taxes
     /////////////////////////////
-    tauxCession: data.tauxCession,
-    tauxRetention: data.tauxRetention,
+    //tauxCession: data.tauxCession,
+    //tauxRetention: data.tauxRetention,
     tauxCedante: data.tauxCedante,
     tauxAccepte: data.tauxAccepte,
     tauxCommission: data.tauxCommission,

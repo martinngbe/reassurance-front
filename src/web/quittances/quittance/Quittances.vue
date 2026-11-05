@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TTable from '@/composants/display/TTable.vue'
 import type { SortState, TableColumn } from '@/composants/forms/common'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
@@ -18,10 +18,12 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import { ECRAN_BORDEREAU, ECRAN_FACULTATIVE, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
+
+const titreFenetre = ref('QUITTANCES')
 const props = defineProps<{
-  isPlacementQuittance?: boolean 
+  isAllQuittance?: boolean 
 }>()
 const { success, error, warning, info } = useToast()
 const ecranStore = useEcransStore()
@@ -38,28 +40,68 @@ const emit = defineEmits<{
 const showModalFicheQuittance = ref(false)
 const showModalModification = ref(false)
 
-// ✅ Corrigé
-const params = computed<PaginationParams>(() => ({
-  page: 1,
-  limit: PAGE_SIZE,
-  search: tableSearch.value.trim() || undefined,
-  sortKey: sortState.value.key ?? undefined,
-  sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
-}))
 
 const policeId = currentPolice.value? currentPolice.value.id : null
 const isCession = ecranStore.currentModule ===MODULE_CESSION
+const isEcranBordereau = ecranStore.currentEcran ===ECRAN_BORDEREAU
+const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
+console.warn(" __________ Quittances.vue _________")
 console.log(" ----- currentPolice.value:",currentPolice.value)
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
+console.log(" ----- ecranStore.currentEcran:",ecranStore.currentEcran)
 console.log(" ----- policeId:",policeId)
 console.log(" ----- isCession:",isCession)
+console.log(" ----- isEcranBordereau:",isEcranBordereau)
 // ==================== API + CRUD ====================
+// Si isEcranBordereau alors 
+//    affiche toutes les quittance FAC
+//    pas de policeId individuelle  
+//FIN SI
+/*
+const policeIdVal = isEcranBordereau? null:  toValue(policeId)
+const isFacVal    = isEcranBordereau? true : null
+titreFenetre.value = isEcranBordereau? "QUITTANCES FAC" : "QUITTANCES"
+const params = {
+  isCession,
+  ...(policeIdVal != null && { policeId: policeIdVal }),
+  ...(isFacVal    != null && { isFac:    isFacVal })
+}
+console.log(" ----- params:",params)
+console.warn(" __________________")
+const store = useQuittances(params)
+*/
 
-const store = useQuittances(
-  props.isPlacementQuittance ? null : policeId,
-  props.isPlacementQuittance ? isCession : null,
-  params
-)
+
+// ============================================
+// 2. LOGIQUE MÉTIER EXISTANTE (inchangée)
+// ============================================
+const policeIdVal = isEcranBordereau ? null : toValue(policeId)
+const isFacVal    = isEcranBordereau ? true : null
+titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" : "QUITTANCES"
+
+// ============================================
+// 3. COMPUTED POUR LA PAGINATION + RECHERCHE
+// ============================================
+// C'est ce computed qui sera transmis au composable via l'option `params`
+const paginationParams = computed<PaginationParams>(() => ({
+  page: 1,
+  limit: PAGE_SIZE,
+  search: tableSearch.value,         // ⭐ La recherche est ici
+  sortKey: '',
+  sortDirection: undefined,
+}))
+
+// ============================================
+// 4. APPEL AU COMPOSABLE (structure modifiée)
+// ============================================
+// ⚠️ On ne passe plus un objet "params" plat,
+// mais la structure exacte attendue par UseQuittancesOptions
+const store = useQuittances({
+  policeId: policeIdVal,
+  isCession: isCession,
+  isFac: isFacVal,
+  params: paginationParams, // ⭐ Le computed contenant la recherche
+})
 
 // ✅ Destructurer les mutations dont tu as besoin
 const { quittances, updateQuittance, deleteQuittance } = store
@@ -102,11 +144,11 @@ const quittanceColumns = computed(()=>{
                     { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },  
                     { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
                     
-                    { key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
+                    //{ key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
                     { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
+                    //{ key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
                     { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
+                    //{ key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
 
                   ]
   console.warn("---- QUITTANCES allColumns:",allColumns )
@@ -117,7 +159,7 @@ const quittanceColumns = computed(()=>{
     : false
   console.log("isOffreProportionnelle:",isOffreProportionnelle )
   const excludedKeys = new Set<string>()
-  if (isOffreProportionnelle) {
+  if (isOffreProportionnelle || isEcranBordereau) {
     // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
     excludedKeys.add('limite')
     excludedKeys.add('retention')
@@ -125,8 +167,8 @@ const quittanceColumns = computed(()=>{
     excludedKeys.add('capacite')
     excludedKeys.add('estimationPrime')
     excludedKeys.add('nombreEcheancePmd')
-    excludedKeys.add('tauxCession')
-    excludedKeys.add('tauxRetention')
+    //excludedKeys.add('tauxCession')
+    //excludedKeys.add('tauxRetention')
     excludedKeys.add('aliment')
   } else {
     // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
@@ -171,6 +213,7 @@ const selectedQuittances = computed({
 })
 
 const titleModal = ref('')
+
 // ==================== TRI ====================
 function onSort(state: SortState): void {
   sortState.value = state
@@ -207,6 +250,7 @@ const onFormSuccess = async (message: string) => {
 }
 // ✅ APRÈS
 const openEdit = (quittance: QuittanceRow) => {
+  console.log(' ___  Quittances.openEdit _____')
   // ✅ Sélectionner via le store
   quittanceStore.selectQuittance(quittance as Quittance)
   titleModal.value = 'Modifier quittance'
@@ -249,7 +293,7 @@ watch(tableSearch, () => {
     :density="tableDensity"
     height="h-full"
     width="w-full"
-    title="Quittances"
+    :title="titreFenetre"
     row-key="id"
     striped
     !selectable
@@ -283,12 +327,12 @@ watch(tableSearch, () => {
           >
             {{ currentPolice.natureOffre.libelle }}
           </p>
-        <TButton  v-if="!props.isPlacementQuittance"
+        <TButton  v-if="isEcranFacultative"
             type="button"
             variant="soft" > 
               <span class="text-lg font-extrabold uppercase cursor-pointer">Avenant</span> 
         </TButton>
-        <TAction  v-if="!props.isPlacementQuittance"
+        <TAction  v-if="isEcranFacultative"
           :masque-nouveau="true"
           :masque-supprimer="true"
           :active-modifier="isLigneSelectionnee"
@@ -403,7 +447,6 @@ watch(tableSearch, () => {
 
   <TModal v-model="showModalFicheQuittance" width="50%" >
           <template #default>
-                <!--QuittanceVentillee  /-->
                 <TFicheQuittance/>
           </template>
   </TModal>

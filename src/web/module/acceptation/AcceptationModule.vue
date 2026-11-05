@@ -12,6 +12,8 @@ const moduleComponents: Record<string, any> = {
   ecranFacultative: defineAsyncComponent(() => import('@/web/module/ecrans/facultative/EcranFacultative.vue')),
   ecranTraite: defineAsyncComponent(() => import('@/web/module/ecrans/traite/EcranTraite.vue')),
   ecranPlacement: defineAsyncComponent(() => import('@/web/module/ecrans/placement/EcranPlacement.vue')),
+  ecranBordereau: defineAsyncComponent(() => import('@/web/module/ecrans/bordereau/EcranBordereau.vue')),
+
 }
 
 //const activeMenu = ref(ECRAN_TABLEAU_DE_BORD)

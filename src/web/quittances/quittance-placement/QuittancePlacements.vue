@@ -78,14 +78,14 @@ const quittancePlacementColumns = computed(()=>{
                     { key: 'numero',       label: 'N°',  width: 200,   minWidth: 80 , resizable:true},
                    
                     { key: 'primeBrute',      label: 'Prime Brute',    width: 150,  minWidth: 100,  align:'right' },
-                    { key: 'tauxCession',     label: 'Taux Cession',    width: 80,  minWidth: 100,  align:'right' },  
+                    //{ key: 'tauxCession',     label: 'Taux Cession',    width: 80,  minWidth: 100,  align:'right' },  
                     
                     { key: 'primeCedee',        label: 'Prime Cédée',    width: 150,  minWidth: 200,  align:'right' },
                     { key: 'tauxCommission',    label: 'Taux Cie.',    width: 80,  minWidth: 200,  align:'right' },
                     { key: 'commissionFixe',    label: 'Commission Fixe',    width: 150,  minWidth: 100,  align:'right' },
                   
                     { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
-  { key: 'acteur',       label: 'Rtrocessionnaire',  width: 400,   minWidth: 80 , resizable:true},
+                    { key: 'acteur',       label: 'Rtrocessionnaire',  width: 400,   minWidth: 80 , resizable:true},
                   
                   ]
   console.warn("---- QUITTANCES allColumns:",allColumns )

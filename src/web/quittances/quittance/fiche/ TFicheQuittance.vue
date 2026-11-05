@@ -178,12 +178,12 @@ const formatPercent = (value: number | undefined | null) => {
               Taux et Taxes
             </th>
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+          <!--tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Cession</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(quittance.tauxCession) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Rétention</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(quittance.tauxRetention) }}</td>
-          </tr>
+          </tr-->
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Cédante</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(quittance.tauxCedante) }}</td>

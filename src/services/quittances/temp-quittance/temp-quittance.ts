@@ -43,8 +43,8 @@ export interface TempQuittance extends BaseEntity {
   ///////////////////////////// 
   ////// Taux et Taxes 
   /////////////////////////////
-  tauxCession: number;
-  tauxRetention: number;
+  //tauxCession: number;
+  //tauxRetention: number;
 
   tauxCedante: number;
   tauxAccepte: number;

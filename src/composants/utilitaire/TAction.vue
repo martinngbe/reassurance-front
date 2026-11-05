@@ -14,6 +14,13 @@ defineProps<{
   masqueModifier?: boolean
   masqueSupprimer?: boolean
   masqueActualiser?: boolean
+
+  // /////////////////
+  contentImpression?: string
+  contentNouveau?: string
+  contentModifier?: string
+  contentSupprimer?: string
+  contentActualiser?: string
 }>()
 const emit = defineEmits<{
   (e: 'nouveau'): void
@@ -29,7 +36,7 @@ const emit = defineEmits<{
   <div 
     class="flex flex-wrap gap-4 sm:gap-3 p-3 sm:p-4  transition-colors duration-300"
   >
-    <TToolTip content="Nouveau" position="bottom" v-if="!masqueNouveau">
+    <TToolTip :content= "contentNouveau?? 'Nouveau' " position="bottom" v-if="!masqueNouveau">
            
         <i class="pi pi-plus pl-3 pr-3 cursor-pointer 
            transition-transform duration-200 hover:scale-225" 

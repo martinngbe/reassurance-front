@@ -45,12 +45,13 @@ export interface Quittance extends BaseEntity {
   ///////////////////////////// 
   ////// Taux et Taxes 
   /////////////////////////////
-  tauxCession: number;
-  tauxRetention: number;
+  //tauxCession: number;
+  //tauxRetention: number;
 
   tauxCedante: number;
   tauxAccepte: number;
   tauxCommission: number;
+  commissionFixe: number;
   taxeSurPrime: number;
   taxeSurCommission: number;
   ///////////////////////////// 

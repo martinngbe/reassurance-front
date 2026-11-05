@@ -71,8 +71,8 @@ const tempQuittanceFields = computed<FormField[]>(() => {
     { section: 'Taux et Taxes' },
     { key: 'tauxCedante', label: 'Taux Cédante', type: 'number', numberOptions: { min: 0 } },
     { key: 'tauxAccepte', label: 'Taux Accepté', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
+   // { key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
+   // { key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
     { key: 'tauxCommission', label: 'Taux commission', type: 'number', numberOptions: { min: 0 } },
     { key: 'taxeSurPrime', label: 'Taxe sur prime', type: 'number', numberOptions: { min: 0 } },
     { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', numberOptions: { min: 0 } },
@@ -88,8 +88,8 @@ const tempQuittanceFields = computed<FormField[]>(() => {
   const excludedKeys = new Set<string>()
   if (isOffreProportionnelle) {
     // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
-    excludedKeys.add('tauxRetention')
-    excludedKeys.add('tauxCession')
+    //excludedKeys.add('tauxRetention')
+    //excludedKeys.add('tauxCession')
    
   } else {
     // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle

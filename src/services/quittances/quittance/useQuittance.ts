@@ -8,51 +8,83 @@ import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-s
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useQuittanceStore } from './quittance.store'
 
-const KEY = 'quittances';
-export function useQuittances(
-  policeId: Ref<number> | number | null,
-  isCession: Ref<boolean> | boolean | null,
-  params: ComputedRef<PaginationParams>) {
+const KEY = 'quittances'
+
+// ⭐ Interface pour les options
+export interface UseQuittancesOptions {
+  policeId?: Ref<number> | number | null
+  isCession?: Ref<boolean> | boolean | null
+  isFac?: Ref<boolean> | boolean | null
+  params?: ComputedRef<PaginationParams>
+}
+const DEFAULT_PAGINATION: PaginationParams = {
+  page: 1,
+  limit: PAGE_SIZE,
+  search: '',
+  sortKey: '',
+  sortDirection: undefined
+}
+export function useQuittances(options: UseQuittancesOptions = {}) {
+  // ⭐ Déstructuration avec valeurs par défaut
+  const {
+    policeId = null,
+    isCession = null,
+    isFac = null,
+    params = computed(() => DEFAULT_PAGINATION)
+  } = options
+
   const queryClient = useQueryClient()
-  const quittanceStore = useQuittanceStore() // ⭐ 
-  /// //////////////////////////////////////////////////  
-  /// RECHARGEMENT AUTOMATIQUE EN CAS DE CHANGEMENT ////
-  /// ////////////////////////////////////////////////// 
+  const quittanceStore = useQuittanceStore()
+
+  //////////////////////////////////////////////////
+  // RECHARGEMENT AUTOMATIQUE EN CAS DE CHANGEMENT //
+  //////////////////////////////////////////////////
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
-    policeId,
-    isCession
+    policeId: toValue(policeId),
+    isCession: toValue(isCession)
   }))
-  //////////////////////////////
+
   const quittances = useInfiniteList<Quittance>({
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-          // ✅ Utiliser page et limit du queryFn, pas ceux de params
-          console.log(' >>>>>>>>>>>>>>>>>>>>>>')
-          console.log(' >>>>  useQuittance.ts.')
-          console.log(' >>>>  policeId:',policeId)
-          console.log(' >>>>  isCession:',isCession)
-          const response = await quittanceApi.getAll({
-          ...toValue(params),
-          ...(policeId  != null && { policeId: toValue(policeId) }),
-          ...(isCession != null && { isCession: toValue(isCession) }),
-          page,
-          limit,
-        });
-      // ✅ Retourner l'objet IResponse complet, pas response.data
-      console.log(" -- useQuittance response:",response)
+      const policeIdVal = toValue(policeId)
+      const isCessionVal = toValue(isCession)
+      const isFacVal = toValue(isFac)    
+      const paramsVal = toValue(params)
+      // const response = await quittanceApi.getAll({
+      //   ...toValue(params),
+      //   ...(policeIdVal != null && { policeId: policeIdVal }),
+      //   ...(isCessionVal != null && { isCession: isCessionVal }),
+      //   ...(isFacVal != null && { isFac: isFacVal }),
+      //   page,
+      //   limit,
+      // })
+        const response = await quittanceApi.getAll({
+            page,
+            limit,
+            // Recherche uniquement si non vide
+            ...(paramsVal.search && { search: paramsVal.search }),
+            // Tri uniquement si défini
+            ...(paramsVal.sortKey && { sortKey: paramsVal.sortKey }),
+            ...(paramsVal.sortDirection && { sortDirection: paramsVal.sortDirection }),
+            // Filtres uniquement si non null
+            ...(policeIdVal != null && { policeId: policeIdVal }),
+            ...(isCessionVal != null && { isCession: isCessionVal }),
+            ...(isFacVal != null && { isFac: isFacVal }),
+          })
       return response as PaginatedResponse<Quittance>
     },
   })
 
- // ==================== CREATE ====================
+  // ==================== CREATE ====================
   const createQuittance = useMutation({
     mutationFn: (data: Quittance) => quittanceApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quittances'] })
+      queryClient.invalidateQueries({ queryKey: [KEY] })
       quittances.refresh()
     },
   })
@@ -67,7 +99,6 @@ export function useQuittances(
       if (index !== -1) {
         quittances.items.value[index] = { ...quittances.items.value[index], ...data } as Quittance
       }
-      // ⭐ Synchroniser le store si c'est l'quittance sélectionné
       if (quittanceStore.currentQuittanceId === id) {
         quittanceStore.updateCurrentQuittance(data)
       }
@@ -90,7 +121,6 @@ export function useQuittances(
     onMutate: async (id) => {
       const previousItems = [...quittances.items.value]
       quittances.items.value = quittances.items.value.filter((d) => d.id !== id)
-      // ⭐ Effacer la sélection si c'est l'quittance supprimé
       quittanceStore.removeIfCurrent(id)
       return { previousItems }
     },
@@ -100,7 +130,7 @@ export function useQuittances(
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['quittances'] })
+      queryClient.invalidateQueries({ queryKey: [KEY] })
     },
   })
 
