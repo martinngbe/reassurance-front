@@ -40,9 +40,9 @@ const showModalFicheBordereau = ref(false)
 const showModal = ref(false)
 const showModalConfirmation = ref(false)
 const quittanceStore = useQuittanceStore()
-const currentQuittance = computed(()=>quittanceStore.currentQuittance)
+//const currentQuittance = computed(()=>quittanceStore.currentQuittance)
 const isCession = ecranStore.currentModule ===MODULE_CESSION
-const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
+//const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 console.warn(" __________ Bordereaux.vue _________")
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
 console.log(" ----- ecranStore.currentEcran:",ecranStore.currentEcran)
@@ -106,13 +106,13 @@ const totalItems = computed(() => bordereaux.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
-const isLigneSelectionnee = computed(() => selectedBordereaux.value.length > 0)
+
 //const selectedBordereaux = ref<(string | number)[]>([])
 const selectedBordereaux = computed({
   get: () => borderauStore.selectedBordereaux,
   set: (value) => borderauStore.setSelectedBordereaux(value)
 })
-
+const isLigneSelectionnee = computed(() => selectedBordereaux.value? selectedBordereaux.value.length > 0 : false)
 const titleModal = ref('')
 
 // ==================== TRI ====================

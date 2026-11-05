@@ -13,6 +13,7 @@ const moduleComponents: Record<string, any> = {
   ecranTraite: defineAsyncComponent(() => import('@/web/module/ecrans/traite/EcranTraite.vue')),
   ecranPlacement: defineAsyncComponent(() => import('@/web/module/ecrans/placement/EcranPlacement.vue')),
   ecranBordereau: defineAsyncComponent(() => import('@/web/module/ecrans/bordereau/EcranBordereau.vue')),
+  ecranEcheancePmd: defineAsyncComponent(() => import('@/web/module/ecrans/echeance-pmd/EcranEcheancePmd.vue')),
 
 }
 

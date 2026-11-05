@@ -18,7 +18,7 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { ECRAN_BORDEREAU, ECRAN_FACULTATIVE, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import { ECRAN_BORDEREAU, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
 
 const titreFenetre = ref('QUITTANCES')
@@ -45,6 +45,7 @@ const policeId = currentPolice.value? currentPolice.value.id : null
 const isCession = ecranStore.currentModule ===MODULE_CESSION
 const isEcranBordereau = ecranStore.currentEcran ===ECRAN_BORDEREAU
 const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
+const isEcranEcheancePmd = ecranStore.currentEcran ===ECRAN_ECHEANCE_PMD
 console.warn(" __________ Quittances.vue _________")
 console.log(" ----- currentPolice.value:",currentPolice.value)
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
@@ -53,31 +54,17 @@ console.log(" ----- policeId:",policeId)
 console.log(" ----- isCession:",isCession)
 console.log(" ----- isEcranBordereau:",isEcranBordereau)
 // ==================== API + CRUD ====================
-// Si isEcranBordereau alors 
-//    affiche toutes les quittance FAC
-//    pas de policeId individuelle  
-//FIN SI
-/*
-const policeIdVal = isEcranBordereau? null:  toValue(policeId)
-const isFacVal    = isEcranBordereau? true : null
-titreFenetre.value = isEcranBordereau? "QUITTANCES FAC" : "QUITTANCES"
-const params = {
-  isCession,
-  ...(policeIdVal != null && { policeId: policeIdVal }),
-  ...(isFacVal    != null && { isFac:    isFacVal })
-}
-console.log(" ----- params:",params)
-console.warn(" __________________")
-const store = useQuittances(params)
-*/
+
 
 
 // ============================================
 // 2. LOGIQUE MÉTIER EXISTANTE (inchangée)
 // ============================================
-const policeIdVal = isEcranBordereau ? null : toValue(policeId)
+const policeIdVal = isEcranBordereau ||  isEcranEcheancePmd ? null : toValue(policeId)
 const isFacVal    = isEcranBordereau ? true : null
-titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" : "QUITTANCES"
+const isProportionnelleVal    =  isEcranEcheancePmd ? false : null
+titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" :
+                    isEcranEcheancePmd?  "QUITTANCES NON PROPORTIONNELLES" : "QUITTANCES"
 
 // ============================================
 // 3. COMPUTED POUR LA PAGINATION + RECHERCHE
@@ -100,6 +87,7 @@ const store = useQuittances({
   policeId: policeIdVal,
   isCession: isCession,
   isFac: isFacVal,
+  isProportionnelle: isProportionnelleVal,
   params: paginationParams, // ⭐ Le computed contenant la recherche
 })
 
@@ -271,6 +259,9 @@ const handleModifier = () => {
   if (quittance) openEdit(quittance)
 }
 
+const handleActualiser = ()=>{
+  quittances.refresh()
+}
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -337,111 +328,112 @@ watch(tableSearch, () => {
           :masque-supprimer="true"
           :active-modifier="isLigneSelectionnee"
           :active-impression="isLigneSelectionnee"
+          :active-actualiser="true"
           @modifier="handleModifier"
+          @actualiser="handleActualiser"
+        />
+        <TAction  v-else
+          :masque-nouveau="true"
+          :masque-modifier="true"
+          :masque-supprimer="true"
+          :active-actualiser="true"
+          @actualiser="handleActualiser"
         />
 
     </template>
-   <template #cell-isCession="{  row }">       
-               <IconeValider  v-if="row.police.isCession" />
-               <IconeNonValider  v-else />
-       
-    </template>
-   <template #cell-isIard="{  row }">       
-               <IconeValider  v-if="row.police.isIard" />
-               <IconeNonValider  v-else />
-       
-    </template>    
-   <template #cell-isSinistree="{ value , row }">
-        
-               <!-- TAF Charger NB Sinsitre ou IsSinistree-->              
-               <IconeNonValider  />
-        
-    </template>
-    <template #cell-mouvement="{ value }">
-      <span class="font-mono  uppercase" >{{ value.code }}</span>
-    </template>
-    <template #cell-dateEffet="{ value }">
-      <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
-       <span class="font-mono  uppercase" v-else>TBA</span>
-    </template>
-    <template #cell-dateEcheance="{ value }">
-      <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
-       <span class="font-mono  uppercase" v-else>TBA</span>
-    </template>
-    <template #cell-devise="{ value }">
-      <span class="font-mono  uppercase" >{{ value.code }}</span>
-    </template>   
-    <template #cell-coursDevise="{ value }">      
-       <span class="font-mono  uppercase" >{{formatDecimal(value,)  }}</span>
-    </template>
-    <template #cell-capitaux="{ value }">      
-       <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-lci="{ value }">      
-       <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-smp="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-limite="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-   <template #cell-retention="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-       <template #cell-conservation="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-estimationPrime="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-sinistreAuComptant="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-     <template #cell-primeBrute="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-     <template #cell-primeNette="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-
-   <template #cell-primeCedee="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-     <template #cell-primeAcceptee="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
+        <template #cell-isCession="{  row }">       
+                  <IconeValider  v-if="row.police.isCession" />
+                  <IconeNonValider  v-else />
+        </template>
+        <template #cell-isIard="{  row }">       
+                  <IconeValider  v-if="row.police.isIard" />
+                  <IconeNonValider  v-else />
+          
+        </template>    
+        <template #cell-isSinistree="{ value , row }">        
+                  <!-- TAF Charger NB Sinsitre ou IsSinistree-->              
+                  <IconeNonValider  />        
+        </template>
+        <template #cell-mouvement="{ value }">
+          <span class="font-mono  uppercase" >{{ value.code }}</span>
+        </template>
+        <template #cell-dateEffet="{ value }">
+          <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
+          <span class="font-mono  uppercase" v-else>TBA</span>
+        </template>
+        <template #cell-dateEcheance="{ value }">
+          <span class="font-mono  uppercase" v-if="value">{{ value }}</span>
+          <span class="font-mono  uppercase" v-else>TBA</span>
+        </template>
+        <template #cell-devise="{ value }">
+          <span class="font-mono  uppercase" >{{ value.code }}</span>
+        </template>   
+        <template #cell-coursDevise="{ value }">      
+          <span class="font-mono  uppercase" >{{formatDecimal(value,)  }}</span>
+        </template>
+        <template #cell-capitaux="{ value }">      
+          <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-lci="{ value }">      
+          <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-smp="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-limite="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-retention="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+          <template #cell-conservation="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-estimationPrime="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-sinistreAuComptant="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-primeBrute="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-primeNette="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-primeCedee="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-primeAcceptee="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
 
 
-      <template #cell-taxeSurPrime="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-         <template #cell-tauxCedante="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-         <template #cell-tauxAccepte="{ value }">
-        <TDisplayNumber :value="value" />
-    </template> 
+        <template #cell-taxeSurPrime="{ value }">
+          <TDisplayNumber :value="value" />
+        </template>
+            <template #cell-tauxCedante="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+            <template #cell-tauxAccepte="{ value }">
+            <TDisplayNumber :value="value" />
+        </template> 
   
-  <template #cell-tauxCession="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-    <template #cell-tauxCommission="{ value }">
-        <TDisplayNumber :value="value" />
-    </template> 
-         <template #cell-tauxRetention="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
-         <template #cell-taxeSurCommission="{ value }">
-        <TDisplayNumber :value="value" />
-    </template> 
-         <template #cell-taxeSurCommissionFixe="{ value }">
-        <TDisplayNumber :value="value" />
-    </template>
- 
-
-
-
+        <template #cell-tauxCession="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+        <template #cell-tauxCommission="{ value }">
+            <TDisplayNumber :value="value" />
+        </template> 
+            <template #cell-tauxRetention="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+            <template #cell-taxeSurCommission="{ value }">
+            <TDisplayNumber :value="value" />
+        </template> 
+            <template #cell-taxeSurCommissionFixe="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
 
   </TTable>
 
@@ -450,13 +442,13 @@ watch(tableSearch, () => {
                 <TFicheQuittance/>
           </template>
   </TModal>
-    <TModal v-model="showModalModification" :title="titleModal"
+  <TModal v-model="showModalModification" :title="titleModal"
      width="60%" >
       <TQuittanceForm
         :loading="updateQuittance.isPending.value"
         @success="onFormSuccess"
         @cancel="closeModal"
       />
-    </TModal>
+  </TModal>
  
 </template>

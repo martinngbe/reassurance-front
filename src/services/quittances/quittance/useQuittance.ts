@@ -12,9 +12,10 @@ const KEY = 'quittances'
 
 // ⭐ Interface pour les options
 export interface UseQuittancesOptions {
-  policeId?: Ref<number> | number | null
-  isCession?: Ref<boolean> | boolean | null
-  isFac?: Ref<boolean> | boolean | null
+  policeId?: Ref<number> | number | null      // POLICE_ID | (NULL)INDIFFERENTS
+  isCession?: Ref<boolean> | boolean | null   // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
+  isFac?: Ref<boolean> | boolean | null       // FAC  |  TRAITE  | (NULL)INDIFFERENTS
+  isProportionnelle?: Ref<boolean> | boolean | null  //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
   params?: ComputedRef<PaginationParams>
 }
 const DEFAULT_PAGINATION: PaginationParams = {
@@ -27,9 +28,10 @@ const DEFAULT_PAGINATION: PaginationParams = {
 export function useQuittances(options: UseQuittancesOptions = {}) {
   // ⭐ Déstructuration avec valeurs par défaut
   const {
-    policeId = null,
-    isCession = null,
-    isFac = null,
+    policeId = null, // POLICE_ID | (NULL)INDIFFERENTS
+    isCession = null, // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
+    isFac = null, // FAC  |  TRAITE  | (NULL)INDIFFERENTS
+    isProportionnelle= null , //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
     params = computed(() => DEFAULT_PAGINATION)
   } = options
 
@@ -53,16 +55,11 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     queryFn: async ({ page, limit }) => {
       const policeIdVal = toValue(policeId)
       const isCessionVal = toValue(isCession)
-      const isFacVal = toValue(isFac)    
+      const isFacVal = toValue(isFac) 
+      const isProportionnelleVal = toValue(isProportionnelle)   
+        
       const paramsVal = toValue(params)
-      // const response = await quittanceApi.getAll({
-      //   ...toValue(params),
-      //   ...(policeIdVal != null && { policeId: policeIdVal }),
-      //   ...(isCessionVal != null && { isCession: isCessionVal }),
-      //   ...(isFacVal != null && { isFac: isFacVal }),
-      //   page,
-      //   limit,
-      // })
+    
         const response = await quittanceApi.getAll({
             page,
             limit,
@@ -75,6 +72,8 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
             ...(policeIdVal != null && { policeId: policeIdVal }),
             ...(isCessionVal != null && { isCession: isCessionVal }),
             ...(isFacVal != null && { isFac: isFacVal }),
+            ...(isProportionnelleVal != null && { isProportionnelle: isProportionnelleVal }),
+            
           })
       return response as PaginatedResponse<Quittance>
     },

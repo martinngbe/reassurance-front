@@ -55,6 +55,7 @@ const maxTauxCessionAutorise = computed<number>(() => tauxDisponible.value)
 
 // cette propriété doit venir obligatoirement 
 // avec au minimum quittanceId  implémenté si Erreur
+// à editer
 const props = defineProps<{
   quittancePlacement?:  QuittancePlacement | null
 }>()
