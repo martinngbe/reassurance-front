@@ -50,7 +50,16 @@ export const authService = {
     const storage = remember ? localStorage : sessionStorage
     storage.setItem(STORAGE_KEY, token)
   },
-
+  saveUserId(userId: string): void {
+    console.log("saveUserId userId:",userId)
+    const storage =  sessionStorage
+    storage.setItem("user", userId)
+     
+  },
+  getUserId():  number | null {
+     const resp = sessionStorage.getItem("user")
+     return resp? Number(resp) :null
+  },
   getToken(): string | null {
     return localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY)
   },

@@ -1,147 +1,162 @@
 <script setup lang="ts">
-
 import TTable from '@/composants/display/TTable.vue'
-import type { SortState, TableColumn, TableRow } from '@/composants/forms/common'
-
+import type { SortState, TableColumn } from '@/composants/forms/common'
 import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
-import TAction from '@/composants/utilitaire/TAction.vue'
+
+import type { PaginationParams } from '@/type/pagination.ts'
 import TModal from '@/composants/display/TModal.vue'
-import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
-import { useToast } from '@/composants/toast/useToast.ts'
-import IconeValider from '@/composants/icone/IconeValider.vue'
-import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import { useComptes } from '@/services/flux-financiers/comptes/compte/useCompte'
 import type { Compte } from '@/services/flux-financiers/comptes/compte/compte'
-import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
+//import TCompteForm from './TCompteForm.vue'
+import TAction from '@/composants/utilitaire/TAction.vue'
+import { useToast } from '@/composants/toast/useToast.ts'
+import { useCompteStore } from '@/services/flux-financiers/comptes/compte/compte.store.ts'
+import TDisplayDecimal from '@/composants/utilitaire/TDisplayDecimal.vue'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import TTempCompteForm from '../temp-compte/TTempCompteForm.vue'
 import TTempCompte from '../temp-compte/TTempCompte.vue'
 import TButton from '@/composants/forms/TButton.vue'
-import { useCompteStore } from '@/services/flux-financiers/comptes/compte/compte.store.ts'
 import { useTempCompteStore } from '@/services/flux-financiers/comptes/temp-compte/temp-compte.store.ts'
 import { useTempComptes } from '@/services/flux-financiers/comptes/temp-compte/useTempCompte.ts'
-import type { PaginationParams } from '@/type/pagination.ts'
 
-// ==================== PAGINATION ====================
-const page = ref(1)
-const pageSize = ref(PAGE_SIZE)
-
-// ==================== TTABLE ENRICHI ====================
-const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
+// ==================== ÉTAT LOCAL ====================
+const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
-
 const sortState = ref<SortState>({ key: null, direction: null })
+const emit = defineEmits<{ 
+  (e: 'row-click',  compte: any): void
+}>()
+const { success, error, warning, info } = useToast()
 
-// ==================== API ====================
-const params = computed(() => ({
-  page: page.value,
-  limit: pageSize.value,
+const props = defineProps<{
+  masqueAffaireNouvelle?: boolean
+}>()
+
+// ✅ Corrigé
+const params = computed<PaginationParams>(() => ({
+  page: 1,
+  limit: PAGE_SIZE,
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
-
-const { comptes ,deleteCompte } = useComptes(params)
+// ==================== API + CRUD ====================
+// Ne pas destructurer comptes
 const compteStore = useCompteStore()
-const { success, error, warning, info, add } = useToast()
+const currentCompte = compteStore.currentCompte
+const store = useComptes({})
+const { comptes , deleteCompte } = store
 
-// Type local pour satisfaire TTable (signature d'index)
 type CompteRow = Compte & { [key: string]: any }
 
-// ==================== DONNÉES TABLE ====================
+// ==================== COLONNES ====================
+
 const compteColumns: TableColumn[] = [ 
-  { key: 'numero',           label: 'N° Compte',          width: '20%',  minWidth: 150 , sortable: true},
-  { key: 'compteType',       label: 'Type',               width: '20%',  minWidth: 150 , sortable: true}, 
-  { key: 'solde',            label: 'Solde',              width: '35%',  minWidth: 150 , sortable: true},
-  { key: 'isEnNotreFaveur',  label: 'En Notre faveur',    width: '15%',  minWidth: 150 , sortable: true},
+  //{ key: 'numero',           label: 'N° Compte',          width: '20%',  minWidth: 150 , sortable: true},
+  { key: 'solde',            label: 'Solde',              width: '35%',  minWidth: 150 , align:'right' },  
+  { key: 'compteType',       label: 'Type',               width: '35%',  minWidth: 150 , }, 
+  { key: 'isEnNotreFaveur',  label: 'En Notre faveur',    width: '30%',  minWidth: 150 , align:'center' },
  
 ]
-const emit = defineEmits<{ 
-  (e: 'row-click',  compte: any): void
-}>()
 
-const totalItems = ref(0)
-const totalPages = ref(0)
+// ==================== DONNÉES TABLE ====================
+// Accéder via store.comptes
+const compteRows = computed(() => store.comptes.items.value)
+const tableLoading = computed(() => store.comptes.isLoading.value)
+const loadingMore = computed(() => store.comptes.loadingMore.value)
+const hasMore = computed(() => store.comptes.hasMore.value)
+// ✅ Correction ici : on utilise .value?.total
+const totalItems = computed(() => comptes.pageInfo.value?.total ?? 0)
 
-const compteRows = computed(() => {
-  const resultat  = comptes.data.value
-  if(!resultat) return []
-  if(!resultat.success) return []
-  const pageInfo  = resultat.pageInfo
-  if(pageInfo){
-     totalItems.value = pageInfo.total
-     totalPages.value = pageInfo.totalPages
-  }
-  return resultat.data;
-})
-// État de chargement exposé au TTable
-const tableLoading = computed(() => comptes.isLoading.value || comptes.isFetching.value)
-const isAfficheSearch = computed(() => totalItems.value> PAGE_SIZE)
-const isLigneSelectionnee = computed(()=> selectedComptes.value.length > 0)
-//const selectedComptes = ref<(string | number)[]>([])
 
-// ✅ REMPLACER le ref local par un computed lié au store
+const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
+const isLigneSelectionnee = computed(() => selectedComptes.value.length > 0)
+
+
+// Le store doit exposer un tableau d'IDs (ex: number[] ou string[])
 const selectedComptes = computed({
   get: () => compteStore.selectedComptes,
-  set: (value) => compteStore.setSelectedComptes(value)
+  set: (value: (string | number)[]) => compteStore.setSelectedComptes(value) // ✅ le bon setter
 })
+// ==================== TRI ====================
 function onSort(state: SortState): void {
   sortState.value = state
-  page.value = 1 // reset page au tri
 }
-// ==================== ACTIONS TAction ====================
-// ==================== MODALE ====================
-const showModal = ref(false)
-const showModalfirmation= ref(false)
-const titleModal = ref('')
-const compteToEdit = ref<Compte | null>(null)
-
 const openCreate = () => {
-  compteToEdit.value = null
-  titleModal.value = 'Nouveau compte : processus ...'
+  titleModal.value = 'Nouveau compte temporaire'
   showModal.value = true
 }
-
-const openEdit = (compte: CompteRow) => {
-  compteToEdit.value = compte
-  titleModal.value = 'Modifier compte'
-  showModal.value = true
-}
-
 const closeModal = () => {
   showModal.value = false
-  compteToEdit.value = null
+  
 }
-// ==================== HANDLERS ====================
+
 const onFormSuccess = (message: string) => {
   closeModal()
   success(message, 'Succès')
+  comptes.refresh()
 }
 const handleNouveau = () => openCreate()
-const handleModifier = () => {
-  if (selectedComptes.value.length === 0) {
-    info('Veuillez sélectionner un compte', 'Info')
-    return
-  }
-  const compteId = selectedComptes.value[0]
-  const compte = compteRows.value.find((u:any) => u.id === compteId)
-  if (compte) openEdit(compte)
+// ==================== INFINITE SCROLL ====================
+async function handleLoadMore() { 
+  if (loadingMore.value || !hasMore.value) return
+  await comptes.loadMore()
 }
 
-const handleSupprimer = async () => {
-  if (selectedComptes.value.length === 0) {
-    warning('Veuillez sélectionner un compte',"Attention")
+const handleSupprimer = () => {
+  const ids = selectedComptes.value
+  if (ids.length === 0) {
+    warning('Veuillez sélectionner un compte', 'Attention')
     return
   }
-  const compteId = selectedComptes.value[0]
-  compteToEdit.value = compteRows.value.find((u:any) => u.id === compteId)
-  if (!compteToEdit.value) return
-  showModalfirmation.value=true 
-  
+  const id = ids[0]
+  compteToEdit.value = compteRows.value.find((u: any) => u.id === id) ?? null
+  handleConfirmeSuppression()
 }
-////////////////  
+
+const handleConfirmeSuppression = async () => {
+  const compte = compteToEdit.value
+  if (!compte) return
+  try {
+    await deleteCompte.mutateAsync(compte.id)
+    success('Opération effectuée avec succès', 'Succès')
+    compteStore.setSelectedComptes([]) // nettoie la sélection
+    compteStore.selectCompte(null)
+    comptes.refresh()
+  } catch (err: any) {
+    error(
+      err?.response?.data?.message || err?.message || 'Erreur lors de la suppression.',
+      'Erreur',
+    )
+  }
+}
+
+const handleActualise =()=>{
+  comptes.refresh()
+}
+// ==================== MODALES ====================
+const showModal = ref(false)
+const titleModal = ref('')
+const compteToEdit = ref<Compte | null>(null)
+
+
+const onRowClick = (row: any, index: number) => {
+  console.log("Comptes.onRowClick row: ", row)
+
+   const ids = selectedComptes.value
+  if (ids.length === 0) {
+    warning('Veuillez sélectionner un compte', 'Attention')
+    return
+  }
+   const id = ids[0]
+  compteToEdit.value = compteRows.value.find((u: any) => u.id === id) ?? null
+  compteStore.selectCompte(compteToEdit.value)
+  emit('row-click', row as Compte)
+}
 const tempCompteStore = useTempCompteStore()
-const currentTempCompte = computed(()=> tempCompteStore.currentTempCompte)
-//const paramsCompte = computed<PaginationParams>(() => ({}))
+const currentTempCompte = computed(()=>tempCompteStore.currentTempCompte)
 const { transfererCompte } = useTempComptes()
 
 const handleTransfertTempCompteVersCompte = async () => {
@@ -155,139 +170,115 @@ const handleTransfertTempCompteVersCompte = async () => {
     const resultat = await transfererCompte.mutateAsync(currentTempCompte.value.id)
     console.log("Transfert réussi :", resultat)
     showModal.value = false
-     success("Transfert réussi : ...", "Success")
   } catch (error) {
     console.error("Erreur lors du transfert :", error)
     // Gérer l'erreur (ex: afficher un toast d'erreur)
   }
 }
-const handlConfirmeSuppression = async ()=>{
-  const compte = compteToEdit.value?? null
-  if (!compte ) return
-    try {
-        await deleteCompte.mutateAsync(compte.id)
-        showModalfirmation.value=false 
-        success("Opération effectuée avec succès", 'Succès')
-        selectedComptes.value = selectedComptes.value.filter(
-          (id) => id !== compte.id,
-        )
-      } catch (err: any) {
-        console.error('Erreur suppression:', err)
-        const message =  err?.response?.data?.message ||
-            err?.message ||
-            'Une erreur est survenue lors de la suppression.'
-        error(message,'Erreur')
-       
-      }
-}
-const onRowClick = ( row: any, index: number)=>{       
-    emit('row-click',row as Compte)
-}
-// Reset page quand la recherche change (avec debounce idéalement)
+
+// Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
   window.clearTimeout(searchTimeout)
   searchTimeout = window.setTimeout(() => {
-    page.value = 1
+    // Le watchKeys dans useCompte gère le reset + refetch automatiquement
   }, 300)
 })
 
-
+// ✅ AJOUT : watcher qui réagit au trigger du store
+watch(
+  () => compteStore.refreshTrigger,
+  () => {
+    console.log('[Comptes] Refresh déclenché depuis un composant enfant')
+    comptes.refresh()
+  }
+)
 </script>
+
 <template>
   <TTable
     v-model:selected-keys="selectedComptes"
-
     :show-index="true"
     index-label="N°"
     :index-width="60"
-
     :columns="compteColumns"
     :rows="compteRows"
     :loading="tableLoading"
     :density="tableDensity"
-   
     height="h-full"
     width="w-full"
-    title="Comptes"
+    title="Comptes oraires"
     row-key="id"
     striped
-
-    @row-click="onRowClick"
-    @sort="onSort"
+    !selectable
     
+    :infinite-scroll="true"
+    :has-more="hasMore"
+    :loading-more="loadingMore"
+    :scroll-threshold="200"
+    end-message="— Fin des données —"
+    :show-end-message="true"
+    
+    @sort="onSort"
+    @row-click="onRowClick"
+    @load-more="handleLoadMore"
   >
     <template #caption-extra>
-      <div class="flex justify-between" v-if="isAfficheSearch">
-        <input
+      <div class="flex justify-between" v-if="isAfficheSearch" >
+        <input  
           v-model="tableSearch"
           type="text"
           placeholder="Rechercher…"
-          class="h-8 rounded-lg border border-neutral-300
-                 bg-white px-3 text-sm outline-none
-                 focus:border-primary-500 focus:ring-2
-                 focus:ring-primary-500/20
-                 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
+        
       </div>
     </template>
 
     <template #caption="{ selectedCount, total }">
        <TAction
           :active-actualiser="total>0"
-          :active-impression="total>0"
+          :masque-impression="true"
           :active-supprimer="selectedCount>0"
           :masque-modifier="true"
-          content-nouveau="Saisissez un nouveau compte ...."
           @nouveau="handleNouveau"
           @supprimer="handleSupprimer"
+          @actualiser="handleActualise"
         
         /> 
     </template>
 
-    <template #cell-numero="{ value }">
-      <span class="font-mono  text-xl uppercase">{{ value }}</span>
+    <template #cell-solde="{ value }">
+        <TDisplayDecimal :value="value"     /> 
     </template>
     <template #cell-compteType="{ value }">
-      <span class="font-mono text-xl uppercase">{{ value }}</span>
+         <span class="font-mono  text-xl uppercase" v-if="value">{{ value.libelle }}</span>
     </template>
 
-   <template #cell-solde="{ value }">
-      <span class="font-mono text-xl uppercase"><TDisplayNumber :value="value" />></span>
-    </template>
+    
     <template #cell-isEnNotreFaveur="{ value }">
-      <IconeValider v-if="value" /><IconeNonValider v-else/>
-    </template>   
-   
-  
+        <IconeValider v-if="value"/><IconeNonValider v-else />
+    </template>
+
   </TTable>
-  <TModal v-model="showModal" width="85%" height="85%" :title="titleModal">
-    <TTempCompte />
+  <TModal v-model="showModal" width="85%" height="85%"  title="Process de création de compte ....." >
+   
+    <template #default>
+            <TTempCompte  @success="onFormSuccess"/>
+    </template>
     <template #footer>
-      <div class="flex justify-center gap-4">
-          <TButton variant="soft" size="2xl" @click="showModal=false">
-                Annuler
-          </TButton>
-          <TButton variant="solid" size="2xl" @click="handleTransfertTempCompteVersCompte">
-                Valider
-          </TButton>
-      </div>
+            <div class="flex justify-center gap-5">
+                  <TButton variant="soft"  width="xl"
+                   @click="showModal=false">
+                        
+                         <p class="text-md font-bold uppercase">Annuller</p>  
+                  </TButton>
+                  <TButton variant="solid" width="xl"
+                  @click="handleTransfertTempCompteVersCompte">
+                      <p class="text-md font-bold uppercase">Validation finale</p>  
+                  </TButton>
+            </div>
     </template>
   </TModal>
-
-          <!-- Modale du formulaire -->
-        <TModal v-model="showModalfirmation" 
-            title="Demande de confirmation"           >
-              <TDemandeConfirmation   
-                @annuler="showModalfirmation=false"
-                @confirmer="handlConfirmeSuppression"
-              > 
-                <template #message>
-                <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4"
-                >Voulez-vous supprimer la compte <span class ="font-extrabold"
-                    >{{ compteToEdit?.numero }}</span>
-                  </p>
-                </template>
-            </TDemandeConfirmation>   
-        </TModal>
+ 
 </template>

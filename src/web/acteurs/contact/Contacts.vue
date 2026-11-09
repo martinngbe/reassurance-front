@@ -197,6 +197,7 @@ watch(tableSearch, () => {
     end-message="— Fin des données —"
     :show-end-message="true"
     @load-more="handleLoadMore"
+    @row-double-click="handleModifier"
   >
     <template #caption-extra>
       <div class="flex justify-between" v-if="isAfficheSearch">

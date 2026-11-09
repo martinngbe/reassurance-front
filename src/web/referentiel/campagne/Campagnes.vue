@@ -173,6 +173,7 @@ watch(tableSearch, () => {
     row-key="id"
     striped
     @sort="onSort"
+    @row-double-click="handleModifier"
     
   >
     <template #caption-extra>

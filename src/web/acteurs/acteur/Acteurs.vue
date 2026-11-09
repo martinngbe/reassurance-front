@@ -190,6 +190,7 @@ watch(tableSearch, () => {
     
     @sort="onSort"
     @row-click="onRowClick"
+    @row-double-click="handleModifier"
     @load-more="handleLoadMore"
   >
     <template #caption-extra>

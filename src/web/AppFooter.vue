@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/auth/auth.store';
 import TToolTip from '@/composants/display/TToolTip.vue';
 import ThemePicker from '@/composants/theme/ThemePicker.vue';
 import { useNetworkStatus } from '@/composants/toast/useNetworkStatus.ts';
 import TIndicateurConnexion from '@/composants/utilitaire/TIndicateurConnexion.vue';
+import { computed } from 'vue';
 const { isOnline } = useNetworkStatus()
-
+const authStore = useAuthStore()
+const  currentUserAuth = computed(()=>authStore.currentUserAuth)  
 </script>
 
 <template >
@@ -20,7 +23,11 @@ const { isOnline } = useNetworkStatus()
           </TToolTip>
       </div>
       <span class="hidden sm:inline">
-        Connecté en tant que <strong class="text-slate-700 dark:text-slate-300">Admin Demo</strong>
+        Connecté en tant que 
+          <p v-if="currentUserAuth">{{ currentUserAuth.nom +' ' + currentUserAuth.prenoms}}</p>
+          <p v-else>Admin Demo </p>
+        
+        
       </span>
     </div>
 </template>

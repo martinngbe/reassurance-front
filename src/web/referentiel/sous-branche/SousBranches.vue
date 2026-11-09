@@ -203,7 +203,7 @@ watch(tableSearch, () => {
     :title="titreTableau"
     row-key="id"
     striped
-
+    @row-double-click="handleModifier"
     @sort="onSort"
     
   >

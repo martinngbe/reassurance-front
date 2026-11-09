@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Login from './composants/Login.vue'
 import EcranPrincipal from './web/EcranPrincipal.vue'
 import type {  LoginPayload } from './auth/types.ts'
 import { authService } from './auth/auth.service.ts'
 import TToastContainer from './composants/toast/TToastContainer.vue'
 import { useNetworkStatus } from './composants/toast/useNetworkStatus.ts'
+import { utilisateurApi } from './services/referentiel/utilisateur/utilisateur.api.ts'
+import { useAuthStore } from './auth/auth.store.ts'
 
 type Theme = 'light' | 'dark'
 
@@ -35,22 +37,31 @@ watch(
   { immediate: true }
 )
 const  serverError =  ref("")
+
+const authStore = useAuthStore()
+const  currentUserAuth = computed(()=>authStore.currentUserAuth) 
+const userId = authService.getUserId()
+await authStore.setUserId(userId)
 authenticated.value = !!authService.getToken()
 
 async function handleLogin(payalod:LoginPayload) {
-  // console.log("---------------- handleLogin -----------------") 
-  // console.log("LoginPayload:",payalod)  
+  
   const response = await  authService.login(payalod)
-  //console.log(" App.handleLogin response:",response)
   if(!response.success){
-    //console.log(" >> response.messag:",response.message)
     serverError.value=response.message
   }
   const token = authService.getToken()
   authenticated.value = !!token
-  // console.log(" App.handleLogin token:",token)
-  // console.log(" App.handleLogin authenticated.value:",authenticated.value)
-  // console.log("---------------------------------") 
+  const responseUser =await  utilisateurApi.getById(response.utilisateurId)
+  if(responseUser.success){
+      authService.saveUserId(response.utilisateurId)
+      authStore.selectUserAuth(responseUser.data )
+  }else {
+    
+  }
+         
+
+  console.log(' ______ currentUserAuth:',currentUserAuth)
 }
 
 function handleLogout() {

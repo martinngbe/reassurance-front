@@ -173,6 +173,7 @@ watch(tableSearch, () => {
     :show-end-message="true"
     @row-click="onRowClick"
     @load-more="handleLoadMore"
+    @row-double-click="handleModifier"
   >
     <template #caption-extra>
       <div class="flex justify-between" v-if="isAfficheSearch">

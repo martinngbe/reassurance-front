@@ -2,9 +2,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Compte } from './compte'
+import { useCompteDetailStore } from '../compte-detail/compte-detail.store'
 
 export const useCompteStore = defineStore('compteStore', () => {
  
+  const compteDetailStore = useCompteDetailStore()
   // ==================== STATE ====================
   // 1. Sélection unique (pour la vue détail / row-click)
   const currentCompte = ref<Compte | null>(null)
@@ -22,13 +24,14 @@ export const useCompteStore = defineStore('compteStore', () => {
   // --- Actions pour la sélection unique ---
   const selectCompte = (compte: Compte | null) => {
     console.warn("__________ CHANGEMENT COMPTE __________")
-    console.log("ANCIEN : ",currentCompte.value?.numero.toUpperCase())
-    console.log("NOUVEAU :",compte? compte.numero.toUpperCase() : null)
+    console.log("ANCIEN : ",currentCompte.value?.numero)
+    console.log("NOUVEAU :",compte? 'compte.numero' : null)
     currentCompte.value = compte
+    compteDetailStore.clearSelectionCompteDetail()
     
   }
   const clearCurrentCompte = () => {
-    clearSelection()
+    clearSelectionCompte()
   }
 
   // --- Actions pour la sélection multiple (Table) ---
@@ -36,11 +39,11 @@ export const useCompteStore = defineStore('compteStore', () => {
     selectedComptes.value = ids
   }
   
-  const clearSelection = () => {
+  const clearSelectionCompte = () => {
     console.warn("__________ INITIALISTAION ASSURES __________")
     selectedComptes.value = []
     currentCompte.value = null
-    //policeStore.clearSelection()
+    compteDetailStore.clearSelectionCompteDetail()
   }
   
   const toggleCompteSelection = (id: string | number) => {
@@ -65,6 +68,15 @@ export const useCompteStore = defineStore('compteStore', () => {
       currentCompte.value = null
     }
   }
+
+  // ✅ AJOUT : compteur pour déclencher un refresh cross-composants
+  const refreshTrigger = ref(0)
+  const triggerRefresh = () => {
+    refreshTrigger.value++
+  }
+
+
+
   return {
     // State
     currentCompte,
@@ -78,9 +90,11 @@ export const useCompteStore = defineStore('compteStore', () => {
     clearCurrentCompte,
     // Actions (Multiple)
     setSelectedComptes,
-    clearSelection,
+    clearSelectionCompte,
     updateCurrentCompte,
     removeIfCurrent,
     toggleCompteSelection,
+    refreshTrigger,
+    triggerRefresh,
   }
 })

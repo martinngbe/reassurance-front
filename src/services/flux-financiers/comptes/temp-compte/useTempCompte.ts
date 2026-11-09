@@ -7,11 +7,14 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useTempCompteStore } from './temp-compte.store'
 import type { TempCompte, CreateTempCompteDto } from './temp-compte'
 import { tempCompteApi } from './temp-compte.api'
+import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store'
+import { useAuthStore } from '@/auth/auth.store'
 
 const KEY = 'tempComptes'
 
 // ⭐ Interface pour les options
 export interface UseTempComptesOptions {
+  createdBy?: Ref<number> | number | null
   quittanceId?: Ref<number> | number | null
   params?: ComputedRef<PaginationParams>
 }
@@ -24,8 +27,15 @@ const DEFAULT_PAGINATION: PaginationParams = {
 }
 export function useTempComptes(options: UseTempComptesOptions = {}) {
   // ⭐ Déstructuration avec valeurs par défaut
+  const quittanceStore = useQuittanceStore()
+  const currentQuittance =quittanceStore.currentQuittance
+  const authStore = useAuthStore()
+  const currentUserAuth =authStore.currentUserAuth
+
+  console.log(' _________ useTempComptes  currentUserAuth:',currentUserAuth)
   const {
-    quittanceId = null,
+    quittanceId = currentQuittance? currentQuittance.id : null,
+    createdBy = currentUserAuth? currentUserAuth.id : null,
     params = computed(() => DEFAULT_PAGINATION)
   } = options
 
@@ -40,6 +50,7 @@ export function useTempComptes(options: UseTempComptesOptions = {}) {
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
     quittanceId: toValue(quittanceId),
+    createdBy: toValue(createdBy),
    
   }))
 
@@ -47,10 +58,12 @@ export function useTempComptes(options: UseTempComptesOptions = {}) {
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      const quittanceIdVal = toValue(quittanceId)     
+      const quittanceIdVal = toValue(quittanceId)
+      const createdByVal  = toValue(createdBy)   
       const response = await tempCompteApi.getAll({
         ...toValue(params),
-        ...(quittanceIdVal != null && { quittanceId: quittanceIdVal }),        
+        ...(quittanceIdVal != null && { quittanceId: quittanceIdVal }),
+        ...(createdBy != null && { createdBy: createdByVal }),          
         page,
         limit,
       })

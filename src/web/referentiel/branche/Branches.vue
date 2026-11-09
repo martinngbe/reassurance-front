@@ -180,6 +180,7 @@ watch(tableSearch, () => {
     striped
 
     @row-click="onRowClick"
+    @row-double-click="handleModifier"
     @sort="onSort"
     
   >

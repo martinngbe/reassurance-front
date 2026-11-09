@@ -3,22 +3,24 @@ import { useTheme } from '@/theme/useTheme.ts';
 import TToolTip from '@/composants/display/TToolTip.vue';
 import ToggleTheme from '@/composants/theme/ToggleTheme.vue';
 import { computed } from 'vue';
- const { theme, toggleMode } = useTheme()
-  
-      defineProps<{
-        theme: 'light' | 'dark'
-        accentColor: string
-        palettes: { name: string; value: string }[]
-      }>()
+import { useAuthStore } from '@/auth/auth.store';
+const { theme, toggleMode } = useTheme()
+const authStore = useAuthStore()
+const  currentUserAuth = computed(()=>authStore.currentUserAuth)  
+defineProps<{
+  theme: 'light' | 'dark'
+  accentColor: string
+  palettes: { name: string; value: string }[]
+}>()
 
-      const emit = defineEmits<{
-        (e: 'update:theme', value: 'light' | 'dark'): void
-        (e: 'update:accent-color', value: string): void
-        (e: 'logout'): void
-      }>()
+const emit = defineEmits<{
+  (e: 'update:theme', value: 'light' | 'dark'): void
+  (e: 'update:accent-color', value: string): void
+  (e: 'logout'): void
+}>()
   
-    /** mode réellement appliqué ('system' déjà résolu) */
-    const isDark = computed<boolean>(() => theme.resolvedMode === 'dark')
+/** mode réellement appliqué ('system' déjà résolu) */
+const isDark = computed<boolean>(() => theme.resolvedMode === 'dark')
 </script>
 
 <template>
@@ -37,9 +39,15 @@ import { computed } from 'vue';
         </div>
         <div class="hidden flex-col leading-tight sm:flex">
           <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
-            Admin Demo
+            <p v-if="currentUserAuth">{{ currentUserAuth.nom +' ' + currentUserAuth.prenoms}}</p>
+            <p v-else>Admin Demo </p> 
           </span>
-          <span class="text-xs text-slate-500 dark:text-slate-400">admin@entreprise.com</span>
+
+          <span class="text-xs text-slate-500 dark:text-slate-400">
+            
+             <p v-if="currentUserAuth">{{ currentUserAuth.email}}</p>
+            <p v-else>admin@entreprise.com </p> 
+          </span>
         </div>
       </div>
 

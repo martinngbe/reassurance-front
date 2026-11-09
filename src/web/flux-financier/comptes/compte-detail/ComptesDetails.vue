@@ -8,27 +8,35 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import TModal from '@/composants/display/TModal.vue'
 import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-
-import type { Branche } from '@/services/referentiel/branche/branche.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
-import { useCompteDetails } from '@/services/flux-financiers/comptes/compte-detail/useCompteDetail'
+import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
+import TDisplayDecimal from '@/composants/utilitaire/TDisplayDecimal.vue'
+import { useQueryClient } from '@tanstack/vue-query' // ✅ AJOUT
 import type { CompteDetail } from '@/services/flux-financiers/comptes/compte-detail/compte-detail'
+import { useCompteDetails } from '@/services/flux-financiers/comptes/compte-detail/useCompteDetail'
+import { useCompteStore } from '@/services/flux-financiers/comptes/compte/compte.store'
+import { useCompteDetailStore } from '@/services/flux-financiers/comptes/compte-detail/compte-detail.store'
 
-const props = withDefaults(
-  defineProps<{
-    branche?: Branche | null // filtrer par branche    
-  }>(),
-  { branche: null },
-)
+const queryClient = useQueryClient() // ✅ AJOUT
+const quittanceStore = useQuittanceStore()
+const currentQuittance = quittanceStore.currentQuittance
+const policeQuittance = currentQuittance?.police
+const natureOffrePolice = policeQuittance?.natureOffre
+const isProportionnelle = natureOffrePolice?.isProportionnelle?? false
+console.log(' ________ ComptesDetaills ___________')
+console.log(' currentQuittance:',currentQuittance)
+
+const compteStore = useCompteStore()
+const currentCompte = compteStore.currentCompte
+//const compte = useComptes()
+
 
 // ==================== PAGINATION ====================
 const page = ref(1)
 const pageSize = ref(PAGE_SIZE)
-
 // ==================== TTABLE ENRICHI ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('md')
 const tableSearch = ref('')
-
 const sortState = ref<SortState>({ key: null, direction: null })
 
 // ==================== API ====================
@@ -38,20 +46,26 @@ const params = computed(() => ({
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
-  brancheId : props.branche?  props.branche.id : null
+  compteId : currentCompte?  currentCompte.id : null,
+  isProportionnelle : isProportionnelle ? true : null,
+  isNonProportionnelle : isProportionnelle ? null : true,
 }))
-const titreTableau = computed(()=> props.branche? `Sous branche : ${props.branche.libelle}` : `Sous branche`  )
+//const titreTableau = computed(()=>currentCompte? `Détail compte temporaire : ${currentCompte.id}` : `Détail compte temporaire`  )
 const { compteDetails ,deleteCompteDetail } = useCompteDetails(params)
 const { success, error , info } = useToast()
-
+const emit = defineEmits<{
+  success: [message: string]
+ 
+}>()
 // Type local pour satisfaire TTable (signature d'index)
 type CompteDetailRow = CompteDetail & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
-const compteDetailColumns: TableColumn[] = [ 
-  { key: 'branche',    label: 'Branche',    width: '15%',  minWidth: 150 , sortable:true , resizable:true},
-  { key: 'code',       label: 'Code',       width: '25%',  minWidth: 150 , sortable:true , resizable:true},
-  { key: 'libelle',    label: 'Libellé',    width: '60%',  minWidth: 150 , sortable:true , resizable:true}, 
+const CompteDetailColumns: TableColumn[] = [ 
+  { key: 'compteRubrique',       label: 'libelle',    width: '45%',  minWidth: 150 },
+  { key: 'debit',             label: 'Débit',       width: '25%',  minWidth: 150 , align:'right'},
+  { key: 'credit',            label: 'Crédit',      width: '25%',  minWidth: 150 , align:'right'},
+
 ]
 
 
@@ -59,7 +73,7 @@ const totalItems = ref(0)
 const totalPages = ref(0)
 
 const compteDetailRows = computed(() => {
-  const resultat  = compteDetails.data.value
+  const resultat  =compteDetails.data.value
   if(!resultat) return []
   if(!resultat.success) return []
   const pageInfo  = resultat.pageInfo
@@ -73,9 +87,17 @@ const compteDetailRows = computed(() => {
 const tableLoading = computed(() => compteDetails.isLoading.value || compteDetails.isFetching.value)
 const isAfficheSearch = computed(() => totalItems.value> PAGE_SIZE)
 
-const selectedCompteDetails = ref<(string | number)[]>([])
-const isLigneSelection = computed(()=> selectedCompteDetails.value.length>0)  
+//const selectedCompteDetails = ref<(string | number)[]>([])
+const compteDetailStore = useCompteDetailStore()
+const selectedCompteDetails = computed({
+  get: () => compteDetailStore.selectedComptesDetails,
+  set: (value: (string | number)[]) => compteDetailStore.setSelectedComptesDetails(value) // ✅ le bon setter
+})
 
+
+const compteDetailId= ref<number |null| undefined>(undefined)
+const isExisteDetailCompteId = computed(()=> compteDetailId.value? true : false)
+const isLigneSelection = computed(()=> selectedCompteDetails.value.length>0)  
 function onSort(state: SortState): void {
   sortState.value = state
   page.value = 1 // reset page au tri
@@ -85,23 +107,17 @@ function onSort(state: SortState): void {
 const showModal = ref(false)
 const showModalfirmation= ref(false)
 const titleModal = ref('')
-const compteDetailToEdit = ref<CompteDetail | null>(null)
-/*
+const compteDetailToEdit = ref<CompteDetailRow | null>(null)
+
 const openCreate = () => {
-  if(!props.branche) return
-  compteDetailToEdit.value = {
-    brancheId : props.branche.id,
-    code: "",
-    libelle: ""
-  } as CompteDetail
-  titleModal.value = 'Nouvel Sous Branche'
+  if(!currentCompte) return
   showModal.value = true
 }
-*/
+
 const openEdit = (compteDetail: CompteDetailRow) => {
   console.log('>>>>>> openEdit = (compteDetail)',compteDetail)
   compteDetailToEdit.value = compteDetail
-  titleModal.value = 'Modifier Sous Branche'
+  titleModal.value = 'Modifier '+compteDetail.libelle
   showModal.value = true
 }
 
@@ -110,44 +126,61 @@ const closeModal = () => {
   compteDetailToEdit.value = null
 }
 // ==================== HANDLERS ====================
-const onFormSuccess = (message: string) => {
+const onFormSuccess = (message: string) => {  
   closeModal()
+  compteStore.triggerRefresh()  // ✅ déclenche le refresh dans Comptes.vue
   success(message, 'Succès')
 }
-//const handleNouveau = () => openCreate()
+const handleNouveau = () => openCreate()
 const handleModifier = () => {
- // console.log('>>>>>> handleModifier SOUS-BRANCHE >>>>>>>>>>>>>>>>>>')
+  console.log('>>>>>> handleModifier compteDetails.vue >>>>>>>>>>>>>>>>>>')
+  console.log('selectedCompteDetails.value:',selectedCompteDetails.value)
   if (selectedCompteDetails.value.length === 0) {
-    info('Veuillez sélectionner une Sous Branche svp', 'Info')
+    info('Veuillez sélectionner une Sous compte svp', 'Info')
     return
   }
-  const compteDetailId = selectedCompteDetails.value[0]
-  const compteDetail = compteDetailRows.value.find((u:any) => u.id === compteDetailId)
- // console.log('>>>>>> handleModifier compteDetail:',compteDetail)
-  if (compteDetail) openEdit(compteDetail)
+  const CompteDetailId = selectedCompteDetails.value[0]
+  console.log('CompteDetailId:',CompteDetailId)
+   console.log('CompteDetailRows.value:',compteDetailRows.value)
+  const CompteDetail = compteDetailRows.value.find((u:any) => u.compteRubriqueId === CompteDetailId)
+  console.log('>>>>>> handleModifier compteDetails:',CompteDetail)
+  if (CompteDetail) openEdit(CompteDetail)
 }
 
 const handleSupprimer = async () => {
   if (selectedCompteDetails.value.length === 0) {
-    info('Veuillez sélectionner une Sous Branche svp', 'Info')
+    info('Veuillez sélectionner une Sous compte svp', 'Info')
     return
   }
-  const compteDetailId = selectedCompteDetails.value[0]
-  compteDetailToEdit.value = compteDetailRows.value.find((u:any) => u.id === compteDetailId)
-  if (!compteDetailToEdit.value) return
+  //const rubriqueCompteId = selectedCompteDetails.value[0] // 
+  console.log(' ________  selectedCompteDetails.value:',selectedCompteDetails.value)
+  //console.log('rubriqueCompteId:',rubriqueCompteId)
+  console.log('compteDetailRows.value:',compteDetailRows.value)
+  compteDetailToEdit.value = compteDetailRows.value.find((u:any) => u.compteDetailId === compteDetailId.value)
+  console.log('compteDetailToEdit.value:',compteDetailToEdit.value)
+  if (!compteDetailToEdit.value || !compteDetailToEdit.value.compteDetailId) return
   showModalfirmation.value=true 
   
 }
 
 const handlConfirmeSuppression = async ()=>{
-  const compteDetail = compteDetailToEdit.value?? null
-  if (!compteDetail ) return
+  console.log(' ______ handlConfirmeSuppression  ________')
+  console.log('compteDetailToEdit.value:',compteDetailToEdit.value)
+
+
+  const compteDetailId = compteDetailToEdit.value? compteDetailToEdit.value.compteDetailId: null
+  if (!compteDetailId ) return
     try {
-        await deleteCompteDetail.mutateAsync(compteDetail.id)
+        const resultat = await deleteCompteDetail.mutateAsync(compteDetailId)
+        console.log(' __________ handlConfirmeSuppression __________ ')
+        console.log(' resultat:',resultat)
         showModalfirmation.value=false 
+       
         success("Opération effectuée avec succès", 'Succès')
+        compteStore.triggerRefresh()  // ✅ refresh du solde parent
+ 
         selectedCompteDetails.value = selectedCompteDetails.value.filter(
-          (id) => id !== compteDetail.id,
+          (id) => id !== compteDetailId,
         )
       } catch (err: any) {
         console.error('Erreur suppression:', err)
@@ -158,14 +191,24 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-
-// 🔑 Watcher qui réinitialise la sélection à chaque changement de branche
+const handelRowClick = (row: any , index: number)=>{
+  console.log(' _______________________________________')
+  console.log(' ______  handelRowClick  row:',row)
+  compteDetailId.value = row.compteDetailId
+  console.log('compteDetailId.value:',compteDetailId.value)
+  console.log('isExisteDetailCompteId.value:',isExisteDetailCompteId.value)
+  
+}
+const handleActualiser = ()=>{
+  compteDetails.refetch()
+}
+// 🔑 Watcher qui réinitialise la sélection à chaque changement de compte
 
 watch(
-  () => props.branche,
+  () => currentCompte,
   (newVal, oldVal) => {
     if(oldVal && newVal)
-        console.log(`Branche changée : ${oldVal.id} → ${newVal.id}`)
+        console.log(`compte changée : ${oldVal.id} → ${newVal.id}`)
     selectedCompteDetails.value = []
   },
   {
@@ -188,23 +231,25 @@ watch(tableSearch, () => {
 <template>
   <TTable
     v-model:selected-keys="selectedCompteDetails"
-
+    row-key="compteRubriqueId"
     :show-index="true"
     index-label="N°"
     :index-width="60"
 
-    :columns="compteDetailColumns"
+    :columns="CompteDetailColumns"
     :rows="compteDetailRows"
     :loading="tableLoading"
     :density="tableDensity"
    
     height="h-full"
     width="w-full"
-    :title="titreTableau"
-    row-key="id"
+    title="Détail compte"
+   
     striped
 
     @sort="onSort"
+    @row-double-click="handleModifier"
+    @row-click="handelRowClick"
     
   >
     <template #caption-extra>
@@ -223,52 +268,58 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption="{ selectedCount, total }">
-       <TAction
+       <!--TAction
           :active-modifier="isLigneSelection"
-          :active-supprimer="isLigneSelection"
+          :active-supprimer="isLigneSelection && isExisteDetailCompteId"
+          :active-actualiser="total>0"
          
           :masque-impression="true"
-        
+          :masque-nouveau="true"         
           @modifier="handleModifier"
           @supprimer="handleSupprimer"
+          @actualiser="handleActualiser"
         
-        /> 
+        /--> 
     </template>
 
-    <template #cell-branche="{ value }">
-      <span class="font-mono  text-xl uppercase" v-if="value"
-      >{{ (value as Branche).code }}</span>
-    </template>
-    <template #cell-code="{ value }">
-      <span class="font-mono  text-xl uppercase">{{ value }}</span>
-    </template>
-    <template #cell-libelle="{ value }">
-      <span class="font-mono text-xl uppercase">{{ value }}</span>
-    </template>
    
+   
+    <template #cell-compteRubrique="{ value }">
+      <span class="font-mono text-xl uppercase" v-if="value">
+        {{ value.libelle }}
+      </span>
+    </template> 
+
+    <template #cell-debit="{ value }">
+      <TDisplayDecimal :value="value"  v-if="value" />
+    </template>
+    <template #cell-credit="{ value }">
+      <TDisplayDecimal :value="value" v-if="value"/>
+    </template>
+
   
   </TTable>
     <!-- Modale du formulaire -->
   <!--TModal v-model="showModal" :title="titleModal" >
-    <TCompteDetailForm  
-      :compteDetail="compteDetailToEdit"
+
+    <TCompteDetailForm 
+    :temp-compte-detail="compteDetailToEdit"    
       @success="onFormSuccess"
       @cancel="closeModal"
     />
   </TModal-->
         <!-- Modale du formulaire -->
-      <!--TModal v-model="showModalfirmation" 
+      <TModal v-model="showModalfirmation" 
           title="Demande de confirmation"           >
             <TDemandeConfirmation   
               @annuler="showModalfirmation=false"
               @confirmer="handlConfirmeSuppression"
             > 
               <template #message>
-              <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4"
-              >Voulez-vous supprimer la compteDetail <span class ="font-extrabold"
-                  >{{ compteDetailToEdit?.code }}</span>
-                </p>
+              <p class="text-xl text-neutral-800 dark:text-neutral-300 pb-4">
+                  Voulez-vous supprimer l'information        
+              </p>
               </template>
           </TDemandeConfirmation>   
-      </TModal-->
+      </TModal>
 </template>

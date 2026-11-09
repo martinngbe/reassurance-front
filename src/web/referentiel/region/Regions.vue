@@ -173,6 +173,7 @@ watch(tableSearch, () => {
     row-key="id"
     striped
     @row-click="onRowClick"
+    @row-double-click="handleModifier"
     @sort="onSort"
     
   >

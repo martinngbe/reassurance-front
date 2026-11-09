@@ -174,6 +174,7 @@ watch(tableSearch, () => {
     striped
     !selectable
     @sort="onSort"
+    @row-double-click="handleModifier"
     :infinite-scroll="true"
     :has-more="hasMore"
     :loading-more="loadingMore"
