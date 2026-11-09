@@ -22,7 +22,7 @@ import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.v
 import TFicheBordereau from './ TFicheBordereau.vue'
 
 
-const titreFenetre = ref('BORDEREAU')
+
 const props = defineProps<{
   isAllBordereau?: boolean 
 }>()
@@ -40,16 +40,16 @@ const showModalFicheBordereau = ref(false)
 const showModal = ref(false)
 const showModalConfirmation = ref(false)
 const quittanceStore = useQuittanceStore()
-//const currentQuittance = computed(()=>quittanceStore.currentQuittance)
+const currentQuittance = quittanceStore.currentQuittance
 const isCession = ecranStore.currentModule ===MODULE_CESSION
 //const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 console.warn(" __________ Bordereaux.vue _________")
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
 console.log(" ----- ecranStore.currentEcran:",ecranStore.currentEcran)
 console.log(" ----- isCession:",isCession)
-
-//titreFenetre.value = isEcranBordereau? "QUITTANCES FAC" : "QUITTANCES"
-const quittanceId = quittanceStore.currentQuittance? quittanceStore.currentQuittance.id : 0
+const titreFenetre = ref('BORDEREAU')
+titreFenetre.value =currentQuittance?  "BORDEREAUX QUITTANCE N°"+ currentQuittance.numero : "BORDEREAUX"
+const quittanceId = currentQuittance? currentQuittance.id : 0
 const params = {quittanceId}
 console.log(" ----- params:",params)
 console.warn(" __________________")

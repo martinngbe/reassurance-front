@@ -21,6 +21,7 @@ import { useToast } from '@/composants/toast/useToast.ts'
 import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
 import TToolTip from '@/composants/display/TToolTip.vue'
+import TQuittanceVueSynoptique from './TQuittanceVueSynoptique.vue'
 
 const titreFenetre = ref('QUITTANCES')
 const props = defineProps<{
@@ -31,6 +32,7 @@ const ecranStore = useEcransStore()
 const policeStore = usePoliceStore()
 const currentPolice = computed(()=> policeStore.currentPolice)
 const quittanceStore = useQuittanceStore()
+const currentQuittance = computed(()=>quittanceStore.currentQuittance)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -40,7 +42,7 @@ const emit = defineEmits<{
 }>()
 const showModalFicheQuittance = ref(false)
 const showModalModification = ref(false)
-
+const showModaleVueSynotique = ref(false)
 
 const policeId = currentPolice.value? currentPolice.value.id : null
 const isCession = ecranStore.currentModule ===MODULE_CESSION
@@ -102,7 +104,7 @@ const store = useQuittances({
 const { quittances, updateQuittance, deleteQuittance } = store
 
 type QuittanceRow = Quittance & { [key: string]: any }
-const quittanceToEdit = ref<Quittance | null | undefined>(null)
+//const quittanceToEdit = ref<Quittance | null | undefined>(null)
 
 // ==================== COLONNES ====================
 const quittanceColumns = computed(()=>{
@@ -317,10 +319,18 @@ watch(tableSearch, () => {
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
 
-        <TToolTip content="Cliquez pour sélectionner un acteur particulier ..." v-if="!policeId">
-                 <p class="pl-12 text-sm text-primary-800 dark:text-primary-400 italic cursor-pointer">Filtre sur Acteurs ...</p>
+        <TToolTip content="Cliquez pour sélectionner les quittances d'un acteur particulier ..." v-if="!policeId">
+                 <p class="pi pi-filter pl-3 pr-3 cursor-pointer
+                  text-primary-600  dark:text-primary-400 
+           transition-transform duration-200 hover:scale-225"></p>
         </TToolTip>
-       
+        <TToolTip content="Cliquez pour une vue synoptique de la quittance ..." v-if="currentQuittance">
+                 <p class="pi pi-eye pl-3 pr-3 cursor-pointer
+                  text-primary-600  dark:text-primary-400 
+           transition-transform duration-200 hover:scale-225"
+           @click="showModaleVueSynotique=true"
+           ></p>
+        </TToolTip>
       </div>
     </template>
 
@@ -452,6 +462,24 @@ watch(tableSearch, () => {
   <TModal v-model="showModalFicheQuittance" width="50%" >
           <template #default>
                 <TFicheQuittance/>
+          </template>
+  </TModal>
+    <TModal v-model="showModaleVueSynotique"
+     width="95%" height="95%" >
+          <template #header>
+                <p>Vue synoptique de la quittance N° 1236652244</p>
+          </template>
+          <template #default>
+                <TQuittanceVueSynoptique/>
+          </template>
+          <template #footer>
+                <div class="flex justify-between">
+                      <TButton 
+                        variant="solid" 
+                        width="xl"
+                        @click="showModaleVueSynotique=false"
+                        >Fermer</TButton>
+                </div>
           </template>
   </TModal>
   <TModal v-model="showModalModification" :title="titleModal"

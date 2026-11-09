@@ -52,8 +52,8 @@ type CompteRubriqueRow = CompteRubrique & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const compteRubriqueColumns: TableColumn[] = [ 
-  { key: 'isProportionnel',       label: 'Proportionnel',        width: '15%',  minWidth: 150 , align:'center', sortable:true},
-  { key: 'isNonProportionnel',    label: 'Non Proportionnel',    width: '15%',  minWidth: 150 , align:'center', sortable:true},
+  { key: 'isProportionnelle',       label: 'Proportionnel',        width: '15%',  minWidth: 150 , align:'center', sortable:true},
+  { key: 'isNonProportionnelle',    label: 'Non Proportionnel',    width: '15%',  minWidth: 150 , align:'center', sortable:true},
   { key: 'code',                  label: 'Code',                 width: '10%',  minWidth: 150 , sortable:true}, 
   { key: 'partie',                label: 'Partie',               width: '10%',  minWidth: 150 , sortable:true},
   { key: 'libelle',               label: 'Libellé',              width: '50%',  minWidth: 150 , sortable:true}, 
@@ -252,10 +252,10 @@ watch(tableSearch, () => {
     </template>
    
 
-    <template #cell-isProportionnel="{ value }">
+    <template #cell-isProportionnelle="{ value }">
        <IconeValider v-if="value"/><IconeNonValider v-else="value"/>
     </template>    
-    <template #cell-isNonProportionnel="{ value }">
+    <template #cell-isNonProportionnelle="{ value }">
       <IconeValider v-if="value"/><IconeNonValider v-else="value"/>
     </template>
     <template #cell-partie="{ value }">

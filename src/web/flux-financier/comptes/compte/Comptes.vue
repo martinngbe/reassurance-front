@@ -15,11 +15,11 @@ import { useCompteStore } from '@/services/flux-financiers/comptes/compte/compte
 import TDisplayDecimal from '@/composants/utilitaire/TDisplayDecimal.vue'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
-import TTempCompteForm from '../temp-compte/TTempCompteForm.vue'
 import TTempCompte from '../temp-compte/TTempCompte.vue'
 import TButton from '@/composants/forms/TButton.vue'
 import { useTempCompteStore } from '@/services/flux-financiers/comptes/temp-compte/temp-compte.store.ts'
 import { useTempComptes } from '@/services/flux-financiers/comptes/temp-compte/useTempCompte.ts'
+import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -29,6 +29,10 @@ const emit = defineEmits<{
   (e: 'row-click',  compte: any): void
 }>()
 const { success, error, warning, info } = useToast()
+const quittanceStore = useQuittanceStore()
+const currentQuittance= quittanceStore.currentQuittance
+const titreFenetre = ref('COMPTES')
+titreFenetre.value =currentQuittance?  "COMPTES QUITTANCE N°"+ currentQuittance.numero : "BORDEREAUX"
 
 const props = defineProps<{
   masqueAffaireNouvelle?: boolean
@@ -207,7 +211,7 @@ watch(
     :density="tableDensity"
     height="h-full"
     width="w-full"
-    title="Comptes oraires"
+    :title="titreFenetre"
     row-key="id"
     striped
     !selectable

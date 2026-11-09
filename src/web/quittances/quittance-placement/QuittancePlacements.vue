@@ -30,6 +30,8 @@ const currentPolice = computed(()=> policeStore.currentPolice)
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=> quittanceStore.currentQuittance)
 const quittancePlacementStore = useQuittancePlacementStore()
+const titreFenetre = ref('PLACEMENTS')
+titreFenetre.value =currentQuittance.value?  "PLACEMENTS QUITTANCE N°"+ currentQuittance.value.numero : "BORDEREAUX"
 
 
 // ✅ AJOUT : composable de cumul des taux
@@ -243,7 +245,7 @@ watch(tableSearch, () => {
     :density="tableDensity"
     height="h-full"
     width="w-full"
-    title="Placements"
+    :title="titreFenetre"
     row-key="id"
     striped
     !selectable

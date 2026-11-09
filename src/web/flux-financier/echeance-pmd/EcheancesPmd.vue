@@ -22,7 +22,7 @@ import TCumulIndicator from '@/composants/utilitaire/ TCumulIndicator.vue'
 import TCumulBadge from '@/composants/utilitaire/TCumulBadge.vue'
 
 
-const titreFenetre = ref('échéances PMD')
+//const titreFenetre = ref('échéances PMD')
 const props = defineProps<{
   isAllEcheancePmd?: boolean 
 }>()
@@ -41,6 +41,9 @@ const showModal = ref(false)
 const showModalConfirmation = ref(false)
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=>quittanceStore.currentQuittance)
+const titreFenetre = ref('ECHéANCE PMD')
+titreFenetre.value =currentQuittance.value?  "ECHéANCES PMD QUITTANCE N°"+ currentQuittance.value.numero : "ECHéANCE PMD"
+
 const isCession = ecranStore.currentModule ===MODULE_CESSION
 const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 console.warn(" __________ EcheancesPmd.vue _________")

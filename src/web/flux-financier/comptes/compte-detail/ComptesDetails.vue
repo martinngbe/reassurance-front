@@ -299,15 +299,7 @@ watch(tableSearch, () => {
 
   
   </TTable>
-    <!-- Modale du formulaire -->
-  <!--TModal v-model="showModal" :title="titleModal" >
 
-    <TCompteDetailForm 
-    :temp-compte-detail="compteDetailToEdit"    
-      @success="onFormSuccess"
-      @cancel="closeModal"
-    />
-  </TModal-->
         <!-- Modale du formulaire -->
       <TModal v-model="showModalfirmation" 
           title="Demande de confirmation"           >

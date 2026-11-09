@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 
 
 export const useAuthStore = defineStore('authStore', () => {
+   const storage =  sessionStorage
   // ==================== STATE ====================
   const currentUserAuth = ref<Utilisateur | null>(null)
   // ==================== GETTERS ====================
@@ -27,16 +28,23 @@ export const useAuthStore = defineStore('authStore', () => {
      
   }
   }
-  const setUserId = async(id: number | null) => {
-   // currentUserAuthId.value = id
+  const setUserId = async(id: number | null) => {  
    if(!id){
+    storage.removeItem("user" )
     clearSelection()
     return
    }
+    storage.setItem("user", String(id) )
     await userFromDB(id)
     console.log(' ______ auth.store.selectUserAuth  currentUserAuth.value:',currentUserAuth.value)
   }
-
+  const getUserId =()=> {
+     const resp = sessionStorage.getItem("user")
+     return resp? Number(resp) :null
+  }
+  const refreshUserId =()=> {
+     setUserId(getUserId())
+  }
   const clearSelection = () => {
     currentUserAuth.value = null
   }
@@ -46,6 +54,7 @@ export const useAuthStore = defineStore('authStore', () => {
     currentUserAuth,
     currentUserAuthId,
     setUserId,
+    refreshUserId,
     selectUserAuth,
     clearSelection,
   }

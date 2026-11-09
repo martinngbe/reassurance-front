@@ -39,11 +39,12 @@ watch(
 const  serverError =  ref("")
 
 const authStore = useAuthStore()
-const  currentUserAuth = computed(()=>authStore.currentUserAuth) 
-const userId = authService.getUserId()
-await authStore.setUserId(userId)
-authenticated.value = !!authService.getToken()
 
+authenticated.value = !!authService.getToken()
+if(authenticated.value) 
+authStore.refreshUserId() 
+
+console.log(' ______authenticated.value:',authenticated.value)
 async function handleLogin(payalod:LoginPayload) {
   
   const response = await  authService.login(payalod)
@@ -54,21 +55,21 @@ async function handleLogin(payalod:LoginPayload) {
   authenticated.value = !!token
   const responseUser =await  utilisateurApi.getById(response.utilisateurId)
   if(responseUser.success){
-      authService.saveUserId(response.utilisateurId)
-      authStore.selectUserAuth(responseUser.data )
+      authStore.setUserId(response.utilisateurId)
+      //authStore.selectUserAuth(responseUser.data )
   }else {
     
   }
          
 
-  console.log(' ______ currentUserAuth:',currentUserAuth)
+ // console.log(' ______ currentUserAuth:',currentUserAuth)
 }
 
 function handleLogout() {
   authenticated.value = false
   authService.logout()
 }
-// Active la détection automatique de la connexion
+
 useNetworkStatus()
 </script>
 
