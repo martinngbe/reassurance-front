@@ -26,9 +26,7 @@ import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.v
 const ecransStore = useEcransStore()
 const currentEcran = computed(()=> ecransStore.currentEcran)
 const isEcranTraite = computed(()=> currentEcran.value=== ECRAN_TRAITE)
-//const isEcranFacultative = computed(()=> currentEcran.value=== ECRAN_FACULTATIVE)
 const isModuleCession = computed(()=> ecransStore.currentModule === MODULE_CESSION)
-//const currenteModule = computed(()=> ecransStore.currenteModule)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -42,7 +40,6 @@ const emit = defineEmits<{
 }>()
 const closeModal = () => {
   showModal.value = false
-  //policeToEdit.value = null
 }
 
 // ==================== HANDLERS CRUD ====================
@@ -50,12 +47,7 @@ const onFormSuccess = async (message: string) => {
   closeModal()
   success(message, 'Succès')
   showModalModification.value = false
-  
-  // ✅ Rafraîchir la liste des polices
   await polices.refresh()
-  
-  // ✅ La police courante est déjà mise à jour via updateCurrentPolice
-  // Pas besoin de clearSelection si on veut garder la police sélectionnée
 }
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
@@ -68,6 +60,7 @@ const params = computed<PaginationParams>(() => ({
 const  assureId = currentAssure.value?currentAssure.value.id : 0
 const {polices , refresh: refreshPolices, updatePolice , deletePolice } =
  usePolices(isEcranTraite.value? null: assureId,isModuleCession.value ,params)
+const titreFenetre = computed(()=>isEcranTraite.value? "Polices traités":"Polices assurés")
 
 type PoliceRow = Police & { [key: string]: any }
 const tempPoliceStore = useTempPoliceStore()
@@ -90,7 +83,7 @@ const policeColumns: TableColumn[] = [
   { key: 'natureOffre',           label: 'Nature Offre',width: 400,  minWidth: 200, },
  
 
- { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
+  { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
   { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
   { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
   { key: 'sousBranche',           label: 'Sous Branche',     width: 500,  minWidth: 500,  },
@@ -104,14 +97,11 @@ const policeRows = computed(() => polices.items.value)
 const tableLoading = computed(() => polices.isLoading.value)
 const loadingMore = computed(() => polices.loadingMore.value)
 const hasMore = computed(() => polices.hasMore.value)
-// ✅ Correction ici : on utilise .value?.total
 const totalItems = computed(() => polices.pageInfo.value?.total ?? 0)
 
 
 const isAfficheSearch = computed(() => tableSearch.value==""? totalItems.value > PAGE_SIZE : true)
 const isLigneSelectionnee = computed(() => selectedPolices.value.length > 0)
-//const selectedPolices = ref<(string | number)[]>([])
-// ✅ REMPLACER le ref local par un computed lié au policesStore
 const selectedPolices = computed({
   get: () => policeStore.selectedPolices,
   set: (value) => policeStore.setSelectedPolices(value)
@@ -126,11 +116,9 @@ async function handleLoadMore() {
   if (loadingMore.value || !hasMore.value) return
   await polices.loadMore()
 }
-
 // ==================== MODALES ====================
 const showModal = ref(false)
 const showModalModification = ref(false)
-
 const showModalPolice = ref(false)
 const titleModal = ref( currentAssure.value?
  `AFFAIRE NOUVELLE : ${currentAssure.value.raisonSociale.toUpperCase()}` :
@@ -145,14 +133,11 @@ const openAffaireNouvelle =()=>{
   tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(false)
 }
 const openEdit = (police: PoliceRow) => {
-  // ✅ Sélectionner via le store (plus besoin de policeToEdit)
   policeStore.selectPolice(police as Police)
   titleModal.value = 'Modifier police'
   showModalModification.value = true
 }
 const handleSupprimer = async () => {
-  console.log("----- Polices.handleSupprimer ------")
-  console.log("selectedPolices.value.length:",selectedPolices.value.length)
   if (selectedPolices.value.length === 0) {
     warning('Veuillez sélectionner un domaineActivite',"Attention")
     return
@@ -160,15 +145,11 @@ const handleSupprimer = async () => {
   
   const policeId = selectedPolices.value[0]
   console.log("Polices.handleSupprimer policeId:",policeId)
-  //policeToEdit.value = policeRows.value.find((u:any) => u.id === policeId)
-  // console.log("policeToEdit.value:",policeToEdit.value)
-  //if (!policeToEdit.value) return
   showModalConfirmation.value=true 
   
 }
 const closeModalModification = () => {
   showModalModification.value = false
-  //policeToEdit.value = null
 }
 const handleModifier = () => {
   if (selectedPolices.value.length === 0) {
@@ -198,14 +179,12 @@ const handleConfirmeSuppression = async () => {
 const openFichePolice =()=>{  
   showModalPolice.value=true
 }
-const onActualisation =()=>{ 
-  console.log(" -- Polices.onActualisation -- ") 
+const onActualisation =()=>{  
   polices.refresh() 
 }
 watch(
   isAffaireNouvelleExecutee,
   (newValue) => {
-     console.warn("isAffaireNouvelleExecutee newValue:",newValue)
      if (newValue) {
       showModal.value=false
       polices.refresh()      
@@ -236,7 +215,7 @@ watch(tableSearch, () => {
     :density="tableDensity"
     height="h-full"
     width="w-full"
-    title="Polices"
+    :title="titreFenetre"
     row-key="id"
     striped
     !selectable

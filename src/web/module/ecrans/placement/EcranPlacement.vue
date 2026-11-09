@@ -37,7 +37,7 @@ watch(currentQuittance, () => {
     :show-left="false"
     >
     <template #default>
-         <Quittances :is-placement-quittance="true" />
+         <Quittances  />
     </template>
     <template #footer>
            <TQuittancePlacement v-if="currentQuittance && !isPatientez" />

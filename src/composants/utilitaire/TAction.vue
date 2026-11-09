@@ -1,7 +1,8 @@
 <script  setup lang="ts">
 import TToolTip from '@/composants/display/TToolTip.vue';
+import { computed } from 'vue';
 
-defineProps<{ 
+const props = defineProps<{ 
   activeImpression?: boolean
   activeNouveau?: boolean
   activeModifier?: boolean
@@ -29,14 +30,14 @@ const emit = defineEmits<{
   (e: 'imprimer'): void
   (e: 'actualiser') : void
 }>()
-
+ const nouveauContente = computed(()=> props.contentNouveau?? "Nouveau" )
 </script>
 
 <template>
   <div 
     class="flex flex-wrap gap-4 sm:gap-3 p-3 sm:p-4  transition-colors duration-300"
   >
-    <TToolTip :content= "contentNouveau?? 'Nouveau' " position="bottom" v-if="!masqueNouveau">
+    <TToolTip :content=nouveauContente position="bottom" v-if="!masqueNouveau">
            
         <i class="pi pi-plus pl-3 pr-3 cursor-pointer 
            transition-transform duration-200 hover:scale-225" 

@@ -70,6 +70,11 @@ const menus: MenuItem[] = [
     label: 'Compte Rubrique',
     icon: 'pi pi-dollar',
   },
+  {
+    id: 'compteType',
+    label: 'Compte Type',
+    icon: 'pi pi-dollar',
+  },
     {
     id: 'natureOffre',
     label: 'Nature Offre',

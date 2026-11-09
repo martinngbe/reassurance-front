@@ -2,12 +2,12 @@
 import { computed, ref } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FieldConfig } from '@/composants/forms/generic-form/types-form'
-import type { CompteRubrique } from '@/services/flux-financiers/compte-rubrique/compte-rubrique';
-import { useCompteRubriques } from '@/services/flux-financiers/compte-rubrique/useCompteRubrique';
+import { useCompteTypes } from '@/services/flux-financiers/comptes/compte-type/useCompteType';
+import type { CompteType } from '@/services/flux-financiers/comptes/compte-type/compte-type';
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps<{
-  compteRubrique?: CompteRubrique | null
+  compteType?: CompteType | null
 }>()
 
 const emit = defineEmits<{
@@ -19,18 +19,15 @@ const emit = defineEmits<{
 const brancheFields: FieldConfig[] = [
   { key: 'code',                  label: 'Code',        type: 'text', required: true, placeholder: 'code' },
   { key: 'libelle',               label: 'Libellé',     type: 'text', required: true, placeholder: '...' },
-  { key: 'partie',                label: 'Partie',                type: 'text', required: true, placeholder: '...' },
-  { key: 'isNonProportionnel',    label: 'Non Proportionnel',     type: 'checkbox', },
-  { key: 'isProportionnel',       label: 'Proportionnel',         type: 'checkbox' },
 ]
 
 // ==================== ÉTAT ====================
-const isEditing = computed(() => !!props.compteRubrique?.id)
+const isEditing = computed(() => !!props.compteType?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
 const formData = ref<Record<string, any>>(
-  props.compteRubrique
-    ? { ...props.compteRubrique }
+  props.compteType
+    ? { ...props.compteType }
     : Object.fromEntries(
         brancheFields.map((f) => [f.key, f.type === 'checkbox' ? true : '']),
       ),
@@ -39,11 +36,11 @@ const formData = ref<Record<string, any>>(
 const errorMessage = ref<string | null>(null)
 
 // ==================== API ====================
-const { createCompteRubrique, updateCompteRubrique } = useCompteRubriques()
+const { createCompteType, updateCompteType } = useCompteTypes()
 
 const loading = computed(
   () =>
-    createCompteRubrique.isPending.value || updateCompteRubrique.isPending.value,
+    createCompteType.isPending.value || updateCompteType.isPending.value,
 )
 // ✅ Helper pour construire le payload commun (évite la duplication)
 function buildPayload(data: Record<string, any>) {
@@ -62,15 +59,15 @@ const handleSubmit = async (data: Record<string, any>) => {
   console.info(" ----- TBrancheForm.handleSubmit  data:",data)
   console.info("data:",data)
   try {
-    if (isEditing.value && props.compteRubrique?.id) {
-      await updateCompteRubrique.mutateAsync({
-        id: props.compteRubrique.id,
+    if (isEditing.value && props.compteType?.id) {
+      await updateCompteType.mutateAsync({
+        id: props.compteType.id,
         data:buildPayload(data),
       })
-      emit('success', 'Compte Rubrique modifié avec succès')
+      emit('success', 'Compte Type modifié avec succès')
     } else {
-      await createCompteRubrique.mutateAsync(buildPayload(data))
-      emit('success', 'Compte Rubrique créé avec succès')
+      await createCompteType.mutateAsync(buildPayload(data))
+      emit('success', 'Compte Type créé avec succès')
     }
   } catch (err: any) {
     console.error('Erreur sauvegarde:', err)

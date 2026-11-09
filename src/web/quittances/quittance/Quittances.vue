@@ -18,8 +18,9 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { ECRAN_BORDEREAU, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
+import TToolTip from '@/composants/display/TToolTip.vue'
 
 const titreFenetre = ref('QUITTANCES')
 const props = defineProps<{
@@ -46,6 +47,8 @@ const isCession = ecranStore.currentModule ===MODULE_CESSION
 const isEcranBordereau = ecranStore.currentEcran ===ECRAN_BORDEREAU
 const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 const isEcranEcheancePmd = ecranStore.currentEcran ===ECRAN_ECHEANCE_PMD
+const isEcranPlacement = ecranStore.currentEcran ===ECRAN_PLACEMENT
+const isEcranCompte = ecranStore.currentEcran ===ECRAN_COMPTE
 console.warn(" __________ Quittances.vue _________")
 console.log(" ----- currentPolice.value:",currentPolice.value)
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
@@ -53,18 +56,22 @@ console.log(" ----- ecranStore.currentEcran:",ecranStore.currentEcran)
 console.log(" ----- policeId:",policeId)
 console.log(" ----- isCession:",isCession)
 console.log(" ----- isEcranBordereau:",isEcranBordereau)
+console.log(" ----- isEcranPlacement:",isEcranPlacement)
+console.log(" ----- isEcranCompte:",isEcranCompte)
 // ==================== API + CRUD ====================
-
-
 
 // ============================================
 // 2. LOGIQUE MÉTIER EXISTANTE (inchangée)
 // ============================================
-const policeIdVal = isEcranBordereau ||  isEcranEcheancePmd ? null : toValue(policeId)
-const isFacVal    = isEcranBordereau ? true : null
+const policeIdVal = isEcranBordereau || isEcranPlacement || isEcranEcheancePmd ? null : toValue(policeId)
+const isFacVal    = isEcranBordereau || isEcranPlacement? true : // Quittances FAC  
+                    isEcranCompte? false :  // Quittances Traités
+                     null  // Indifférent
+
 const isProportionnelleVal    =  isEcranEcheancePmd ? false : null
-titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" :
-                    isEcranEcheancePmd?  "QUITTANCES NON PROPORTIONNELLES" : "QUITTANCES"
+titreFenetre.value = isEcranBordereau || isEcranPlacement? "QUITTANCES FAC" :
+                     isEcranEcheancePmd?  "QUITTANCES NON PROPORTIONNELLES" : 
+                     isEcranCompte?       "QUITTANCES TRAITéS" : "QUITTANCES"
 
 // ============================================
 // 3. COMPUTED POUR LA PAGINATION + RECHERCHE
@@ -302,13 +309,18 @@ watch(tableSearch, () => {
     @load-more="handleLoadMore"
   >
     <template #caption-extra>
-      <div class="flex justify-between" v-if="isAfficheSearch">
-        <input
+      <div class="flex justify-between">
+        <input  v-if="isAfficheSearch"
           v-model="tableSearch"
           type="text"
           placeholder="Rechercher…"
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
+
+        <TToolTip content="Cliquez pour sélectionner un acteur particulier ..." v-if="!policeId">
+                 <p class="pl-12 text-sm text-primary-800 dark:text-primary-400 italic cursor-pointer">Filtre sur Acteurs ...</p>
+        </TToolTip>
+       
       </div>
     </template>
 

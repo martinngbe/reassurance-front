@@ -3,6 +3,7 @@
 import TAlert from '@/composants/display/TAlert.vue';
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
+import TSelectionnezQuittance from '@/composants/utilitaire/TSelectionnezQuittance.vue';
 import { usePoliceStore } from '@/services/polices/police/police.store';
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store';
 import Bordereaux from '@/web/flux-financier/bordereau/Bordereaux.vue';
@@ -43,11 +44,8 @@ watch(currentQuittance, () => {
     <template #footer>
            <Bordereaux v-if="currentQuittance && !isPatientez" />
            <TPatientez v-else-if="isPatientez"/> 
-           <div v-else class="flex w-full  p-4 h-full items-center justify-center">                 
-                  <TAlert variant="info">
-                      <p class="text-2xl font-bold">Selectionnez une quittance svp..</p> 
-                  </TAlert> 
-            </div>
+           <TSelectionnezQuittance v-else/>
+          
     </template>
 
 

@@ -20,9 +20,9 @@ const menus: MenuItem[] = [
   { id: ECRAN_FACULTATIVE,          label: 'Facultative'},
   { id: ECRAN_TRAITE,               label: 'Traité',},
   { id: ECRAN_PLACEMENT,            label: 'Placement' },
-  { id: ECRAN_BORDEREAU,            label: 'Borderau réçu' },
+  { id: ECRAN_BORDEREAU,            label: 'Bordereau réçu' },
   { id: ECRAN_ECHEANCE_PMD,         label: 'Echéance PMD'},
-  { id: ECRAN_COMPTE,               label: 'Compte' }
+  { id: ECRAN_COMPTE,               label: 'Compte réçu' }
 
 ];
 

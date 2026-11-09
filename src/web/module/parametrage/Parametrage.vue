@@ -16,7 +16,8 @@ const moduleComponents: Record<string, any> = {
   region: defineAsyncComponent(() => import('@//web/referentiel/region/TRegion.vue')),
   domaineActivite: defineAsyncComponent(() => import('@//web/referentiel/domaine-activite/TDomaineActivite.vue')),
   devise: defineAsyncComponent(() => import('@//web/referentiel/devise/TDevise.vue')),
-  compteRubrique: defineAsyncComponent(() => import('@//web/flux-financier/compte-rubrique/TCompteRubrique.vue')),
+  compteRubrique: defineAsyncComponent(() => import('@//web/flux-financier/comptes/compte-rubrique/TCompteRubrique.vue')),
+  compteType: defineAsyncComponent(() => import('@//web/flux-financier/comptes/compte-type/TCompteType.vue')),
   
   natureOffre: defineAsyncComponent(() => import('@/web/referentiel/nature-offre/TNatureOffre.vue')),
   naturePlacement: defineAsyncComponent(() => import('@/web/referentiel/nature-placement/TNaturePlacement.vue')),

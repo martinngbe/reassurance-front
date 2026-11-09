@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
-import type { CompteRubrique } from '@/services/flux-financiers/compte-rubrique/compte-rubrique';
+import type { CompteRubrique } from '@/services/flux-financiers/comptes/compte-rubrique/compte-rubrique.ts';
 import { onUnmounted, ref } from 'vue';
 import Bordereaux from './Bordereaux.vue';
 

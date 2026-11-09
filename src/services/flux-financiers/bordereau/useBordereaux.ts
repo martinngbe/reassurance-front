@@ -54,6 +54,7 @@ export function useBordereaux(options: UseBordereausOptions = {}) {
         page,
         limit,
       })
+  
       return response as PaginatedResponse<Bordereau>
     },
   })
