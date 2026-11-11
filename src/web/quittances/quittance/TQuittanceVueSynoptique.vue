@@ -11,10 +11,11 @@ import TTabPanel from '@/composants/tab/TTabPanel.vue';
 import QuittancePlacements from '../quittance-placement/QuittancePlacements.vue';
 import EcheancesPmd from '@/web/flux-financier/echeance-pmd/EcheancesPmd.vue';
 import Comptes from '@/web/flux-financier/comptes/compte/Comptes.vue';
+import QuittanceJsonNode from '@/web/quittances/quittance/QuittanceJsonNode.vue';
 
 
 
-const active = ref('bordereau')
+const active = ref('accueil')
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=>quittanceStore.currentQuittance)
 const policeQuittance = computed(()=>currentQuittance.value?.police)
@@ -47,7 +48,7 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
 
            <template #default>
                 <TTab v-model="active" variant="underline" size="md">
-                            <!--TTabItem value="accueil"      label="Accueil"    /-->
+                            <TTabItem value="accueil"      label="Accueil"    />
                             <TTabItem value="bordereau"    label="Bordereau"  v-if="isFacultative"/>
                             <TTabItem value="placement"    label="Placement" />
                         
@@ -60,7 +61,7 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
 
                             <template #panels>
                                             <TTabPanel value="accueil">
-                                           
+                                                    <QuittanceJsonNode class="h-full w-full"/>
                                             </TTabPanel>
                                             <TTabPanel value="bordereau" v-if="isFacultative">
                                                 <Bordereaux />
