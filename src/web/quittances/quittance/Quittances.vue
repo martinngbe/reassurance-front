@@ -66,12 +66,13 @@ console.log(" ----- isEcranCompte:",isEcranCompte)
 // 2. LOGIQUE MÉTIER EXISTANTE (inchangée)
 // ============================================
 const policeIdVal = isEcranBordereau || isEcranPlacement || isEcranEcheancePmd ? null : toValue(policeId)
-const isFacVal    = isEcranBordereau || isEcranPlacement? true : // Quittances FAC  
+const isFacVal    = isEcranBordereau? true : // Quittances FAC  
                     isEcranCompte? false :  // Quittances Traités
                      null  // Indifférent
 
 const isProportionnelleVal    =  isEcranEcheancePmd ? false : null
-titreFenetre.value = isEcranBordereau || isEcranPlacement? "QUITTANCES FAC" :
+titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" :
+                     isEcranPlacement ? "QUITTANCES CESSION" :
                      isEcranEcheancePmd?  "QUITTANCES NON PROPORTIONNELLES" : 
                      isEcranCompte?       "QUITTANCES TRAITéS" : "QUITTANCES"
 

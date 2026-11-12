@@ -90,7 +90,7 @@ const formatPercent = (value: number | undefined | null) => {
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Avis d'échéance</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.avisEcheance) }}</td>
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="isProportionnelle">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Nbre Échéance PMD</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.nombreEcheancePmd, 0) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Sinistre au comptant</td>
@@ -214,7 +214,7 @@ const formatPercent = (value: number | undefined | null) => {
               Autres & Relations
             </th>
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="isProportionnelle">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Aliment</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.aliment) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Mouvement</td>

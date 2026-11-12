@@ -17,108 +17,91 @@ const emit = defineEmits<{
   delete: []
   back: []
 }>()
-/*
-// Configuration des champs pour l'affichage
-const fields = computed<FormField[]>(() => [
-///////////////////////////// 
-////// Capitaux 
-/////////////////////////////
-  { key: 'capitaux',     label: 'Capitaux',     type: 'number' , size:'2xl', helpText:"Capitaux à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'lci',          label: 'LCI',          type: 'number', size:'2xl' , helpText:"LCI à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'smp',          label: 'SMP',          type: 'number' , size:'2xl', helpText:"SMP à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'limite',       label: 'Limite',       type: 'number' , size:'2xl', helpText:"Limite à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'retention',    label: 'Retention',    type: 'number' , size:'2xl', helpText:"Retention à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'conservation', label: 'Conservation', type: 'number' , size:'2xl', helpText:"Conservation à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-  { key: 'capacite',     label: 'Capacite',     type: 'number' , size:'2xl', helpText:"Capacite à 100%",
-        numberOptions: {
-          decimals: 2,
-          formatOptions: { style: 'decimal' },
-          returnType: 'number',
-        }
-  }, 
-])
-*/
 const tempPoliceStore = useTempPoliceStore()
-const curentNatureOffre = computed(()=> tempPoliceStore.currentTempPolice?.natureOffre)
+const natureOffre =  tempPoliceStore.currentTempPolice?.natureOffre
 
-// 1. Configuration commune pour les nombres (déclarée en dehors du computed pour optimiser les performances)
-const baseNumberOptions = {
-  decimals: 2,
-  formatOptions: { style: 'decimal' as const },
-  returnType: 'number' as const,
-}
 
-// 2. Tableau contenant uniquement les données uniques (la clé et le label)
-const fieldsConfig = computed(()=>{
-          const localFieldsConfig = [
-            { key: 'capitaux', label: 'Capitaux' },
-            { key: 'lci', label: 'LCI' },
-            { key: 'smp', label: 'SMP' },
-           
-          ]
-          // 2. On ajoute les champs conditionnels avec de simples 'if'
-          if (curentNatureOffre.value && !curentNatureOffre.value.isProportionnelle) {
-            // Offre Non proportionnelle
-            localFieldsConfig.push(
-               { key: 'capacite', label: 'Capacite' },
-               { key: 'retention', label: 'Retention' },
-            /*
-              { key: 'limite', label: 'Limite' },              
-              { key: 'conservation', label: 'Conservation' },
-            */
-            );
-          }
-
-          return localFieldsConfig
+// ✅ Helper pour éviter de répéter la configuration des champs numériques
+const createNumberField = (key: string, label: string): FormField => ({
+  key,
+  label,
+  type: 'number',
+  size: 'xl',
+  helpText: `${label} à 100%`,
+  numberOptions: {
+    decimals: 2,
+    formatOptions: { style: 'decimal' },
+    returnType: 'number',
+    min: 0,        // 👈 Prix minimum = 0
+    max: 999999999999999.99, // 👈 Prix maximum
+  },
 })
 
-// 3. Génération dynamique de tes FormField
-const fields = computed<FormField[]>(() => 
-  fieldsConfig.value.map(({ key, label }) => ({
-    key,
-    label,
-    type: 'number',
-    size: '2xl',
-    helpText: `${label} à 100%`,
-    numberOptions: baseNumberOptions,
-  }))
-)
+const tempQuittanceFields = computed<FormField[]>(() => {
+  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+  const allFields: FormField[] = [
+  
+    { section: 'Capitaux' },
+    createNumberField( 'capitaux', 'Capitaux'),
+    createNumberField( 'lci',  'LCI'),
+    createNumberField( 'smp',  'SMP'),
+    createNumberField( 'limite',  'Limite'),
+    createNumberField( 'aliment',  'Aliment'),
+  
+    createNumberField( 'retention',  'Retention'),
+    createNumberField( 'conservation',  'Conservation'),
+    createNumberField( 'capacite',  'Capacité'),
+  ]
+
+  // 2. Champs à retirer selon l'état courant
+  // ✅ Utiliser policeQuittance.value (maintenant réactif)
+ // const isOffreProportionnelle =natureOffre?.isProportionnelle
+  
+  const isEdp =natureOffre?.isEdp   
+  const isFacultative =natureOffre?.isFacultative
+  const isFacObligatoire =natureOffre?.isFacObligatoire
+  const isQuotePart =natureOffre?.isQuotePart
+  const isXs =natureOffre?.isXs
+
+  const excludedKeys = new Set<string>()
+  if (isEdp) {
+    // OFFRE EDP : retirer les champs Non-Proportionnelle
+    console.log('---- OFFRE EDP isEdp :',isEdp)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite'),  
+    excludedKeys.add( 'retention'),
+    excludedKeys.add( 'capacite')   
+  }else if(isFacObligatoire || isQuotePart) {
+    console.log('---- OFFRE FACOB  QP  isFacObligatoire :',isFacObligatoire)
+    console.log('---- OFFRE FACOB  QP  isQuotePart :',isQuotePart)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite'),  
+    excludedKeys.add( 'retention') 
+    excludedKeys.add( 'conservation')
+  }else if (isXs){
+    console.log('---- OFFRE EDP isEdp :',isEdp)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite')//,  
+   // excludedKeys.add( 'retention'),
+   // excludedKeys.add( 'capacite')  
+  }
+
+  console.log('excludedKeys:', excludedKeys.values)
+
+  // 3. Application du filtre
+  if (excludedKeys.size === 0) return allFields
+
+  return allFields.filter(
+    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+  )
+})
+
 // Données formatées pour l'affichage
 const formattedQuittance = computed(() => {
   return {
@@ -133,7 +116,7 @@ const formattedQuittance = computed(() => {
 <template>
   <GenericDetailView
     :model-value="formattedQuittance"
-    :fields="fields"
+    :fields="tempQuittanceFields"
     :show-header="props.showHeader"
     :loading="loading"
     :columns="props.colums?? 2"

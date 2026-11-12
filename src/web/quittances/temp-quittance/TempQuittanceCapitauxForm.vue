@@ -17,10 +17,9 @@ const tempPoliceStore = useTempPoliceStore()
 const tempQuittanceStore = useTempQuittanceStore()
 
 const currentMouvement = computed(() => mouvementStore.currentMouvement)
-const currentTempPolice = computed(() => tempPoliceStore.currentTempPolice)
-const currentNatureOffre = computed(() => tempPoliceStore.currentTempPolice?.natureOffre)
 const currentTempQuittance = computed(() => tempQuittanceStore.currentTempQuittance)
-
+const currentTempPolice = tempPoliceStore.currentTempPolice
+const natureOffre = currentTempPolice?.natureOffre
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
@@ -29,7 +28,7 @@ const emit = defineEmits<{
 console.log('==================================')
 console.log('TempQuittanceCapitauxForm.vue')
 console.log('==================================')
-console.log('currentTempPolice.value    :', currentTempPolice.value)
+console.log('currentTempPolice    :', currentTempPolice)
 console.log('currentTempQuittance.value :', currentTempQuittance.value)
 console.log('currentMouvement.value     :', currentMouvement.value)
 console.log('==================================')
@@ -53,41 +52,105 @@ const createNumberField = (key: string, label: string): FormField => ({
 })
 
 // ✅ Génération dynamique et lisible des champs
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. Champs de base (toujours présents)
-  const fields: FormField[] = [
-    createNumberField('capitaux', 'Capitaux'),
-    createNumberField('lci', 'LCI'),
-    createNumberField('smp', 'SMP'),
-  ]
-  // 2. Champs conditionnels (si l'offre n'est pas proportionnelle)
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. Champs de base (toujours présents)
+//   const fields: FormField[] = [
+//     createNumberField('capitaux', 'Capitaux'),
+//     createNumberField('lci', 'LCI'),
+//     createNumberField('smp', 'SMP'),
+//   ]
+//   // 2. Champs conditionnels (si l'offre n'est pas proportionnelle)
   
-  if(currentNatureOffre.value)  {
-            if ( currentNatureOffre.value.isEdp) {
-                fields.push(
-                  createNumberField('retention', 'Rétention'),
-                  createNumberField('aliment', 'Aliment'),
-                )
-              }
-              if ( currentNatureOffre.value.isXs) {
-                fields.push(
-                  createNumberField('capacite', 'Portée'),
-                  createNumberField('retention', 'Franchise'),
-                )
-              }
-              if (
-                currentNatureOffre.value.isFacObligatoire || 
-                currentNatureOffre.value.isQuotePart
-              ) {
-                fields.push(
-                  createNumberField('aliment', 'Aliment'),
-                  createNumberField('capacite', 'Capacité'),
-                )
-              }
+//   if(currentNatureOffre.value)  {
+//             if ( currentNatureOffre.value.isEdp) {
+//                 fields.push(
+//                   createNumberField('retention', 'Rétention'),
+//                   createNumberField('aliment', 'Aliment'),
+//                 )
+//               }
+//               if ( currentNatureOffre.value.isXs) {
+//                 fields.push(
+//                   createNumberField('capacite', 'Portée'),
+//                   createNumberField('retention', 'Franchise'),
+//                 )
+//               }
+//               if (
+//                 currentNatureOffre.value.isFacObligatoire || 
+//                 currentNatureOffre.value.isQuotePart
+//               ) {
+//                 fields.push(
+//                   createNumberField('aliment', 'Aliment'),
+//                   createNumberField('capacite', 'Capacité'),
+//                 )
+//               }
 
-  }//if(currentNatureOffre.value) 
+//   }//if(currentNatureOffre.value) 
 
-  return fields
+//   return fields
+// })
+const tempQuittanceFields = computed<FormField[]>(() => {
+  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+  const allFields: FormField[] = [
+  
+    { section: 'Capitaux' },
+    createNumberField( 'capitaux', 'Capitaux'),
+    createNumberField( 'lci',  'LCI'),
+    createNumberField( 'smp',  'SMP'),
+    createNumberField( 'limite',  'Limite'),
+    createNumberField( 'aliment',  'Aliment'),
+  
+    createNumberField( 'retention',  'Retention'),
+    createNumberField( 'conservation',  'Conservation'),
+    createNumberField( 'capacite',  'Capacité'),
+  ]
+
+  // 2. Champs à retirer selon l'état courant
+  // ✅ Utiliser policeQuittance.value (maintenant réactif)
+ // const isOffreProportionnelle =natureOffre?.isProportionnelle
+  
+  const isEdp =natureOffre?.isEdp   
+  const isFacultative =natureOffre?.isFacultative
+  const isFacObligatoire =natureOffre?.isFacObligatoire
+  const isQuotePart =natureOffre?.isQuotePart
+  const isXs =natureOffre?.isXs
+
+  const excludedKeys = new Set<string>()
+  if (isEdp) {
+    // OFFRE EDP : retirer les champs Non-Proportionnelle
+    console.log('---- OFFRE EDP isEdp :',isEdp)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite'),  
+    excludedKeys.add( 'retention'),
+    excludedKeys.add( 'capacite')   
+  }else if(isFacObligatoire || isQuotePart) {
+    console.log('---- OFFRE FACOB  QP  isFacObligatoire :',isFacObligatoire)
+    console.log('---- OFFRE FACOB  QP  isQuotePart :',isQuotePart)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite'),  
+    excludedKeys.add( 'retention') 
+    excludedKeys.add( 'conservation')
+  }else if (isXs){
+    console.log('---- OFFRE EDP isEdp :',isEdp)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite')//,  
+   // excludedKeys.add( 'retention'),
+   // excludedKeys.add( 'capacite')  
+  }
+
+  console.log('excludedKeys:', excludedKeys.values)
+
+  // 3. Application du filtre
+  if (excludedKeys.size === 0) return allFields
+
+  return allFields.filter(
+    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+  )
 })
 
 // ==================== LOGIQUE FORMULAIRE ====================
@@ -139,7 +202,7 @@ function extractId(value: any): number | undefined {
 // ✅ Helper pour construire le payload commun (évite la duplication)
 function buildPayload(data: Record<string, any>) {
    const mouvementId = data.mouvementId || currentMouvement.value?.id
-   const policeId = data.policeId || currentTempPolice.value?.id
+   const policeId = data.policeId || currentTempPolice?.id
   return {
           mouvementId,
           capitaux: data.capitaux,

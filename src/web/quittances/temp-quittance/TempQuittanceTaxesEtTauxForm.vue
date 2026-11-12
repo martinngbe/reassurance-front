@@ -10,6 +10,7 @@ import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQ
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 import TAlert from '@/composants/display/TAlert.vue'
+import TSelectionnez from '@/composants/utilitaire/TSelectionnez.vue'
 
 // ==================== STORES & COMPUTED ====================
 const tempQuittanceStore = useTempQuittanceStore()
@@ -17,9 +18,9 @@ const tempPoliceStore = useTempPoliceStore()
 const mouvementStore = useMouvementStore()
 
 const currentTempQuittance = computed(() => tempQuittanceStore.currentTempQuittance)
-const currentTempPolice = computed(() => tempPoliceStore.currentTempPolice)
 const currentMouvement = computed(() => mouvementStore.currentMouvement)
-
+const currentTempPolice = tempPoliceStore.currentTempPolice
+const natureOffre = currentTempPolice?.natureOffre
 const emit = defineEmits<{
   success: [message: string]
   cancel: []
@@ -28,7 +29,7 @@ const emit = defineEmits<{
 console.log('==================================')
 console.log('TempQuittanceTaxesEtTauxForm.vue')
 console.log('==================================')
-console.log('currentTempPolice.value    :', currentTempPolice.value)
+console.log('currentTempPolice    :', currentTempPolice)
 console.log('currentTempQuittance.value :', currentTempQuittance.value)
 console.log('currentMouvement.value     :', currentMouvement.value)
 console.log('==================================')
@@ -36,12 +37,12 @@ console.log('==================================')
 // ==================== CONFIGURATION DES CHAMPS ====================
 
 // ✅ Configuration commune pour les nombres
-const numberConfig = {
-  decimals: 2,
-  min: 0,        // 👈 Prix minimum = 0
-  max: 100, // 👈 Prix maximum
-  returnType: 'number' as const,
-}
+// const numberConfig = {
+//   decimals: 2,
+//   min: 0,        // 👈 Prix minimum = 0
+//   max: 100, // 👈 Prix maximum
+//   returnType: 'number' as const,
+// }
 
 // ✅ Helper pour créer un champ numérique rapidement
 const createNumberField = (key: string, label: string, helpText?: string): FormField => ({
@@ -49,54 +50,80 @@ const createNumberField = (key: string, label: string, helpText?: string): FormF
   label,
   type: 'number',
   size: 'xl',
-  helpText,
-  numberOptions: numberConfig,
+  helpText: `${label} à 100%`,
+  numberOptions:  {
+    decimals: 2,
+    formatOptions: { style: 'decimal' },
+    returnType: 'number',
+    min: 0,        // 👈 Prix minimum = 0
+    max: 100, // 👈 Prix maximum
+  },
 })
-/*
-const tempQuittanceFields = computed(()=>{
-          // ✅ Configuration des champs optimisée et lisible
-          const fields: FormField[] = [
-            createNumberField('tauxCedante', 'Taux Cédente', 'Taux Cédente à 100%'),
-            createNumberField('tauxAccepte', 'Taux Accepté', 'Taux Accepté à 100%'),
-            createNumberField('taxeSurPrime', 'Taxe sur prime'),
 
-          ]
-          return fields
-})
-*/
 const tempQuittanceFields = computed<FormField[]>(() => {
   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
   const allFields: FormField[] = [
 
     { section: 'Taux et Taxes' },
-    { key: 'tauxCedante', label: 'Taux Cédante', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxAccepte', label: 'Taux Accepté', type: 'number', numberOptions: { min: 0 } },
-   // { key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
-   // { key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxCommission', label: 'Taux commission', type: 'number', numberOptions: { min: 0 } },
-    { key: 'taxeSurPrime', label: 'Taxe sur prime', type: 'number', numberOptions: { min: 0 } },
-    { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', numberOptions: { min: 0 } },
+    createNumberField( 'tauxCedante', 'Taux Cédante'  ),
+    createNumberField( 'tauxAccepte', 'Taux Accepté'  ),
+    createNumberField( 'tauxCession', 'Taux Cession' ),
+    createNumberField( 'tauxRetention', 'Taux Retention' ),
+    createNumberField( 'tauxCommission', 'Taux commission' ),
+    createNumberField( 'taxeSurPrime', 'Taxe sur prime' ),
+    createNumberField( 'taxeSurCommission', 'Taxe sur commission' ),
 
   ]
 
   // 2. Champs à retirer selon l'état courant
   // ✅ Utiliser policeQuittance.value (maintenant réactif)
-  const isOffreProportionnelle = currentTempPolice.value
-    ? currentTempPolice.value.natureOffre?.isProportionnelle === true
-    : false
-
+  // const isOffreProportionnelle = currentTempPolice.value
+  //   ? currentTempPolice.value.natureOffre?.isProportionnelle === true
+  //   : false
+  const isEdp =natureOffre?.isEdp   
+  const isFacultative =natureOffre?.isFacultative
+  const isFacObligatoire =natureOffre?.isFacObligatoire
+  const isQuotePart =natureOffre?.isQuotePart
+  const isXs =natureOffre?.isXs
   const excludedKeys = new Set<string>()
-  if (isOffreProportionnelle) {
-    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
-    //excludedKeys.add('tauxRetention')
-    //excludedKeys.add('tauxCession')
-   
-  } else {
-    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
-    excludedKeys.add('tauxCedante')
-    excludedKeys.add('tauxAccepte')
+  if(isEdp){
+    excludedKeys.add( 'tauxCedante')
+    excludedKeys.add( 'tauxAccepte')
+    excludedKeys.add( 'tauxCession' )
+    excludedKeys.add( 'tauxRetention' )    
+    excludedKeys.add( 'tauxCommission' )
+    excludedKeys.add( 'taxeSurPrime' )
+    excludedKeys.add( 'taxeSurCommission' )
+
+  }else if(isFacObligatoire){
+    excludedKeys.add( 'tauxCedante')
+    excludedKeys.add( 'tauxAccepte')
+    //excludedKeys.add( 'tauxCession' )
+    excludedKeys.add( 'tauxRetention' )    
+    excludedKeys.add( 'tauxCommission' )
+    excludedKeys.add( 'taxeSurPrime' )
+    excludedKeys.add( 'taxeSurCommission' )  
+  }else if(isQuotePart){
+    excludedKeys.add( 'tauxCedante')
+    excludedKeys.add( 'tauxAccepte')
+    //excludedKeys.add( 'tauxCession' )
+    //excludedKeys.add( 'tauxRetention' )    
+    excludedKeys.add( 'tauxCommission' )
+    excludedKeys.add( 'taxeSurPrime' )
+    excludedKeys.add( 'taxeSurCommission' )  
+  }else if(isXs){
+    excludedKeys.add( 'tauxCedante')
+    excludedKeys.add( 'tauxAccepte')
+    excludedKeys.add( 'tauxCession' )
+    excludedKeys.add( 'tauxRetention' )    
+    excludedKeys.add( 'tauxCommission' )
+    excludedKeys.add( 'taxeSurPrime' )
+    excludedKeys.add( 'taxeSurCommission' )  
   }
 
+    // Le les champs  ont été rétirée
+  // donc on retourne un tableau vide
+  if(excludedKeys.size===7) return [] 
   // 3. Application du filtre
   if (excludedKeys.size === 0) return allFields
 
@@ -109,6 +136,7 @@ const tempQuittanceFields = computed<FormField[]>(() => {
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
+const isAucunTauxASaisir = computed(()=> tempQuittanceFields.value.length===0)
 
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
@@ -181,7 +209,13 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div class="flex flex-col">
+    <div  class="flex w-full  p-24 mt-24 h-full items-center justify-center"
+    v-if="isAucunTauxASaisir">
+          <TSelectionnez 
+            message="Aucun taux à saisir pour cette offre"
+          /> 
+  </div>
+  <div class="flex flex-col" v-else>
     <TTitreSousModule libelle="Quittance Taux et Taxes" class="mb-8" />
     
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">

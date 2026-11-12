@@ -112,6 +112,7 @@ const quittanceFields = computed<FormField[]>(() => {
 
     { section: 'Autres' },
     { key: 'aliment', label: 'Aliment', type: 'number', numberOptions: { min: 0 } },
+  
   ]
 
   // 2. Champs à retirer selon l'état courant

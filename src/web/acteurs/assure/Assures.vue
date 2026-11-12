@@ -134,7 +134,9 @@ const onRowClick =(row :AssureRow ,index: number)=>{
   console.log("Assures.onRowClick row:",row)
   assureStore.selectAssure(row as Assure)
 }
-
+const handleActualise =()=>{
+  assures.refresh()
+}
 
 // Debounce recherche
 let searchTimeout: number | undefined
@@ -186,14 +188,16 @@ watch(tableSearch, () => {
       </div>
     </template>
 
-    <template #caption>
+    <template  #caption="{ selectedCount, total }">
       <TAction
         :active-modifier="isLigneSelectionnee"
         :active-supprimer="isLigneSelectionnee"
+        :active-actualiser="total>0"
         :masque-impression="true"
         :masque-supprimer="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
+        @actualiser="handleActualise"
       
       />
     </template>

@@ -3,9 +3,11 @@ import { computed, ref } from 'vue'
 import type { TempPolice } from './temp-police'
 import { useTempQuittanceStore } from '../../quittances/temp-quittance/temp-quittance.store'
 import type { TempQuittance } from '../../quittances/temp-quittance/temp-quittance'
+import { useQueryClient } from '@tanstack/vue-query'
 
 export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
   // ==================== STATE ====================
+  const queryClient = useQueryClient()
   const tempQuittanceStore = useTempQuittanceStore() // ⭐ 
   const currentTempPolice = ref<TempPolice | null>(null)
   const isAffaireNouvelleExecutee = ref<boolean>(false)
@@ -37,8 +39,14 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
 
   const clearTempPoliceSelection = () => {
     currentTempPolice.value = null
+  
+    
   }
-
+  const viderCacheTempPolice = ()=>{
+      clearTempPoliceSelection()
+     // il faut vider le cache d tempPolice
+     queryClient.invalidateQueries({ queryKey: ['tempPolices'] })
+  }
   // ⭐ Action utile : mettre à jour le tempPolice en cache
   // (par ex. après un updateTempPolice réussi)
   const updateCurrentTempPolice = (data: Partial<TempPolice>) => {
@@ -85,6 +93,7 @@ export const useTempPoliceStore = defineStore('tempPoliceStore', () => {
     isAffaireNouvelleExecutee,
     setTempPoliceIsAffaireNouvelleExecutee,
     setCurrentTempPolice,
+    viderCacheTempPolice,
     selectTempPolice,
     clearTempPoliceSelection,
     updateCurrentTempPolice,

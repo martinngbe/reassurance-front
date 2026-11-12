@@ -9,8 +9,6 @@ import { useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import EnConstruction from '@/web/EnConstruction.vue'
 import TAlert from '@/composants/display/TAlert.vue'
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store.ts'
-import TempPolices from '@/web/polices/temp-police/TempPolices.vue'
-import TModal from '@/composants/display/TModal.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store.ts'
 import { useMouvements } from '@/services/referentiel/mouvement/useMouvement.ts'
 import { MOUVEMENT_AFN } from '@/services/common/constantes.ts'
@@ -109,7 +107,8 @@ watch(mouvement  , (newData ) => {
   <TLayoutModule 
       topSize="80px" 
       leftSize="20%" 
-      bottom-size="85px"
+
+      :show-bottom="false"
       :show-top="showTopHeader"
       >
     <template #header>
@@ -117,28 +116,39 @@ watch(mouvement  , (newData ) => {
         <TTitreModule :libelle="assureEnCours?.raisonSociale ?? 'AFFAIRE NOUVELLE'" />
         <TLigneHorizontale />
       </div>
+      
     </template>
 
     <template #left>
-      <!-- ✅ 6. Passer activeMenu en prop -->
-      <AffaireNouvelleEtapes        
-        :active-menu="activeMenu"
-        @select="selectMenu"
-      />
+      <div class="flex flex-col justify-between">
+          <AffaireNouvelleEtapes        
+            :active-menu="activeMenu"
+            @select="selectMenu"
+          />
+        <div  class="flex w-full mt-12 items-center justify-center">                 
+                    <TAlert variant="info">
+                        <div class="flex flex-col">
+                              <p  v-if="natureOffre" class="text-lg font-bold">{{ natureOffre.libelle }}</p>
+                              <p class="text-md font-bold">{{ currenteModuleDisplay +' / '+ currentEcran }}</p> 
+                        </div>
+                    </TAlert> 
+        </div>          
+      </div>
+
     </template>
 
     <template #default>
-      <keep-alive class="ml-5">
+      <div class="ml-5 mr-5">
         <component
           :is="currentModule"
           :key="activeMenu"
           @success="onStepSuccess"
           @cancel="onStepCancel"
         />
-      </keep-alive>
+      </div>
     </template>
 
-    <template #footer >
+    <!--template #footer >
       
       <div  class="flex w-full mt-2  items-center justify-center">                 
                   <TAlert variant="info">
@@ -148,7 +158,7 @@ watch(mouvement  , (newData ) => {
                        </div>
                   </TAlert> 
       </div>
-    </template>
+    </template-->
 
   </TLayoutModule>
 

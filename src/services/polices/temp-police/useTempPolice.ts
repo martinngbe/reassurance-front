@@ -9,16 +9,20 @@ import { useTempPoliceStore } from './temp-police.store'
 import { tempPoliceApi } from './temp-police.api'
 import { useAssureStore } from '../../acteurs/assure/assure.store'
 import { useEcransStore } from '../../ecrans/ecrans.store'
+import { useAuthStore } from '@/auth/auth.store'
 
-const KEY = 'temp-tempPolices';
+const KEY = 'tempPolices';
 export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const queryClient = useQueryClient()
   const tempPoliceStore = useTempPoliceStore() // ⭐ 
   const ecranStore = useEcransStore()
   const assureStore = useAssureStore()
-
+  const authUser = useAuthStore()
+ 
   const isFAC = computed(()=> ecranStore.currentEcran)
   const currentAssure = computed(()=> assureStore.currentAssure)
+  //const currentAuthUser = computed(()=> authUser.currentUserAuth)
+
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
@@ -29,13 +33,13 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      //console.warn(" -- useTempPolice tempPolices = useInfiniteList<TempPolice> ")
-      // const response = await tempPoliceApi.getAll(params.value)
+        const userIdVal = toValue(authUser.currentUserAuth?.id)
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
         // On affiche les police d'un assuré sir nous sommes en FAC
         const response = await tempPoliceApi.getAll({
           ...toValue(params),
           ...(isFAC.value &&  currentAssure.value && { assureId: currentAssure.value?.id }),
+          ...(userIdVal &&   { createdBy: userIdVal }),
           page,      // ← page dynamique (1, 2, 3...)
           limit,     // ← limit dynamique
         })
@@ -49,12 +53,12 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
   const createTempPolice = useMutation({
     mutationFn: async (data: TempPolice) => {
      const tPolice= await  tempPoliceApi.create(data)
-     console.log("__________________________________")
-     console.warn("const createTempPolice = useMutation")
-     console.log("__________________________________")
-     console.log("tPolice:",tPolice)
-     console.log("tempPoliceStore.currentTempPoliceId :",tempPoliceStore.currentTempPoliceId )
-     console.log("__________________________________")
+    //  console.log("__________________________________")
+    //  console.warn("const createTempPolice = useMutation")
+    //  console.log("__________________________________")
+    //  console.log("tPolice:",tPolice)
+    //  console.log("tempPoliceStore.currentTempPoliceId :",tempPoliceStore.currentTempPoliceId )
+    //  console.log("__________________________________")
      // dès la création d'une TempPolice, on la selectionne
      // ⭐ Synchroniser le store si c'est l'police sélectionné
      tempPoliceStore.setCurrentTempPolice(tPolice)
@@ -62,14 +66,10 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
      // tPolice ne possede que les clés étrangeres
      reloadCurrentTempPolice()
      
-      // if (tempPoliceStore.currentTempPoliceId !== tPolice.id) {
-      //   console.log("Stockage  useTempPolice.ts tPolice:",tPolice)
-      //   tempPoliceStore.selectTempPolice(tPolice)
-      // }
      return tPolice
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tempPolices'] })
+      queryClient.invalidateQueries({ queryKey: [KEY] })
       tempPolices.refresh()
     },
   })
@@ -82,7 +82,8 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       const previousItems = [...tempPolices.items.value]
       const index = tempPolices.items.value.findIndex((d) => d.id === id)
       if (index !== -1) {
-        tempPolices.items.value[index] = { ...tempPolices.items.value[index], ...data } as TempPolice
+        //tempPolices.items.value[index] = { ...tempPolices.items.value[index], ...data } as TempPolice
+       await  reloadCurrentTempPolice()
       }
       if (tempPoliceStore.currentTempPoliceId === id) {
         tempPoliceStore.updateCurrentTempPolice(data)
@@ -132,7 +133,7 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
     if (!currentId) return
     // On recharge la 
     try {
-      console.warn("  Rechargement de cuurentTempPolice depuis la BD")
+      console.warn("  Rechargement de currentTempPolice depuis la BD")
       const tempPol = await tempPoliceApi.getById(currentId)
       // Affectation apres rechargement
       tempPoliceStore.setCurrentTempPolice(tempPol)
@@ -142,12 +143,12 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
   }
   const executeAffaireNouvelle = async () => {
     if (tempPoliceStore.isAffaireNouvelleExecutee) return
-      console.log(" --------------------------------------------  ")
-      console.log(" ------- On Lance l'éxécution de l' AFN -----  ")
-      console.log(" ------- tempPoliceStore.isAffaireNouvelleExecutee:  ",
-      tempPoliceStore.isAffaireNouvelleExecutee)
+      // console.log(" --------------------------------------------  ")
+      // console.log(" ------- On Lance l'éxécution de l' AFN -----  ")
+      // console.log(" ------- tempPoliceStore.isAffaireNouvelleExecutee:  ",
+      // tempPoliceStore.isAffaireNouvelleExecutee)
       
-      console.log(" --------------------------------------------  ") 
+      // console.log(" --------------------------------------------  ") 
       tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(true)
   }
   // ==================== TRANSFERT TEMP -> DÉFINITIF ====================
@@ -161,6 +162,11 @@ export function useTempPolices(params: ComputedRef<PaginationParams>) {
       // Si tu as un cache pour les polices temporaires, invalide-le aussi :
       queryClient.invalidateQueries({ queryKey: ['temp-polices'] })
       tempPolices.refresh()
+      // On invalide aussi le cache de Police
+      // un watcher sur la variable isAffaireNouvelleExecutee
+      // va réactualiser les Polices
+      queryClient.invalidateQueries({ queryKey: ['polices'] })
+      
     },
   })
 

@@ -154,6 +154,9 @@ const handleConfirmeSuppression = async () => {
 const onRowClick = ( row: any, index: number)=>{       
     emit('row-click',row as Acteur)
 }
+const handleActualise =()=>{
+  acteurs.refresh()
+}
 // Debounce recherche
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -204,14 +207,15 @@ watch(tableSearch, () => {
       </div>
     </template>
 
-    <template #caption>
+    <template #caption="{selectedCount , total}">
       <TAction
         :active-modifier="isLigneSelectionnee"
-       
+        :active-actualiser="total>0"
         :masque-impression="true"
         :masque-supprimer="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
+        @actualiser="handleActualise"
        
       />
     </template>

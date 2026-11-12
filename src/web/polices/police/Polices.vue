@@ -130,6 +130,7 @@ const onRowClick = ( row: any, index: number)=>{
 }
 const openAffaireNouvelle =()=>{  
   showModal.value=true
+  tempPoliceStore.viderCacheTempPolice()
   tempPoliceStore.setTempPoliceIsAffaireNouvelleExecutee(false)
 }
 const openEdit = (police: PoliceRow) => {

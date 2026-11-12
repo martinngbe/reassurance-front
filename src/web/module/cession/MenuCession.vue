@@ -19,9 +19,9 @@ const ecranStore = useEcransStore()
 const activeMenu = computed(()=> ecranStore.currentEcran)
 const menus: MenuItem[] = [
   { id: ECRAN_TABLEAU_DE_BORD,      label: 'Tableau de bord'},
-  { id: ECRAN_FACULTATIVE,          label: 'Facultative'},
+ // { id: ECRAN_FACULTATIVE,          label: 'Facultative'},
   { id: ECRAN_TRAITE,               label: 'Traité',},
-  { id: ECRAN_PLACEMENT,            label: 'Placement' },
+  { id: ECRAN_PLACEMENT,            label: 'Liste sécurité' },
   { id: ECRAN_BORDEREAU,            label: 'Borderau payé' },
   { id: ECRAN_ECHEANCE_PMD,         label: 'Echéance PMD'},
   { id: ECRAN_COMPTE,               label: 'Compte' }

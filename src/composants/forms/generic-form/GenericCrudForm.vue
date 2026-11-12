@@ -282,7 +282,7 @@ const handleUpdate = (key: string, value: any) => {
         :loading="loading"
         :disabled="loading"
       >
-        {{ submitLabel }}
+       <p class="font-extrabold text-md uppercase">{{ submitLabel }} </p> 
       </TButton>
     </div>
   </form>

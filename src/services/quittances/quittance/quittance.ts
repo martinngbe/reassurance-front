@@ -21,6 +21,7 @@ export interface Quittance extends BaseEntity {
   coursDevise: number;
   avisEcheance?: number;
   nombreEcheancePmd: number;
+  nombrePlein: number;
   sinistreAuComptant?: number;
   avisSinistre?: number;
   ///////////////////////////// 

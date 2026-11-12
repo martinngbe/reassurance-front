@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import TAlert from '@/composants/display/TAlert.vue';
 import TButton from '@/composants/forms/TButton.vue';
-import { usePolices } from '@/services/polices/police/usePolice';
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store';
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store';
 import type { PaginationParams } from '@/type/pagination';
@@ -28,7 +27,7 @@ const executeValidationFinale = async ()=>{
   if(!currentTempPolice.value) return
   try {
     showPatientez.value=true
-    console.log(" ------------  TRANSFERE DE DONNEES TEMP_POLICE ------")
+    console.log(" ------------  TRANSFERER DE DONNEES TEMP_POLICE ------")
     const police = await transfererPolice.mutateAsync(currentTempPolice.value.id)
     console.log(" police:",police)
    

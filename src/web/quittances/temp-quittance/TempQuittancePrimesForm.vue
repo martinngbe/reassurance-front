@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
-import type { FieldConfig, FormField } from '@/composants/forms/generic-form/types-form'
+import type {  FormField } from '@/composants/forms/generic-form/types-form'
 import type { PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
@@ -11,15 +11,16 @@ import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQ
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
+import TSelectionnez from '@/composants/utilitaire/TSelectionnez.vue'
 
 
 const tempQuittanceStore = useTempQuittanceStore()
 const tempPoliceStore = useTempPoliceStore()
 const currentTempQuittance = computed(()=> tempQuittanceStore.currentTempQuittance)
-const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
+const currentTempPolice = tempPoliceStore.currentTempPolice
+const natureOffre = currentTempPolice?.natureOffre
 const mouvementStore = useMouvementStore()
 const currentMouvement = computed(()=> mouvementStore.currentMouvement)
-const currentNatureOffre = computed(() => tempPoliceStore.currentTempPolice?.natureOffre)
 
 const emit = defineEmits<{
   success: [message: string]
@@ -28,7 +29,7 @@ const emit = defineEmits<{
 console.log('==================================')
 console.log('TempQuittancePrimesForm.vue')
 console.log('==================================')
-console.log('currentTempPolice.value    :',currentTempPolice.value)
+console.log('currentTempPolice    :',currentTempPolice)
 console.log('currentTempQuittance.value :',currentTempQuittance.value)
 console.log('currentMouvement.value     :',currentMouvement.value)
 console.log('==================================')
@@ -37,89 +38,34 @@ console.log('==================================')
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
-async function fetchActeur(query: string, page: number) {
-  const res = await apiClient.get('/pays', {
-    params: { search: query, page, limit: 20 }
-  })
-  return {
-    options: res.data.items || res.data.data || [],
-    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
-  }
-}
-
-async function fetchSousBranche(query: string, page: number) {
-  const res = await apiClient.get('/sous-branche', {
-    params: { search: query, page, limit: 20 }
-  })
-  return {
-    options: res.data.items || res.data.data || [],
-    hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
-  }
-}
-
-// ==================== CONFIGURATION DES CHAMPS ====================
-// ✅ Helper pour éviter de répéter la configuration des champs numériques
-const createNumberField = (key: string, label: string ): FormField => ({
-  key,
-  label,
-  type: 'number',
-  size: 'xl',
-  helpText: `${label} à 100%`,
-  numberOptions: {
-    decimals: 2,
-    formatOptions: { style: 'decimal' },
-    returnType: 'number',
-  },
-})
-// 1. Configuration commune pour les nombres (déclarée en dehors du computed pour optimiser les performances)
-const baseNumberOptions = {
-  decimals: 2,
-  formatOptions: { style: 'decimal' as const }, 
-  returnType: 'number' as const,
-}
-/*
-const tempQuittanceFields = computed(()=>{
-          // ✅ Configuration des champs optimisée et lisible
-          const fields: FormField[] = [
-            createNumberField('tauxCedante', 'Taux Cédente',),
-            createNumberField('tauxAccepte', 'Taux Accepté',),
-            createNumberField('taxeSurPrime', 'Taxe sur prime'),
-
-          ]
-          return fields
-})
-*/
 const tempQuittanceFields = computed<FormField[]>(() => {
   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
-  const allFields: FormField[] = [
-  
+  const allFields: FormField[] = [ 
    
     { section: 'Primes' },
-    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } },
-   // { key: 'primeNette', label: 'Prime nette', type: 'number', numberOptions: { min: 0 } },
-    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } },
-
-   
+    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%' },
+    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%'},   
   ]
 
-  // 2. Champs à retirer selon l'état courant
-  // ✅ Utiliser policeQuittance.value (maintenant réactif)
-  const isOffreProportionnelle = currentTempPolice.value
-    ? currentTempPolice.value.natureOffre?.isProportionnelle === true
-    : false
 
+  const isEdp =natureOffre?.isEdp   
+  const isFacultative =natureOffre?.isFacultative
+  const isFacObligatoire =natureOffre?.isFacObligatoire
+  const isQuotePart =natureOffre?.isQuotePart
+  const isXs =natureOffre?.isXs
   const excludedKeys = new Set<string>()
-  if (isOffreProportionnelle) {
+  if (isEdp || isFacObligatoire || isQuotePart) {
     // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
     excludedKeys.add('estimationPrime')
-   
-  } else {
-    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
     excludedKeys.add('primeBrute')
-   // excludedKeys.add('primeNette')
-    
+   
+  }else if(isXs){
+    excludedKeys.add('primeBrute')
   }
 
+  // Le deux champs primes ont été rétirée
+  // donc on retourne un tableau vide
+  if(excludedKeys.size===2) return [] 
   // 3. Application du filtre
   if (excludedKeys.size === 0) return allFields
 
@@ -131,7 +77,10 @@ const tempQuittanceFields = computed<FormField[]>(() => {
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
+const isAucunePrimeASaisir = computed(()=> tempQuittanceFields.value.length===0)
 
+console.warn("isAucunePrimeASaisir :",isAucunePrimeASaisir.value)
+console.warn("tempQuittanceFields.value :",tempQuittanceFields.value)
 // ✅ Fonction pour initialiser le formData avec le bon mapping
 function initializeFormData(): TempQuittanceFormData {
   if (!currentTempQuittance.value) {
@@ -216,9 +165,15 @@ const dismissError = () => {
 </script>
 
 <template>
-  <div class="flex flex-col ">
-    <TTitreSousModule  libelle="Quittance Primes" class="mb-8" />  
-   
+  <div  class="flex w-full  p-24 mt-24 h-full items-center justify-center"
+    v-if="isAucunePrimeASaisir">
+          <TSelectionnez  
+            message="Aucune prime à saisir pour cette offre"
+          /> 
+  </div>
+
+  <div class="flex flex-col " v-else>
+    <TTitreSousModule  libelle="Quittance Primes" class="mb-8" />
     <div v-if="errorMessage" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
       {{ errorMessage }}
     </div>

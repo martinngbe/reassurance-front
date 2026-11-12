@@ -41,10 +41,10 @@ type TempPoliceRow = TempPolice & { [key: string]: any }
 // ==================== COLONNES ====================
 const tempPoliceColumns: TableColumn[] = [
   //{ key: 'numero',                label: 'N°TempPolice',    width: 20,   minWidth: 80 },
-  { key: 'isCession',             label: 'Cess°',           width: 50,   minWidth: 80,  align: 'center' },
+  { key: 'isCession',             label: 'Cess°',          width: 50,   minWidth: 80,  align: 'center' },
   { key: 'isIard',                label: 'IARD',           width: 50,   minWidth: 80,  align: 'center' },
  
-  { key: 'natureOffre',           label: 'Nature Offre',    width: 150,  minWidth: 100, },
+  { key: 'natureOffre',           label: 'Nature Offre',    width: 350,  minWidth: 100, },
 
   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 100,  minWidth: 100, align: 'center' },
   
@@ -166,10 +166,6 @@ watch(tableSearch, () => {
           <template #cell-acteurCedante="{ value }">
               <span class="font-mono text-xl uppercase" v-if="value">{{ value.raisonSociale }}</span>
           </template>
-                 
-
-
-
   </TTable>
 
  

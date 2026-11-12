@@ -192,7 +192,7 @@ function initializeFormData(): TempPoliceFormData {
 const formData = ref<TempPoliceFormData>(initializeFormData())
 
 // ✅ Watcher pour gérer les changements de props.currentTempPolice
-watch(() => currentTempPolice, (newPolice) => {
+watch(() => currentTempPolice.value, (newPolice) => {
   console.log("_____ TempPoliceForm.watch.currentTempPolice _____")
   console.log("newPolice:",newPolice)
   if (newPolice) {
