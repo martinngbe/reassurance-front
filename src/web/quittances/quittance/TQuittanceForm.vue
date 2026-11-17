@@ -2,7 +2,6 @@
 import { computed, ref, watch } from 'vue'
 import GenericCrudForm from '@/composants/forms/generic-form/GenericCrudForm.vue'
 import type { FormField } from '@/composants/forms/generic-form/types-form'
-import type { PaginationParams } from '@/type/pagination'
 import { apiClient } from '@/api/api-client'
 import TTitreSousModule from '@/composants/utilitaire/TTitreSousModule.vue'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store'
@@ -20,10 +19,7 @@ const currentQuittance = computed(() => quittanceStore.currentQuittance)
 
 // ✅ policeQuittance RÉACTIF (computed) - lié à la police de la quittance courante
 const policeQuittance = computed(() => currentQuittance.value?.police ?? null)
-
-// ✅ Instance useQuittances pour avoir accès à updateQuittance
-//onst paramsQuittance = computed<PaginationParams>(() => ({}))
-
+const natureOffre = policeQuittance.value?.natureOffre
 
 
 //const paramsQuittance = {}  
@@ -48,7 +44,21 @@ async function fetchDevise(query: string, page: number) {
     hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
   }
 }
-
+// ✅ Helper pour éviter de répéter la configuration des champs numériques
+const createNumberField = (key: string, label: string): FormField => ({
+  key,
+  label,
+  type: 'number',
+  size: 'xl',
+  helpText: `${label} à 100%`,
+  numberOptions: {
+    decimals: 2,
+    formatOptions: { style: 'decimal' },
+    returnType: 'number',
+    min: 0,        // 👈 Prix minimum = 0
+    max: 999999999999999.99, // 👈 Prix maximum
+  },
+})
 // ==================== CONFIGURATION DES CHAMPS ====================
 const quittanceFields = computed<FormField[]>(() => {
   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
@@ -64,7 +74,7 @@ const quittanceFields = computed<FormField[]>(() => {
       autoSelectFirst: true,
       asyncOptions: { trackBy: 'id', labelBy: 'libelle' },
     },
-    { key: 'coursDevise', label: 'Cours Devise', type: 'number', numberOptions: { min: 0 } },
+    createNumberField('coursDevise', 'Cours Devise'),
 
     { section: "Période d'ouverture et émission" },
     { key: 'dateEffet', label: 'Date Effet', type: 'calendar' },
@@ -72,6 +82,8 @@ const quittanceFields = computed<FormField[]>(() => {
 
     { key: 'avisEcheance', label: 'Avis échéance', type: 'number', numberOptions: { min: 0 } },
     { key: 'nombreEcheancePmd', label: 'Nb. échéance PMD', type: 'number', numberOptions: { min: 0 } },
+    { key: 'nombreTranche', label: 'Nb.Tranche', type: 'number', numberOptions: { min: 0 } },
+  
     {
       key: 'sinistreAuComptant',
       label: 'Sinistre au Comptant',
@@ -88,27 +100,29 @@ const quittanceFields = computed<FormField[]>(() => {
     },
 
     { section: 'Capitaux' },
-    { key: 'capitaux', label: 'Capitaux', type: 'number', numberOptions: { min: 0 } },
-    { key: 'lci', label: 'LCI', type: 'number', numberOptions: { min: 0 } },
-    { key: 'smp', label: 'SMP', type: 'number', numberOptions: { min: 0 } },
-    { key: 'limite', label: 'Limite', type: 'number', numberOptions: { min: 0 } },
-    { key: 'retention', label: 'Retention', type: 'number', numberOptions: { min: 0 } },
-    { key: 'conservation', label: 'Conservation', type: 'number', numberOptions: { min: 0 } },
-    { key: 'capacite', label: 'Capacité', type: 'number', numberOptions: { min: 0 } },
+    createNumberField( 'capitaux',  'Capitaux'),
+    createNumberField( 'lci', 'LCI'),
+    createNumberField( 'smp', 'SMP'),
+    createNumberField( 'limite', 'Limite'),
+    createNumberField( 'retention', 'Retention'),
+    createNumberField( 'conservation', 'Conservation'),
+    createNumberField( 'capacite', 'Capacité'),
+    createNumberField( 'priorite', 'Priorité'),
+    createNumberField( 'portee', 'Portée'),
+
+
 
     { section: 'Primes' },
-    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } },
-    { key: 'primeNette', label: 'Prime nette', type: 'number', numberOptions: { min: 0 } },
-    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } },
+    createNumberField( 'primeBrute',  'Prime brute'),
+    createNumberField( 'primeNette',  'Prime nette'),
+    createNumberField( 'estimationPrime',  'Estimation prime'),
 
     { section: 'Taux et Taxes' },
-    { key: 'tauxCedante', label: 'Taux Cédante', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxAccepte', label: 'Taux Accepté', type: 'number', numberOptions: { min: 0 } },
-    //{ key: 'tauxCession', label: 'Taux Cession', type: 'number', numberOptions: { min: 0 } },
-    //{ key: 'tauxRetention', label: 'Taux Retention', type: 'number', numberOptions: { min: 0 } },
-    { key: 'tauxCommission', label: 'Taux commission', type: 'number', numberOptions: { min: 0 } },
-    { key: 'taxeSurPrime', label: 'Taxe sur prime', type: 'number', numberOptions: { min: 0 } },
-    { key: 'taxeSurCommission', label: 'Taxe sur commission', type: 'number', numberOptions: { min: 0 } },
+    createNumberField( 'tauxCedante',  'Taux Cédante'),
+    createNumberField( 'tauxAccepte',  'Taux Accepté'),
+    createNumberField( 'tauxCommission',  'Taux commission'),
+    createNumberField( 'taxeSurPrime',  'Taxe sur prime'),
+    createNumberField( 'taxeSurCommission',  'Taxe sur commission'),
 
     { section: 'Autres' },
     { key: 'aliment', label: 'Aliment', type: 'number', numberOptions: { min: 0 } },
@@ -117,32 +131,55 @@ const quittanceFields = computed<FormField[]>(() => {
 
   // 2. Champs à retirer selon l'état courant
   // ✅ Utiliser policeQuittance.value (maintenant réactif)
-  const isOffreProportionnelle = policeQuittance.value
-    ? policeQuittance.value.natureOffre?.isProportionnelle === true
-    : false
+  // const isOffreProportionnelle = policeQuittance.value
+  //   ? policeQuittance.value.natureOffre?.isProportionnelle === true
+  //   : false
+  const isEdp =natureOffre?.isEdp   
+  const isFacultative =natureOffre?.isFacultative
+  const isFacObligatoire =natureOffre?.isFacObligatoire
+  const isQuotePart =natureOffre?.isQuotePart
+  const isXs =natureOffre?.isXs
+
 
   const excludedKeys = new Set<string>()
-  if (isOffreProportionnelle) {
-    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+  if (isEdp) {
     excludedKeys.add('limite')
     excludedKeys.add('retention')
     excludedKeys.add('conservation')
     excludedKeys.add('capacite')
     excludedKeys.add('estimationPrime')
     excludedKeys.add('nombreEcheancePmd')
-    //excludedKeys.add('tauxCession')
-    //excludedKeys.add('tauxRetention')
     excludedKeys.add('aliment')
-  } else {
-    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
-    excludedKeys.add('capitaux')
-    excludedKeys.add('lci')
-    excludedKeys.add('smp')
-    excludedKeys.add('primeBrute')
-    excludedKeys.add('primeNette')
-    excludedKeys.add('tauxCedante')
-    excludedKeys.add('tauxAccepte')
-    excludedKeys.add('taxeSurPrime')
+  }  else if(isFacObligatoire || isQuotePart) {
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite'),  
+    excludedKeys.add( 'retention') 
+    excludedKeys.add( 'conservation')
+  }else if (isXs){
+    console.log('---- OFFRE XS isXs :',isXs)
+    excludedKeys.add( 'capitaux'),
+    excludedKeys.add( 'lci'),
+    excludedKeys.add( 'smp'),
+    excludedKeys.add( 'limite')//,  
+    excludedKeys.add( 'retention'),
+    excludedKeys.add( 'conservation'),
+    excludedKeys.add( 'capacite') 
+    excludedKeys.add( 'aliment')
+
+     excludedKeys.add('nombrePlein')
+     excludedKeys.add('primeBrute')
+     excludedKeys.add('primeNette')
+
+    excludedKeys.add( 'tauxCedante')
+    excludedKeys.add( 'tauxAccepte')
+    excludedKeys.add( 'tauxCession' )
+    excludedKeys.add( 'tauxRetention' )    
+    excludedKeys.add( 'tauxCommission' )
+    excludedKeys.add( 'taxeSurPrime' )
+    excludedKeys.add( 'taxeSurCommission' )
+    
   }
 
   // 3. Application du filtre
@@ -226,6 +263,7 @@ function buildPayload(data: Record<string, any>) {
     coursDevise: data.coursDevise,
     avisEcheance: data.avisEcheance,
     nombreEcheancePmd: data.nombreEcheancePmd,
+    nombreTranche: data.nombreTranche,
     sinistreAuComptant: data.sinistreAuComptant,
     avisSinistre: data.avisSinistre,
     /////////////////////////////

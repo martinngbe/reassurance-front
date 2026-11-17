@@ -2,6 +2,7 @@
 import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store';
+import { quittanceCapitauxFields } from '@/services/quittances/quittance/quittance';
 import type { TempQuittance } from '@/services/quittances/temp-quittance/temp-quittance';
 import { computed } from 'vue'
 
@@ -22,86 +23,95 @@ const natureOffre =  tempPoliceStore.currentTempPolice?.natureOffre
 
 
 // ✅ Helper pour éviter de répéter la configuration des champs numériques
-const createNumberField = (key: string, label: string): FormField => ({
-  key,
-  label,
-  type: 'number',
-  size: 'xl',
-  helpText: `${label} à 100%`,
-  numberOptions: {
-    decimals: 2,
-    formatOptions: { style: 'decimal' },
-    returnType: 'number',
-    min: 0,        // 👈 Prix minimum = 0
-    max: 999999999999999.99, // 👈 Prix maximum
-  },
-})
+// const createNumberField = (key: string, label: string): FormField => ({
+//   key,
+//   label,
+//   type: 'number',
+//   size: 'xl',
+//   helpText: `${label} à 100%`,
+//   numberOptions: {
+//     decimals: 2,
+//     formatOptions: { style: 'decimal' },
+//     returnType: 'number',
+//     min: 0,        // 👈 Prix minimum = 0
+//     max: 999999999999999.99, // 👈 Prix maximum
+//   },
+// })
 
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
-  const allFields: FormField[] = [
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+//   const allFields: FormField[] = [
   
-    { section: 'Capitaux' },
-    createNumberField( 'capitaux', 'Capitaux'),
-    createNumberField( 'lci',  'LCI'),
-    createNumberField( 'smp',  'SMP'),
-    createNumberField( 'limite',  'Limite'),
-    createNumberField( 'aliment',  'Aliment'),
+//     { section: 'Capitaux' },
+//     createNumberField( 'capitaux', 'Capitaux'),
+//     createNumberField( 'lci',  'LCI'),
+//     createNumberField( 'smp',  'SMP'),
+//     createNumberField( 'limite',  'Limite'),
+//     createNumberField( 'aliment',  'Aliment'),
   
-    createNumberField( 'retention',  'Retention'),
-    createNumberField( 'conservation',  'Conservation'),
-    createNumberField( 'capacite',  'Capacité'),
-  ]
+//     createNumberField( 'retention',  'Retention'),
+//     createNumberField( 'conservation',  'Conservation'),
+//     createNumberField( 'capacite',  'Capacité'),
+//     createNumberField( 'priorite',  'Priorité'),
+//     createNumberField( 'portee',  'Portée'),
+//   ]
 
-  // 2. Champs à retirer selon l'état courant
-  // ✅ Utiliser policeQuittance.value (maintenant réactif)
- // const isOffreProportionnelle =natureOffre?.isProportionnelle
+//   // 2. Champs à retirer selon l'état courant
+//   // ✅ Utiliser policeQuittance.value (maintenant réactif)
+//  // const isOffreProportionnelle =natureOffre?.isProportionnelle
   
-  const isEdp =natureOffre?.isEdp   
-  const isFacultative =natureOffre?.isFacultative
-  const isFacObligatoire =natureOffre?.isFacObligatoire
-  const isQuotePart =natureOffre?.isQuotePart
-  const isXs =natureOffre?.isXs
+//   const isEdp =natureOffre?.isEdp   
+//   const isFacultative =natureOffre?.isFacultative
+//   const isFacObligatoire =natureOffre?.isFacObligatoire
+//   const isQuotePart =natureOffre?.isQuotePart
+//   const isXs =natureOffre?.isXs
 
-  const excludedKeys = new Set<string>()
-  if (isEdp) {
-    // OFFRE EDP : retirer les champs Non-Proportionnelle
-    console.log('---- OFFRE EDP isEdp :',isEdp)
-    excludedKeys.add( 'capitaux'),
-    excludedKeys.add( 'lci'),
-    excludedKeys.add( 'smp'),
-    excludedKeys.add( 'limite'),  
-    excludedKeys.add( 'retention'),
-    excludedKeys.add( 'capacite')   
-  }else if(isFacObligatoire || isQuotePart) {
-    console.log('---- OFFRE FACOB  QP  isFacObligatoire :',isFacObligatoire)
-    console.log('---- OFFRE FACOB  QP  isQuotePart :',isQuotePart)
-    excludedKeys.add( 'capitaux'),
-    excludedKeys.add( 'lci'),
-    excludedKeys.add( 'smp'),
-    excludedKeys.add( 'limite'),  
-    excludedKeys.add( 'retention') 
-    excludedKeys.add( 'conservation')
-  }else if (isXs){
-    console.log('---- OFFRE EDP isEdp :',isEdp)
-    excludedKeys.add( 'capitaux'),
-    excludedKeys.add( 'lci'),
-    excludedKeys.add( 'smp'),
-    excludedKeys.add( 'limite')//,  
-   // excludedKeys.add( 'retention'),
-   // excludedKeys.add( 'capacite')  
-  }
+//   const excludedKeys = new Set<string>()
+//   if (isEdp) {
+//     // OFFRE EDP : retirer les champs Non-Proportionnelle
+//     console.log('---- OFFRE EDP isEdp :',isEdp)
+//     excludedKeys.add( 'capitaux'),
+//     excludedKeys.add( 'lci'),
+//     excludedKeys.add( 'smp'),
+//     excludedKeys.add( 'limite'),  
+//     excludedKeys.add( 'retention'),
+//     excludedKeys.add( 'capacite')   
+//   }
+//    if(isFacObligatoire || isFacultative || isQuotePart) {
+//    // console.log('---- OFFRE FACOB  QP  isFacObligatoire :',isFacObligatoire)
+//    // console.log('---- OFFRE FACOB  QP  isQuotePart :',isQuotePart)
+//     //excludedKeys.add( 'capitaux')
+//     //excludedKeys.add( 'lci')
+//     //excludedKeys.add( 'smp')
+//     excludedKeys.add( 'priorite')
+//     excludedKeys.add( 'portee')
+//     excludedKeys.add( 'limite'),  
+//     excludedKeys.add( 'retention') 
+//     excludedKeys.add( 'conservation')
+//     excludedKeys.add( 'aliment')
+//     excludedKeys.add( 'capacite')
+//   } if (isXs){
+//     console.log('---- OFFRE XS isXs :',isXs)
+//     excludedKeys.add( 'capitaux'),
+//     excludedKeys.add( 'lci'),
+//     excludedKeys.add( 'smp'),
+//     excludedKeys.add( 'limite')//,  
+//     excludedKeys.add( 'retention'),
+//     excludedKeys.add( 'conservation'),
+//     excludedKeys.add( 'capacite') 
+//     excludedKeys.add( 'aliment')  
+//   }
 
-  console.log('excludedKeys:', excludedKeys.values)
+//   console.log('excludedKeys:', excludedKeys.values)
 
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allFields
+//   // 3. Application du filtre
+//   if (excludedKeys.size === 0) return allFields
 
-  return allFields.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )
-})
-
+//   return allFields.filter(
+//     (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+//   )
+// })
+const  tempQuittanceFields = computed<FormField[]>(() => quittanceCapitauxFields(natureOffre))
 // Données formatées pour l'affichage
 const formattedQuittance = computed(() => {
   return {

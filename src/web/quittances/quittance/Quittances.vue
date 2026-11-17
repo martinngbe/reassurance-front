@@ -1,27 +1,30 @@
 <script setup lang="ts">
 import TTable from '@/composants/display/TTable.vue'
 import type { SortState, TableColumn } from '@/composants/forms/common'
-import { computed, ref, toValue, watch } from 'vue'
+import { computed, ref, toValue, watch, type Ref } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import TButton from '@/composants/forms/TButton.vue'
 import { useQuittances } from '@/services/quittances/quittance/useQuittance'
-import type { Quittance } from '@/services/quittances/quittance/quittance'
+import { quittanceAllColumns, type Quittance } from '@/services/quittances/quittance/quittance'
 import { formatDecimal } from '@/utilitaire/number'
 import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
 import { usePoliceStore } from '@/services/polices/police/police.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
-import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_CONSULTATION, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
 import TToolTip from '@/composants/display/TToolTip.vue'
 import TQuittanceVueSynoptique from './TQuittanceVueSynoptique.vue'
+import Acteurs from '@/web/acteurs/acteur/Acteurs.vue'
+import TButton from '@/composants/forms/TButton.vue'
+import type { Acteur } from '@/services/acteurs/acteur/acteur.ts'
+import { useQueryClient } from '@tanstack/vue-query'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 
 const titreFenetre = ref('QUITTANCES')
 const props = defineProps<{
@@ -30,9 +33,11 @@ const props = defineProps<{
 const { success, error, warning, info } = useToast()
 const ecranStore = useEcransStore()
 const policeStore = usePoliceStore()
-const currentPolice = computed(()=> policeStore.currentPolice)
+
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=>quittanceStore.currentQuittance)
+const currentPolice = policeStore.currentPolice
+const natureOffre = currentPolice?.natureOffre
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -44,15 +49,16 @@ const showModalFicheQuittance = ref(false)
 const showModalModification = ref(false)
 const showModaleVueSynotique = ref(false)
 
-const policeId = currentPolice.value? currentPolice.value.id : null
+const policeId = currentPolice? currentPolice.id : null
 const isCession = ecranStore.currentModule ===MODULE_CESSION
 const isEcranBordereau = ecranStore.currentEcran ===ECRAN_BORDEREAU
 const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 const isEcranEcheancePmd = ecranStore.currentEcran ===ECRAN_ECHEANCE_PMD
 const isEcranPlacement = ecranStore.currentEcran ===ECRAN_PLACEMENT
 const isEcranCompte = ecranStore.currentEcran ===ECRAN_COMPTE
+const isEcranConsultation = ecranStore.currentEcran ===ECRAN_CONSULTATION
 console.warn(" __________ Quittances.vue _________")
-console.log(" ----- currentPolice.value:",currentPolice.value)
+console.log(" ----- currentPolice:",currentPolice)
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
 console.log(" ----- ecranStore.currentEcran:",ecranStore.currentEcran)
 console.log(" ----- policeId:",policeId)
@@ -65,16 +71,20 @@ console.log(" ----- isEcranCompte:",isEcranCompte)
 // ============================================
 // 2. LOGIQUE MÉTIER EXISTANTE (inchangée)
 // ============================================
+const acteurCedante   = ref<Acteur| undefined>(undefined)
+
+
 const policeIdVal = isEcranBordereau || isEcranPlacement || isEcranEcheancePmd ? null : toValue(policeId)
-const isFacVal    = isEcranBordereau? true : // Quittances FAC  
+const isFacVal    = isEcranBordereau || isEcranPlacement? true : // Quittances FAC  
                     isEcranCompte? false :  // Quittances Traités
                      null  // Indifférent
 
 const isProportionnelleVal    =  isEcranEcheancePmd ? false : null
-titreFenetre.value = isEcranBordereau ? "QUITTANCES FAC" :
-                     isEcranPlacement ? "QUITTANCES CESSION" :
-                     isEcranEcheancePmd?  "QUITTANCES NON PROPORTIONNELLES" : 
-                     isEcranCompte?       "QUITTANCES TRAITéS" : "QUITTANCES"
+
+const titreQuittance = isCession?"QUITTANCES CESSION ":"QUITTANCES ACCEPTATION "
+titreFenetre.value = isEcranBordereau || isEcranPlacement? titreQuittance+" FAC" :
+                     isEcranEcheancePmd? titreQuittance+ "NON PROPORTIONNELLES" : 
+                     isEcranCompte?      titreQuittance+ " TRAITéS" : titreQuittance
 
 // ============================================
 // 3. COMPUTED POUR LA PAGINATION + RECHERCHE
@@ -93,8 +103,22 @@ const paginationParams = computed<PaginationParams>(() => ({
 // ============================================
 // ⚠️ On ne passe plus un objet "params" plat,
 // mais la structure exacte attendue par UseQuittancesOptions
+console.log(' ________  toValue(acteurCedante.value?.id):', toValue(acteurCedante.value?.id))
+//const cedanteIdRef : Ref<number> | number | null =null
+const cedanteIdRef = ref< number | null>(null)
+const params = {
+  policeId: policeIdVal,
+  cedanteId: cedanteIdRef,
+  isCession: isCession,
+  isFac: isFacVal,
+  isProportionnelle: isProportionnelleVal,
+  params: paginationParams, // ⭐ Le computed contenant la recherche
+}
+console.log(' ________  params:', params)
+const paramsQuittance = computed(()=>params)
 const store = useQuittances({
   policeId: policeIdVal,
+  cedanteId: cedanteIdRef,
   isCession: isCession,
   isFac: isFacVal,
   isProportionnelle: isProportionnelleVal,
@@ -105,92 +129,10 @@ const store = useQuittances({
 const { quittances, updateQuittance, deleteQuittance } = store
 
 type QuittanceRow = Quittance & { [key: string]: any }
-//const quittanceToEdit = ref<Quittance | null | undefined>(null)
-
 // ==================== COLONNES ====================
-const quittanceColumns = computed(()=>{
-    const allColumns: TableColumn[] = [
-                    { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
-                    { key: 'numero',       label: 'N°Quittance',  width: 200,   minWidth: 80 , resizable:true},
-                    { key: 'isCession',    label: 'Cess°',        width: 50,   minWidth: 80,  align: 'center' },
-                    { key: 'isIard',       label: 'IARD',         width: 50,   minWidth: 80,  align: 'center' },
-                  
-                    { key: 'isSinistree',  label: 'Sinistrée',    width: 50,   minWidth: 80,  align: 'center' },
-                    { key: 'dateEffet',    label: 'Date Effet',   width: 200,  minWidth: 200, align: 'center' },
-                    { key: 'dateEcheance', label: 'Date Echéance',width: 200,  minWidth: 200,  align: 'center' },
-                    { key: 'devise',       label: 'Devise',       width: 80,   minWidth: 80,   align:'center'},
-                    { key: 'coursDevise',  label: 'Cours Devise', width: 150,  minWidth: 80,  align:'right' },
-                  
-                    { key: 'capitaux',     label: 'Capitaux',     width: 200,  minWidth: 200, align:'right'  },
-                    { key: 'lci',          label: 'LCI',          width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'smp',          label: 'SMP',          width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'limite',       label: 'Limite',       width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'retention',    label: 'Retention',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'conservation',         label: 'Conservation',        width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'estimationPrime',      label: 'Estimation Prime',    width: 200,  minWidth: 200,  align:'right' },
-                  
-                    { key: 'nombreEcheancePmd',    label: 'Nb. Echéeance PMD',   width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'sinistreAuComptant',   label: 'Sinistre Au Comptant',width: 200,  minWidth: 200,  align:'right' },
-                    
-                    { key: 'primeBrute',    label: 'Prime Brute',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'primeCedee',    label: 'Prime Cédée',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'primeAcceptee', label: 'Prime Acceptée',    width: 200,  minWidth: 200,  align:'right' },
+const quittanceColumns = computed(()=> quittanceAllColumns(natureOffre))             
 
-                    { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
 
-                    { key: 'taxeSurPrime',  label: 'Taxe sur Prime', width: 200,  minWidth: 200,  align:'right' }, 
-                    { key: 'tauxCedante',    label: 'Taux Cédante',    width: 200,  minWidth: 200,  align:'right' },  
-                    { key: 'tauxAccepte',    label: 'Taux Accepté',    width: 200,  minWidth: 200,  align:'right' },
-                    
-                    //{ key: 'tauxCession',    label: 'Taux Cession',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'tauxCommission',    label: 'Taux Cie',    width: 200,  minWidth: 200,  align:'right' },
-                    //{ key: 'tauxRetention',    label: 'Taux Retention',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'taxeSurCommission',    label: 'Taxe sur Cie',    width: 200,  minWidth: 200,  align:'right' },
-                    //{ key: 'taxeSurCommissionFixe',    label: 'Taxe su Cie',    width: 200,  minWidth: 200,  align:'right' },
-
-                  ]
-  console.warn("---- QUITTANCES allColumns:",allColumns )
-   // 2. Champs à retirer selon l'état courant
-  // ✅ Utiliser policeQuittance.value (maintenant réactif)
-  const isOffreProportionnelle = currentPolice.value
-    ? currentPolice.value.natureOffre?.isProportionnelle === true
-    : false
-  console.log("isOffreProportionnelle:",isOffreProportionnelle )
-  const excludedKeys = new Set<string>()
-  if (isOffreProportionnelle || isEcranBordereau) {
-    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
-    excludedKeys.add('limite')
-    excludedKeys.add('retention')
-    excludedKeys.add('conservation')
-    excludedKeys.add('capacite')
-    excludedKeys.add('estimationPrime')
-    excludedKeys.add('nombreEcheancePmd')
-    //excludedKeys.add('tauxCession')
-    //excludedKeys.add('tauxRetention')
-    excludedKeys.add('aliment')
-  } else {
-    // OFFRE NON PROPORTIONNELLE : retirer les champs Proportionnelle
-    excludedKeys.add('capitaux')
-    excludedKeys.add('lci')
-    excludedKeys.add('smp')
-    excludedKeys.add('primeBrute')
-    excludedKeys.add('primeNette')
-    excludedKeys.add('primeCedee')
-    excludedKeys.add('primeAcceptee')
-    excludedKeys.add('tauxCedante')
-    excludedKeys.add('tauxAccepte')
-    excludedKeys.add('taxeSurPrime')
-  }
-   console.log("excludedKeys:",excludedKeys )
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allColumns
-
-  return allColumns.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )
-
-})
-             
 console.log("quittanceColumns.value:",quittanceColumns.value )
 // ==================== DONNÉES TABLE ====================
 // Accéder via store.quittances
@@ -251,7 +193,7 @@ const openEdit = (quittance: QuittanceRow) => {
   console.log(' ___  Quittances.openEdit _____')
   // ✅ Sélectionner via le store
   quittanceStore.selectQuittance(quittance as Quittance)
-  titleModal.value = 'Modifier quittance'
+  titleModal.value = 'Modifier quittance N°'+ quittance.numero
   showModalModification.value = true
 }
 const handleModifier = () => {
@@ -259,12 +201,9 @@ const handleModifier = () => {
     info('Veuillez sélectionner une quittance svp...', 'Info')
     return
   }
-  console.log(" ---- Quittances.handleModifier ------")
-  console.log(" selectedQuittances.value:",selectedQuittances.value)
   const quittanceId = selectedQuittances.value[0]
   const quittance = quittanceRows.value.find((u: any) => u.id === quittanceId)
-  console.log(" quittanceId:",quittanceId)
-  console.log(" quittance:",quittance)
+
  
   if (quittance) openEdit(quittance)
 }
@@ -272,7 +211,25 @@ const handleModifier = () => {
 const handleActualiser = ()=>{
   quittances.refresh()
 }
+//const showModal = ref(false)
+const isModifierQuittance=ref(true)
+const showModalActeur = ref(false)
+ const queryClient = useQueryClient()
+const onChoixActeur = (acteur: Acteur)=>{
+  console.log(' __Av____ onChoixActeur paramsQuittance.value:',paramsQuittance.value)
+  console.log(' __Av____ acteur: ' ,acteur)
+  acteurCedante.value = acteur
+  cedanteIdRef.value = acteur.id
+  showModalActeur.value=false
+  
+  //paramsQuittance.value.cedanteId=acteur.id
+  console.log(' __Ap____ onChoixActeur paramsQuittance.value:',paramsQuittance.value)
+  //queryClient.invalidateQueries({ queryKey: ["quittances"] })
+  //quittances.refresh()
+}
+// //////////////////////////////
 // Debounce recherche
+// //////////////////////////////
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
   window.clearTimeout(searchTimeout)
@@ -320,10 +277,22 @@ watch(tableSearch, () => {
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
 
-        <TToolTip content="Cliquez pour sélectionner les quittances d'un acteur particulier ..." v-if="!policeId">
-                 <p class="pi pi-filter pl-3 pr-3 cursor-pointer
-                  text-primary-600  dark:text-primary-400 
-           transition-transform duration-200 hover:scale-225"></p>
+        <TToolTip content="Cliquez pour sélectionner les quittances d'une cédante particulière ..." v-if="!policeId">
+               <div class="flex ">
+                      <p  class="pi pi-filter pl-3 pr-3 cursor-pointer
+                        text-primary-600  dark:text-primary-400 
+                        transition-transform duration-200 hover:scale-225" 
+                        @click="showModalActeur=true">
+                      </p>
+                      <p v-if="acteurCedante"
+                      @click="showModalActeur=true"
+                      class="text-primary-600  cursor-pointer  hover:italic dark:text-primary-400"
+                      > Les quittances de : {{ acteurCedante.raisonSociale }}
+                      </p>
+               </div>                
+        </TToolTip>
+        <TToolTip class="pl-4"  content="Cliquez pour afficher toutes les quittances" v-if="acteurCedante">
+               <IconeNonValider @click="acteurCedante=undefined"></IconeNonValider>
         </TToolTip>
         <TToolTip content="Cliquez pour une vue synoptique de la quittance ..." v-if="currentQuittance">
                  <p class="pi pi-eye pl-3 pr-3 cursor-pointer
@@ -346,7 +315,7 @@ watch(tableSearch, () => {
             variant="soft" > 
               <span class="text-lg font-extrabold uppercase cursor-pointer">Avenant</span> 
         </TButton>
-        <TAction  v-if="isEcranFacultative"
+        <TAction  v-if="isModifierQuittance"
           :masque-nouveau="true"
           :masque-supprimer="true"
           :active-modifier="isLigneSelectionnee"
@@ -376,6 +345,12 @@ watch(tableSearch, () => {
         <template #cell-isSinistree="{ value , row }">        
                   <!-- TAF Charger NB Sinsitre ou IsSinistree-->              
                   <IconeNonValider  />        
+        </template>
+
+        <template #cell-police="{ value }">
+            <span class="font-mono  uppercase" v-if="value" >
+              {{ value.acteurCedante.sigle }}
+            </span>
         </template>
         <template #cell-mouvement="{ value }">
           <span class="font-mono  uppercase" >{{ value.code }}</span>
@@ -412,9 +387,18 @@ watch(tableSearch, () => {
           <template #cell-conservation="{ value }">
             <TDisplayNumber :value="value" />
         </template>
+  
+        <template #cell-priorite="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>
+          <template #cell-portee="{ value }">
+            <TDisplayNumber :value="value" />
+        </template>        
+
         <template #cell-estimationPrime="{ value }">
             <TDisplayNumber :value="value" />
         </template>
+
         <template #cell-sinistreAuComptant="{ value }">
             <TDisplayNumber :value="value" />
         </template>
@@ -484,12 +468,27 @@ watch(tableSearch, () => {
           </template>
   </TModal>
   <TModal v-model="showModalModification" :title="titleModal"
-     width="60%" >
+     width="60%"  height="75%" >
       <TQuittanceForm
         :loading="updateQuittance.isPending.value"
         @success="onFormSuccess"
         @cancel="closeModal"
       />
   </TModal>
- 
+  <TModal v-model="showModalActeur" 
+      width="70%"  
+      height="65%" 
+      title="Choisissez un acteur" 
+   >
+        <template #default>
+            <Acteurs 
+                :masquer-bouton-action="true" 
+                @row-click="onChoixActeur"
+            />
+        </template>
+        <template #footer>
+            <TButton  variant="soft" @click="showModalActeur=false">Ferner</TButton>
+        </template>    
+
+  </TModal>
 </template>

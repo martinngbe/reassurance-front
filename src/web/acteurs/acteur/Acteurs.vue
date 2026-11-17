@@ -19,6 +19,8 @@ import IconeValider from '@/composants/icone/IconeValider.vue'
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
+
+const props =  defineProps<{ masquerBoutonAction?:boolean}>()  
 const emit = defineEmits<{ 
   (e: 'row-click',  acteur: any): void
 }>()
@@ -208,7 +210,7 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption="{selectedCount , total}">
-      <TAction
+      <TAction v-if="!masquerBoutonAction"
         :active-modifier="isLigneSelectionnee"
         :active-actualiser="total>0"
         :masque-impression="true"

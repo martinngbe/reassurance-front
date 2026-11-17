@@ -12,6 +12,7 @@ import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.s
 import TAlert from '@/composants/display/TAlert.vue'
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 import TSelectionnez from '@/composants/utilitaire/TSelectionnez.vue'
+import { quittancePrimesFields } from '@/services/quittances/quittance/quittance'
 
 
 const tempQuittanceStore = useTempQuittanceStore()
@@ -38,42 +39,43 @@ console.log('==================================')
 
 // ==================== FONCTIONS RESOLVE (SCROLL INFINI) ====================
 
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
-  const allFields: FormField[] = [ 
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+//   const allFields: FormField[] = [ 
    
-    { section: 'Primes' },
-    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%' },
-    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%'},   
-  ]
+//     { section: 'Primes' },
+//     { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%' },
+//     { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%'},   
+//   ]
 
 
-  const isEdp =natureOffre?.isEdp   
-  const isFacultative =natureOffre?.isFacultative
-  const isFacObligatoire =natureOffre?.isFacObligatoire
-  const isQuotePart =natureOffre?.isQuotePart
-  const isXs =natureOffre?.isXs
-  const excludedKeys = new Set<string>()
-  if (isEdp || isFacObligatoire || isQuotePart) {
-    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
-    excludedKeys.add('estimationPrime')
-    excludedKeys.add('primeBrute')
+//   const isEdp =natureOffre?.isEdp   
+//   const isFacultative =natureOffre?.isFacultative
+//   const isFacObligatoire =natureOffre?.isFacObligatoire
+//   const isQuotePart =natureOffre?.isQuotePart
+//   const isXs =natureOffre?.isXs
+//   const excludedKeys = new Set<string>()
+//   if (isEdp || isFacObligatoire || isFacultative || isQuotePart) {
+//     // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+//     excludedKeys.add('estimationPrime')
+//     //excludedKeys.add('primeBrute')
    
-  }else if(isXs){
-    excludedKeys.add('primeBrute')
-  }
+//   } if(isXs){
+//     excludedKeys.add('primeBrute')
+    
+//   }
 
-  // Le deux champs primes ont été rétirée
-  // donc on retourne un tableau vide
-  if(excludedKeys.size===2) return [] 
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allFields
+//   // Le deux champs primes ont été rétirée
+//   // donc on retourne un tableau vide
+//   if(excludedKeys.size===2) return [] 
+//   // 3. Application du filtre
+//   if (excludedKeys.size === 0) return allFields
 
-  return allFields.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )
-})
-
+//   return allFields.filter(
+//     (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+//   )
+// })
+const tempQuittanceFields = computed<FormField[]>(() =>quittancePrimesFields(natureOffre) )
 
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))

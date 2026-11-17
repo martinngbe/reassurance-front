@@ -20,6 +20,8 @@ export const ECRAN_PLACEMENT = 'ecranPlacement'
 export const ECRAN_BORDEREAU = 'ecranBordereau'
 export const ECRAN_ECHEANCE_PMD = 'ecranEcheancePmd'
 export const ECRAN_COMPTE = 'ecranCompte'
+export const ECRAN_TRANCHE = 'ecranTranche'
+export const ECRAN_CONSULTATION = 'ecranConsultation'
 
 
 export const ECRAN_TABLEAU_DE_BORD = 'ecranTableauDeBord'

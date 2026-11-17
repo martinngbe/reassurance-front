@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
-import TTitreModule from '@/composants/utilitaire/TTitreModule.vue';
-import { ref } from 'vue';
-const active = ref('reassureurs')
+import EnConstruction from '@/web/EnConstruction.vue';
 
 
 </script>
@@ -16,7 +14,7 @@ const active = ref('reassureurs')
    
 
     <template #default>
-          <TTitreModule libelle="Ecran Tableau de bord"/>
+          <EnConstruction />
     </template>
 
 

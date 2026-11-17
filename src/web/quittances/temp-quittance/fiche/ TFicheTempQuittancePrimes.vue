@@ -2,6 +2,7 @@
 import type { FormField } from '@/composants/forms/generic-form/types-form';
 import GenericDetailView from '@/composants/forms/genericDetail/GenericDetailView.vue';
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store';
+import { quittancePrimesFields } from '@/services/quittances/quittance/quittance';
 import type { TempQuittance } from '@/services/quittances/temp-quittance/temp-quittance';
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store';
 import { computed } from 'vue'
@@ -28,66 +29,60 @@ const numberConfig = {
   formatOptions: { style: 'decimal' },
   returnType: 'number' as const,
 }
-// Configuration des champs pour l'affichage
-// const fields = computed<FormField[]>(() => [
-//   /////////////////////////////// 
-//   ////// Prime 
-//   /////////////////////////////
-//   { key: 'primeBrute',          label: 'Prime Brute',     type: 'number' , size:'2xl' , helpText:"Prime Brute à 100%",
-//         numberOptions: {
-//           decimals: 2,
-//           formatOptions: { style: 'decimal' },
-//           returnType: 'number',
-//         }}, 
-//   { key: 'primeNette',          label: 'Prime Nette',     type: 'number' , size:'2xl' , helpText:"Prime Nette à 100%",
-//         numberOptions: {
-//           decimals: 2,
-//           formatOptions: { style: 'decimal' },
-//           returnType: 'number',
-//         }}, 
-//   { key: 'estimationPrime',     label: 'Estimation',      type: 'number' , size:'2xl' , helpText:"Estimation à 100%",
-//         numberOptions: {
-//           decimals: 2,
-//           formatOptions: { style: 'decimal' },
-//           returnType: 'number',
-//         }}, 
-
-// ])
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
-  const allFields: FormField[] = [ 
+// ✅ Helper pour éviter de répéter la configuration des champs numériques
+// const createNumberField = (key: string, label: string): FormField => ({
+//   key,
+//   label,
+//   type: 'number',
+//   size: 'xl',
+//   helpText: `${label} à 100%`,
+//   numberOptions: {
+//     decimals: 2,
+//     formatOptions: { style: 'decimal' },
+//     returnType: 'number',
+//     min: 0,        // 👈 Prix minimum = 0
+//     max: 999999999999999.99, // 👈 Prix maximum
+//   },
+// })
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+//   const allFields: FormField[] = [ 
    
-    { section: 'Primes' },
-    { key: 'primeBrute', label: 'Prime brute', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%' },
-    { key: 'estimationPrime', label: 'Estimation prime', type: 'number', numberOptions: { min: 0 } , helpText:'Prime à100%'},   
-  ]
+//     { section: 'Primes' },
+//     createNumberField( 'primeBrute', 'Prime brute'),
+//     createNumberField( 'estimationPrime', 'Estimation prime'),   
+//   ]
 
 
-  const isEdp =natureOffre?.isEdp   
-  const isFacultative =natureOffre?.isFacultative
-  const isFacObligatoire =natureOffre?.isFacObligatoire
-  const isQuotePart =natureOffre?.isQuotePart
-  const isXs =natureOffre?.isXs
-  const excludedKeys = new Set<string>()
-  if (isEdp || isFacObligatoire || isQuotePart) {
-    // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
-    excludedKeys.add('estimationPrime')
-    excludedKeys.add('primeBrute')
+//   const isEdp =natureOffre?.isEdp   
+//   const isFacultative =natureOffre?.isFacultative
+//   const isFacObligatoire =natureOffre?.isFacObligatoire
+//   const isQuotePart =natureOffre?.isQuotePart
+//   const isXs =natureOffre?.isXs
+//   const excludedKeys = new Set<string>()
+//   if (isEdp || isFacObligatoire || isFacultative || isQuotePart) {
+//     // OFFRE PROPORTIONNELLE : retirer les champs Non-Proportionnelle
+//     excludedKeys.add('estimationPrime')
+//     //excludedKeys.add('primeBrute')
    
-  }else if(isXs){
-    excludedKeys.add('primeBrute')
-  }
+//   } if(isXs){
+//     excludedKeys.add('primeBrute')
+//   }
 
-  // Le deux champs primes ont été rétirée
-  // donc on retourne un tableau vide
-  if(excludedKeys.size===2) return [] 
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allFields
+//   // Le deux champs primes ont été rétirée
+//   // donc on retourne un tableau vide
+//   if(excludedKeys.size===2) return [] 
+//   // 3. Application du filtre
+//   if (excludedKeys.size === 0) return allFields
 
-  return allFields.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )
-})
+//   return allFields.filter(
+//     (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+//   )
+// })
+
+const tempQuittanceFields = computed<FormField[]>(() =>
+quittancePrimesFields(natureOffre) )
+
 
 // Données formatées pour l'affichage
 const formattedQuittance = computed(() => {

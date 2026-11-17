@@ -14,6 +14,12 @@ import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.v
 import { useToast } from '@/composants/toast/useToast.ts'
 import TBadge from '@/composants/display/TBadge.vue'
 
+const props = defineProps<{
+  masquerBoutonAction?: boolean
+}>()
+const emit = defineEmits<{ 
+  (e: 'row-click',  campagne: any): void
+}>()
 // ==================== PAGINATION ====================
 const page = ref(1)
 const pageSize = ref(PAGE_SIZE)
@@ -142,7 +148,9 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-
+const onRowClick = ( row: any, index: number)=>{       
+    emit('row-click',row as Campagne)
+}
 // Reset page quand la recherche change (avec debounce idéalement)
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -174,6 +182,7 @@ watch(tableSearch, () => {
     striped
     @sort="onSort"
     @row-double-click="handleModifier"
+    @row-click="onRowClick"
     
   >
     <template #caption-extra>
@@ -192,7 +201,7 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption="{ selectedCount, total }">
-       <TAction
+       <TAction v-if="masquerBoutonAction"
           :active-modifier="isLigneSelectionnee"
           :active-supprimer="isLigneSelectionnee"
          

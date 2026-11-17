@@ -13,6 +13,7 @@ const KEY = 'quittances'
 // ⭐ Interface pour les options
 export interface UseQuittancesOptions {
   policeId?: Ref<number> | number | null      // POLICE_ID | (NULL)INDIFFERENTS
+  cedanteId?: Ref<number| null> | number   
   isCession?: Ref<boolean> | boolean | null   // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
   isFac?: Ref<boolean> | boolean | null       // FAC  |  TRAITE  | (NULL)INDIFFERENTS
   isProportionnelle?: Ref<boolean> | boolean | null  //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
@@ -29,6 +30,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
   // ⭐ Déstructuration avec valeurs par défaut
   const {
     policeId = null, // POLICE_ID | (NULL)INDIFFERENTS
+    cedanteId= null , 
     isCession = null, // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
     isFac = null, // FAC  |  TRAITE  | (NULL)INDIFFERENTS
     isProportionnelle= null , //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
@@ -46,6 +48,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
     policeId: toValue(policeId),
+    cedanteId: toValue(cedanteId),
     isCession: toValue(isCession)
   }))
 
@@ -54,6 +57,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     watchKeys,
     queryFn: async ({ page, limit }) => {
       const policeIdVal = toValue(policeId)
+      const cedanteIdVal = toValue(cedanteId)
       const isCessionVal = toValue(isCession)
       const isFacVal = toValue(isFac) 
       const isProportionnelleVal = toValue(isProportionnelle)   
@@ -70,7 +74,9 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
             ...(paramsVal.sortDirection && { sortDirection: paramsVal.sortDirection }),
             // Filtres uniquement si non null
             ...(policeIdVal != null && { policeId: policeIdVal }),
+            ...(cedanteIdVal != null && { cedanteId: cedanteIdVal }),
             ...(isCessionVal != null && { isCession: isCessionVal }),
+            // //////////////////////////////////
             ...(isFacVal != null && { isFac: isFacVal }),
             ...(isProportionnelleVal != null && { isProportionnelle: isProportionnelleVal }),
             

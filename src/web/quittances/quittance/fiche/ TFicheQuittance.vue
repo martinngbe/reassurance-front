@@ -8,9 +8,13 @@ const quittance = computed(() => quittanceStore.currentQuittance);
 // lecture de la police rattaché à la quittance
 const police = computed(()=> quittance.value?.police)
 // lecture de la nature de l'offre rattaché à la police
-const natureOffre = computed(()=> police.value? police.value.natureOffre : null)
-const isProportionnelle = computed(()=> natureOffre.value?.isProportionnelle )
-
+const natureOffre =  police.value?.natureOffre
+const isProportionnelle = computed(()=> natureOffre?.isProportionnelle )
+  const isEdp = computed(()=>natureOffre?.isEdp)   
+  const isFacultative = computed(()=>natureOffre?.isFacultative)
+  const isFacObligatoire = computed(()=>natureOffre?.isFacObligatoire)
+  const isQuotePart = computed(()=>natureOffre?.isQuotePart)
+  const isXs = computed(()=>natureOffre?.isXs)
 const props = 
   defineProps<{
     masqueEntete?: boolean
@@ -93,14 +97,14 @@ const formatPercent = (value: number | undefined | null) => {
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Nbre Échéance PMD</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.nombreEcheancePmd, 0) }}</td>
-            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Sinistre au comptant</td>
-            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.sinistreAuComptant) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400" v-if="isXs">Nbre Tranche</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200"v-if="isXs">{{ formatNumber(quittance.nombreTranche) }}</td>
           </tr>
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Avis sinistre</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.avisSinistre) }}</td>
-            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400"></td>
-            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200"></td>
+ <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Sinistre au comptant</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.sinistreAuComptant) }}</td>
           </tr>
         </tbody>
 
@@ -126,18 +130,26 @@ const formatPercent = (value: number | undefined | null) => {
             
            
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle && !isXs">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Rétention</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.retention) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Conservation</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.conservation) }}</td>
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle && !isXs">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Capacité</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.capacite) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Limite</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.limite) }}</td>
           </tr>
+          
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="isXs">
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Priorité</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.priorite) }}</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">portee</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.portee) }}</td>
+          </tr>
+
         </tbody>
 
         <!-- SECTION: PRIMES -->
@@ -172,7 +184,7 @@ const formatPercent = (value: number | undefined | null) => {
         </tbody>
 
         <!-- SECTION: TAUX ET TAXES -->
-        <tbody  v-if="!props.masqueTauxEtTaxes" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+        <tbody  v-if="!props.masqueTauxEtTaxes && isProportionnelle" class="border-b-2 border-[#a8a29e] dark:border-stone-600">
           <tr>
             <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
               Taux et Taxes
@@ -190,7 +202,7 @@ const formatPercent = (value: number | undefined | null) => {
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Accepté</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(quittance.tauxAccepte) }}</td>
           </tr>
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors"  v-if="isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux Commission</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(quittance.tauxCommission) }}</td>
            
@@ -208,7 +220,7 @@ const formatPercent = (value: number | undefined | null) => {
         </tbody>
 
         <!-- SECTION: AUTRES & RELATIONS -->
-        <tbody  v-if="!props.masqueAutreRelations">
+        <tbody  v-if="!props.masqueAutreRelations && false">
           <tr>
             <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
               Autres & Relations
@@ -216,19 +228,19 @@ const formatPercent = (value: number | undefined | null) => {
           </tr>
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" v-if="!isProportionnelle">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Aliment</td>
-            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance.aliment) }}</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatNumber(quittance?.aliment) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Mouvement</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">
-              {{ quittance.mouvement?.libelle || `ID: ${quittance.mouvementId}` }}
+              {{ quittance?.mouvement?.libelle || `ID: ${quittance?.mouvementId}` }}
             </td>
           </tr>
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Police</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">
-              {{ quittance.police?.numero || `ID: ${quittance.policeId}` }}
+              {{ quittance?.police?.numero || `ID: ${quittance?.policeId}` }}
             </td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Devise (ID)</td>
-            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ quittance.devise.libelle }}</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ quittance?.devise.libelle }}</td>
           </tr>
         </tbody>
       </table>

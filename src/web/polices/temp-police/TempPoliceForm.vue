@@ -13,6 +13,7 @@ import { ECRAN_FACULTATIVE, MODULE_ACCEPTATION, useEcransStore } from '@/service
 import { AUCUN } from '@/services/common/constantes'
 import { useTempQuittanceStore } from '@/services/quittances/temp-quittance/temp-quittance.store'
 import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQuittance'
+import type { Police } from '@/services/polices/police/police'
 
 const tempPoliceStore = useTempPoliceStore()
 const currentTempPolice = computed(()=> tempPoliceStore.currentTempPolice)
@@ -253,7 +254,7 @@ const handleSubmit = async (data: Record<string, any>) => {
     
   try {
     if (isEditing.value && currentTempPolice.value?.id) {
-      await updateTempPolice.mutateAsync({
+      const police = await updateTempPolice.mutateAsync({
               id: currentTempPolice.value.id,
               data: buildPayload(data),
             })
@@ -277,11 +278,12 @@ const handleSubmit = async (data: Record<string, any>) => {
                   console.log(" APRES currentTempQuittance.value:",currentTempQuittance.value)
         }
            
-      }   
+      }
+      tempPoliceStore.setCurrentTempPolice(police as TempPolice)   
       emit('success', 'TempPolice modifiée avec succès')
     } else {
-      await createTempPolice.mutateAsync( buildPayload(data) as TempPolice)
-        
+      const police = await createTempPolice.mutateAsync( buildPayload(data) as TempPolice)
+      tempPoliceStore.setCurrentTempPolice(police as TempPolice)  
       emit('success', 'TempPolice créé avec succès')
     }
   } catch (err: any) {

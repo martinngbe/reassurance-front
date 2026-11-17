@@ -11,6 +11,7 @@ import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.s
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 import TAlert from '@/composants/display/TAlert.vue'
 import TSelectionnez from '@/composants/utilitaire/TSelectionnez.vue'
+import { quittanceTauxEtTaxesFields } from '@/services/quittances/quittance/quittance'
 
 // ==================== STORES & COMPUTED ====================
 const tempQuittanceStore = useTempQuittanceStore()
@@ -36,13 +37,6 @@ console.log('==================================')
 
 // ==================== CONFIGURATION DES CHAMPS ====================
 
-// ✅ Configuration commune pour les nombres
-// const numberConfig = {
-//   decimals: 2,
-//   min: 0,        // 👈 Prix minimum = 0
-//   max: 100, // 👈 Prix maximum
-//   returnType: 'number' as const,
-// }
 
 // ✅ Helper pour créer un champ numérique rapidement
 const createNumberField = (key: string, label: string, helpText?: string): FormField => ({
@@ -60,80 +54,81 @@ const createNumberField = (key: string, label: string, helpText?: string): FormF
   },
 })
 
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. Liste COMPLÈTE des champs (y compris conditionnels)
-  const allFields: FormField[] = [
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. Liste COMPLÈTE des champs (y compris conditionnels)
+//   const allFields: FormField[] = [
 
-    { section: 'Taux et Taxes' },
-    createNumberField( 'tauxCedante', 'Taux Cédante'  ),
-    createNumberField( 'tauxAccepte', 'Taux Accepté'  ),
-    createNumberField( 'tauxCession', 'Taux Cession' ),
-    createNumberField( 'tauxRetention', 'Taux Retention' ),
-    createNumberField( 'tauxCommission', 'Taux commission' ),
-    createNumberField( 'taxeSurPrime', 'Taxe sur prime' ),
-    createNumberField( 'taxeSurCommission', 'Taxe sur commission' ),
+//     { section: 'Taux et Taxes' },
+//     createNumberField( 'tauxCedante', 'Taux Cédante'  ),
+//     createNumberField( 'tauxAccepte', 'Taux Accepté'  ),
+//     createNumberField( 'tauxCession', 'Taux Cession' ),
+//     createNumberField( 'tauxRetention', 'Taux Retention' ),
+//     createNumberField( 'tauxCommission', 'Taux commission' ),
+//     createNumberField( 'taxeSurPrime', 'Taxe sur prime' ),
+//     createNumberField( 'taxeSurCommission', 'Taxe sur commission' ),
 
-  ]
+//   ]
 
-  // 2. Champs à retirer selon l'état courant
-  // ✅ Utiliser policeQuittance.value (maintenant réactif)
-  // const isOffreProportionnelle = currentTempPolice.value
-  //   ? currentTempPolice.value.natureOffre?.isProportionnelle === true
-  //   : false
-  const isEdp =natureOffre?.isEdp   
-  const isFacultative =natureOffre?.isFacultative
-  const isFacObligatoire =natureOffre?.isFacObligatoire
-  const isQuotePart =natureOffre?.isQuotePart
-  const isXs =natureOffre?.isXs
-  const excludedKeys = new Set<string>()
-  if(isEdp){
-    excludedKeys.add( 'tauxCedante')
-    excludedKeys.add( 'tauxAccepte')
-    excludedKeys.add( 'tauxCession' )
-    excludedKeys.add( 'tauxRetention' )    
-    excludedKeys.add( 'tauxCommission' )
-    excludedKeys.add( 'taxeSurPrime' )
-    excludedKeys.add( 'taxeSurCommission' )
+//   // 2. Champs à retirer selon l'état courant
+//   // ✅ Utiliser policeQuittance.value (maintenant réactif)
+//   // const isOffreProportionnelle = currentTempPolice.value
+//   //   ? currentTempPolice.value.natureOffre?.isProportionnelle === true
+//   //   : false
+//   const isEdp =natureOffre?.isEdp   
+//   const isFacultative =natureOffre?.isFacultative
+//   const isFacObligatoire =natureOffre?.isFacObligatoire
+//   const isQuotePart =natureOffre?.isQuotePart
+//   const isXs =natureOffre?.isXs
+//   const excludedKeys = new Set<string>()
+//   if(isEdp){
+//     excludedKeys.add( 'tauxCedante')
+//     excludedKeys.add( 'tauxAccepte')
+//     excludedKeys.add( 'tauxCession' )
+//     excludedKeys.add( 'tauxRetention' )    
+//     excludedKeys.add( 'tauxCommission' )
+//     excludedKeys.add( 'taxeSurPrime' )
+//     excludedKeys.add( 'taxeSurCommission' )
 
-  }else if(isFacObligatoire){
-    excludedKeys.add( 'tauxCedante')
-    excludedKeys.add( 'tauxAccepte')
-    //excludedKeys.add( 'tauxCession' )
-    excludedKeys.add( 'tauxRetention' )    
-    excludedKeys.add( 'tauxCommission' )
-    excludedKeys.add( 'taxeSurPrime' )
-    excludedKeys.add( 'taxeSurCommission' )  
-  }else if(isQuotePart){
-    excludedKeys.add( 'tauxCedante')
-    excludedKeys.add( 'tauxAccepte')
-    //excludedKeys.add( 'tauxCession' )
-    //excludedKeys.add( 'tauxRetention' )    
-    excludedKeys.add( 'tauxCommission' )
-    excludedKeys.add( 'taxeSurPrime' )
-    excludedKeys.add( 'taxeSurCommission' )  
-  }else if(isXs){
-    excludedKeys.add( 'tauxCedante')
-    excludedKeys.add( 'tauxAccepte')
-    excludedKeys.add( 'tauxCession' )
-    excludedKeys.add( 'tauxRetention' )    
-    excludedKeys.add( 'tauxCommission' )
-    excludedKeys.add( 'taxeSurPrime' )
-    excludedKeys.add( 'taxeSurCommission' )  
-  }
+//   } if(isFacObligatoire || isFacultative){
+//     //excludedKeys.add( 'tauxCedante')
+//     //excludedKeys.add( 'tauxAccepte')
+//     excludedKeys.add( 'tauxCession' )
+//     excludedKeys.add( 'tauxRetention' )    
+//     excludedKeys.add( 'tauxCommission' )
+//     excludedKeys.add( 'taxeSurPrime' )
+//     excludedKeys.add( 'taxeSurCommission' )  
+//   } if(isQuotePart){
+//     excludedKeys.add( 'tauxCedante')
+//     excludedKeys.add( 'tauxAccepte')
+//     //excludedKeys.add( 'tauxCession' )
+//     //excludedKeys.add( 'tauxRetention' )    
+//     excludedKeys.add( 'tauxCommission' )
+//     excludedKeys.add( 'taxeSurPrime' )
+//     excludedKeys.add( 'taxeSurCommission' )  
+//   }
+//    if(isXs){
+//     excludedKeys.add( 'tauxCedante')
+//     excludedKeys.add( 'tauxAccepte')
+//     excludedKeys.add( 'tauxCession' )
+//     excludedKeys.add( 'tauxRetention' )    
+//     excludedKeys.add( 'tauxCommission' )
+//     excludedKeys.add( 'taxeSurPrime' )
+//     excludedKeys.add( 'taxeSurCommission' )  
+//   }
 
-    // Le les champs  ont été rétirée
-  // donc on retourne un tableau vide
-  if(excludedKeys.size===7) return [] 
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allFields
+//     // Le les champs  ont été rétirée
+//   // donc on retourne un tableau vide
+//   if(excludedKeys.size===7) return [] 
+//   // 3. Application du filtre
+//   if (excludedKeys.size === 0) return allFields
 
-  return allFields.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )
-})
+//   return allFields.filter(
+//     (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+//   )
+// })
 
 // ==================== LOGIQUE FORMULAIRE ====================
-
+const tempQuittanceFields = computed<FormField[]>(() =>quittanceTauxEtTaxesFields(natureOffre))
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 const isAucunTauxASaisir = computed(()=> tempQuittanceFields.value.length===0)

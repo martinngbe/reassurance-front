@@ -5,11 +5,10 @@ import { computed, ref, watch } from 'vue'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
-import type { Police } from '@/services/polices/police/police'
 import TButton from '@/composants/forms/TButton.vue'
 import TModal from '@/composants/display/TModal.vue'
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
-import {  ECRAN_TRAITE,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
+import {  ECRAN_CONSULTATION, ECRAN_TRAITE,  MODULE_CESSION,  useEcransStore } from '@/services/ecrans/ecrans.store'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import { usePoliceStore } from '@/services/polices/police/police.store'
@@ -21,11 +20,13 @@ import { useAssureStore } from '@/services/acteurs/assure/assure.store.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TPoliceForm from './TPoliceForm.vue'
 import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
+import { policeAllTableColumns, type Police } from '@/services/polices/police/police.ts'
 
 
 const ecransStore = useEcransStore()
 const currentEcran = computed(()=> ecransStore.currentEcran)
 const isEcranTraite = computed(()=> currentEcran.value=== ECRAN_TRAITE)
+const isEcranConsultation = computed(()=> currentEcran.value=== ECRAN_CONSULTATION)
 const isModuleCession = computed(()=> ecransStore.currentModule === MODULE_CESSION)
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -59,8 +60,13 @@ const params = computed<PaginationParams>(() => ({
 }))
 const  assureId = currentAssure.value?currentAssure.value.id : 0
 const {polices , refresh: refreshPolices, updatePolice , deletePolice } =
- usePolices(isEcranTraite.value? null: assureId,isModuleCession.value ,params)
-const titreFenetre = computed(()=>isEcranTraite.value? "Polices traités":"Polices assurés")
+ usePolices(isEcranTraite.value || isEcranConsultation? null: assureId,isModuleCession.value ,params)
+
+const titreConsultation = computed(()=>isModuleCession.value? "Polices cession" : "Polices acceptations")
+const titreTraite = computed(()=>isModuleCession.value? "Polices traités :cession " : "Polices traités: acceptations")
+  
+const titreFenetre = computed(()=>isEcranConsultation.value? titreConsultation.value :
+ isEcranTraite.value? titreTraite.value:"Polices assurés")
 
 type PoliceRow = Police & { [key: string]: any }
 const tempPoliceStore = useTempPoliceStore()
@@ -69,27 +75,27 @@ const policeStore = usePoliceStore()
 const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvelleExecutee )
 
 // ==================== COLONNES ====================
-const policeColumns: TableColumn[] = [
-  { key: 'numero',                label: 'N°Police',    width: 200,   minWidth: 80 },
-  { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isProportionnelle',     label: 'Propor.',     width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 50,  minWidth: 200, align: 'center' },
+// const policeColumns: TableColumn[] = [
+//   { key: 'acteurCedante',          label: 'Cedante',    width: 150,  minWidth: 100, },
+//   { key: 'numero',                label: 'N°Police',    width: 200,   minWidth: 80 },
+//   { key: 'isCession',             label: 'Cess°',       width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isFac',                 label: 'FAC',         width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isProportionnelle',     label: 'Propor.',     width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isReconductionTacite',  label: 'Tacite Recond.',   width: 50,  minWidth: 200, align: 'center' },
   
-  { key: 'isIard',                label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isAnnulee',             label: 'Annullée',    width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
-  { key: 'natureOffre',           label: 'Nature Offre',width: 400,  minWidth: 200, },
+//   { key: 'isIard',                label: 'IARD',        width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isCouverte',            label: 'Couverte',    width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isAnnulee',             label: 'Annullée',    width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'isSinistree',           label: 'Sinistrée',   width: 50,   minWidth: 80,  align: 'center' },
+//   { key: 'natureOffre',           label: 'Nature Offre',width: 400,  minWidth: 200, },
  
 
-  { key: 'acteurCedante',         label: 'Cedante',          width: 500,  minWidth: 500, },
-  { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
-  { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
-  { key: 'sousBranche',           label: 'Sous Branche',     width: 500,  minWidth: 500,  },
+//   { key: 'acteurCourtier',        label: 'Courtier',         width: 500,  minWidth: 500, },
+//   { key: 'assure',                label: 'Assure',           width: 500,  minWidth: 500,  },
+//   { key: 'sousBranche',           label: 'Sous Branche',     width: 500,  minWidth: 500,  },
   
-]
-
+// ]
+const policeColumns : TableColumn[] = policeAllTableColumns(isEcranTraite.value)
 
 // ==================== DONNÉES TABLE ====================
 // Accéder via policesStore.polices
@@ -280,10 +286,10 @@ watch(tableSearch, () => {
       <span class="font-mono  uppercase" >{{ value.libelle }}</span>
     </template>
     <template #cell-acteurCedante="{ value }">
-      <span class="font-mono  uppercase"  v-if="value">{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase"  v-if="value">{{ value.sigle }}</span>
     </template>
     <template #cell-acteurCourtier="{ value }">
-      <span class="font-mono  uppercase" v-if="value">{{ value.raisonSociale }}</span>
+      <span class="font-mono  uppercase" v-if="value">{{ value.sigle }}</span>
     </template>    
 
     <template #cell-isProportionnelle="{ value , row }" >
@@ -317,7 +323,7 @@ watch(tableSearch, () => {
   </TTable>
 
    <TModal v-model="showModal" 
-      width="70%"  
+      width="80%"  
       height="98%" 
       :title="titleModal" 
    >

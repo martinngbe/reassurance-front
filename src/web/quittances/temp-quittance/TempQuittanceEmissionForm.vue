@@ -11,7 +11,7 @@ import { useTempQuittances } from '@/services/quittances/temp-quittance/useTempQ
 import { useMouvementStore } from '@/services/referentiel/mouvement/mouvement.store'
 import { useTempPoliceStore } from '@/services/polices/temp-police/temp-police.store'
 import TAlert from '@/composants/display/TAlert.vue'
-import { useEcransStore } from '@/services/ecrans/ecrans.store'
+import { quittanceEmissionFields } from '@/services/quittances/quittance/quittance'
 
 const mouvementStore = useMouvementStore()
 const tempPoliceStore = useTempPoliceStore()
@@ -49,59 +49,69 @@ async function fetchDevise(query: string, page: number) {
     hasMore: res.data.meta?.current_page < res.data.meta?.last_page || false
   }
 }
-const tempQuittanceFields = computed<FormField[]>(() => {
-  // 1. On initialise un tableau explicitement typé
-  const allFields: FormField[] = [
-    { section: 'Dévise et Période de couverture' },
-    {
-      key: 'deviseId',
-      label: 'Devise',
-      type: 'async-select',
-      required: true,
-      placeholder: 'Sélectionner une devise ...',
-      loadOptions: fetchDevise,
-      autoSelectFirst: true,
-      asyncOptions: { trackBy: 'id', labelBy: 'libelle' }
-    },
-    { key: 'coursDevise', label: 'Cours devise', type: 'number', required: true },
-    { key: 'dateEffet', label: 'Date Effet', type: 'calendar' },  
-    { key: 'dateEcheance', label: 'Date Echéance', type: 'calendar' },
+
+// const tempQuittanceFields = computed<FormField[]>(() => {
+//   // 1. On initialise un tableau explicitement typé
+//   const allFields: FormField[] = [
+//     { section: 'Dévise et Période de couverture' },
+//     {
+//       key: 'deviseId',
+//       label: 'Devise',
+//       type: 'async-select',
+//       required: true,
+//       placeholder: 'Sélectionner une devise ...',
+//       loadOptions: fetchDevise,
+//       autoSelectFirst: true,
+//       asyncOptions: { trackBy: 'id', labelBy: 'libelle' }
+//     },
+//     { key: 'coursDevise', label: 'Cours devise', type: 'number', required: true },
+//     { key: 'dateEffet', label: 'Date Effet', type: 'calendar' },  
+//     { key: 'dateEcheance', label: 'Date Echéance', type: 'calendar' },
    
-    { section: 'Autres informations' },
-    { key: 'nombrePlein', label: 'Nombre Plein', type: 'number' },
-    { key: 'nombreEcheancePmd', label: 'Nb.échéance PMD', type: 'number' },     
-    { key: 'avisEcheance', label: 'Avis Echéance', type: 'number', helpText: "Délais (jours) de notification avant échéance" },  
+//     { section: 'Autres informations' },
+//     { key: 'nombrePlein', label: 'Nombre Plein', type: 'number' },
+//     { key: 'nombreEcheancePmd', label: 'Nb.échéance PMD', type: 'number' },     
+//     { key: 'nombreTranche', label: 'Nb. Tranche', type: 'number' },     
    
-    { key: 'sinistreAuComptant', label: 'Sinistre au Comptant', type: 'number', helpText: 'Montant min à payer sans attendre' }, 
-    { key: 'avisSinistre', label: 'Avis sinistre', type: 'number', helpText: 'Délais (jours) de notification du sinistre' }
+//     { key: 'avisEcheance', label: 'Avis Echéance', type: 'number', helpText: "Délais (jours) de notification avant échéance" },  
    
-  ];
-  const isEdp =natureOffre?.isEdp   
-  const isFacultative =natureOffre?.isFacultative
-  const isFacObligatoire =natureOffre?.isFacObligatoire
-  const isQuotePart =natureOffre?.isQuotePart
-  const isXs =natureOffre?.isXs
-  const excludedKeys = new Set<string>()
-  if(isEdp)  {
-    excludedKeys.add('nombreEcheancePmd')
-   //  excludedKeys.add('nombreEcheancePmd')
-  }else if(isFacObligatoire || isQuotePart){
-     excludedKeys.add('nombreEcheancePmd')
-     excludedKeys.add('nombrePlein')
-  }else if(isXs){
-     excludedKeys.add('nombrePlein')
-  }
+//     { key: 'sinistreAuComptant', label: 'Sinistre au Comptant', type: 'number', helpText: 'Montant min à payer sans attendre' }, 
+//     { key: 'avisSinistre', label: 'Avis sinistre', type: 'number', helpText: 'Délais (jours) de notification du sinistre' }
+   
+//   ];
+//   const isEdp =natureOffre?.isEdp   
+//   const isFacultative =natureOffre?.isFacultative
+//   const isFacObligatoire =natureOffre?.isFacObligatoire
+//   const isQuotePart =natureOffre?.isQuotePart
+//   const isXs =natureOffre?.isXs
+
+//   console.log('_____ natureOffre:', natureOffre)
+//   const excludedKeys = new Set<string>()
+//   if(isEdp ||  isFacultative)  {
+//     excludedKeys.add('nombreEcheancePmd')
+//    //  excludedKeys.add('nombreEcheancePmd')
+//   }
+//   if(isFacObligatoire || isFacultative||  isQuotePart){
+//      excludedKeys.add('nombreEcheancePmd')
+//      excludedKeys.add('nombrePlein')
+//      excludedKeys.add('nombreEchancePmd')
+//      excludedKeys.add('nombreTranche')
+//   }
+//   if(isXs || isFacultative){
+//      excludedKeys.add('nombrePlein')
+//   }
  
-  // 3. Application du filtre
-  if (excludedKeys.size === 0) return allFields
+//   // 3. Application du filtre
+//   if (excludedKeys.size === 0) return allFields
 
-  return allFields.filter(
-    (field) => !('key' in field) || !excludedKeys.has(field.key as string)
-  )   
+//   return allFields.filter(
+//     (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+//   )   
 
-});
+// });
 // ==================== LOGIQUE FORMULAIRE ====================
 
+const tempQuittanceFields = computed<FormField[]>(() => quittanceEmissionFields(natureOffre,fetchDevise) )
 const isEditing = computed(() => !!currentTempQuittance.value?.id)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
 
@@ -182,6 +192,7 @@ const handleSubmit = async (data: Record<string, any>) => {
             coursDevise: data.coursDevise,
             avisEcheance: data.avisEcheance,
             nombreEcheancePmd: data.nombreEcheancePmd,
+            nombreTranche: data.nombreTranche,
             sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
         },
@@ -201,6 +212,7 @@ const handleSubmit = async (data: Record<string, any>) => {
             coursDevise: data.coursDevise,
             avisEcheance: data.avisEcheance,
             nombreEcheancePmd: data.nombreEcheancePmd,
+            nombreTranche: data.nombreTranche,
             sinistreAuComptant: data.sinistreAuComptant ,
             avisSinistre: data.avisSinistre,
           

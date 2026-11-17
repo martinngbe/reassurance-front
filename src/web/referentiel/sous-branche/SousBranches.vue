@@ -16,10 +16,14 @@ import TAction from '@/composants/utilitaire/TAction.vue'
 
 const props = withDefaults(
   defineProps<{
-    branche?: Branche | null // filtrer par branche    
+    branche?: Branche | null // filtrer par branche  
+    masquerBoutonAction? : boolean  
   }>(),
   { branche: null },
 )
+const emit = defineEmits<{ 
+  (e: 'row-click',  sousBranche: any): void
+}>()
 
 // ==================== PAGINATION ====================
 const page = ref(1)
@@ -183,6 +187,9 @@ watch(tableSearch, () => {
   }, 300)
 })
 
+const onRowClick = ( row: any, index: number)=>{       
+    emit('row-click',row as SousBranche)
+}
 
 </script>
 <template>
@@ -204,6 +211,7 @@ watch(tableSearch, () => {
     row-key="id"
     striped
     @row-double-click="handleModifier"
+    @row-click="onRowClick"
     @sort="onSort"
     
   >
@@ -223,10 +231,10 @@ watch(tableSearch, () => {
     </template>
 
     <template #caption="{ selectedCount, total }">
-       <TAction
+       <TAction v-if="props.masquerBoutonAction"
           :active-modifier="isLigneSelection"
           :active-supprimer="isLigneSelection"
-         
+        
           :masque-impression="true"
           @nouveau="handleNouveau"
           @modifier="handleModifier"

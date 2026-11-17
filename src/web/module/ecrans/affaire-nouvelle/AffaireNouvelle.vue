@@ -38,6 +38,7 @@ function goToNextStep() {
   const currentIndex = etapesOrdre.indexOf(activeMenu.value)
   if (currentIndex === -1 || currentIndex === etapesOrdre.length - 1) return
   activeMenu.value = etapesOrdre[currentIndex + 1] as EtapeId
+  
 }
 
 function selectMenu(menuId: string) {
@@ -74,10 +75,15 @@ const  {getMouvementByCode} = useMouvements()
 const currenteModuleDisplay = computed(() => ecransStore.currentModule)
 const currentEcran = computed(() => ecransStore.currentEcran)
 const natureOffre = computed(()=>tempPoliceStore.currentTempPolice?.natureOffre)
+const acteurCedante = computed(()=>tempPoliceStore.currentTempPolice?.acteurCedante)
+const sousBranche = computed(()=>tempPoliceStore.currentTempPolice?.sousBranche)
 
 // ✅ 5. Fallback garanti → jamais undefined
 const currentModule = computed(() => moduleComponents[activeMenu.value] ?? EnConstruction)
-
+console.warn('AffaireNouvelle.vue ')
+console.log(' acteurCedante.value:',acteurCedante.value)
+console.log(' natureOffre.value:',natureOffre.value)
+console.log(' currentTempPolice:',tempPoliceStore.currentTempPolice)
 // lecture du mouvement AFN
 const afn = ref(MOUVEMENT_AFN);
 const { data: mouvement } = getMouvementByCode(afn);
@@ -106,7 +112,7 @@ watch(mouvement  , (newData ) => {
 <template>
   <TLayoutModule 
       topSize="80px" 
-      leftSize="20%" 
+      leftSize="25%" 
 
       :show-bottom="false"
       :show-top="showTopHeader"
@@ -128,8 +134,11 @@ watch(mouvement  , (newData ) => {
         <div  class="flex w-full mt-12 items-center justify-center">                 
                     <TAlert variant="info">
                         <div class="flex flex-col">
-                              <p  v-if="natureOffre" class="text-lg font-bold">{{ natureOffre.libelle }}</p>
-                              <p class="text-md font-bold">{{ currenteModuleDisplay +' / '+ currentEcran }}</p> 
+                              <p  v-if="natureOffre" class="text-md font-bold mb-2">{{ natureOffre.libelle }}</p>
+                              <p class="text-sm font-bold " v-if="acteurCedante">{{ acteurCedante.raisonSociale }}</p> 
+                              <p class="text-xs font-bold mb-2 " v-if="sousBranche">{{ sousBranche.libelle }}</p> 
+                              <p class="text-sm font-bold">{{ currenteModuleDisplay +' / '+ currentEcran }}</p> 
+                        
                         </div>
                     </TAlert> 
         </div>          
@@ -147,18 +156,6 @@ watch(mouvement  , (newData ) => {
         />
       </div>
     </template>
-
-    <!--template #footer >
-      
-      <div  class="flex w-full mt-2  items-center justify-center">                 
-                  <TAlert variant="info">
-                       <div class="flex flex-col">
-                            <p  v-if="natureOffre" class="text-lg font-bold">{{ natureOffre.libelle }}</p>
-                            <p class="text-md font-bold">{{ currenteModuleDisplay +' / '+ currentEcran }}</p> 
-                       </div>
-                  </TAlert> 
-      </div>
-    </template-->
 
   </TLayoutModule>
 

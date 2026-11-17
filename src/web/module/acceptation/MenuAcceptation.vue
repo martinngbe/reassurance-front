@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, useEcransStore } from '@/services/ecrans/ecrans.store';
+import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_CONSULTATION, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, ECRAN_TABLEAU_DE_BORD, ECRAN_TRAITE, ECRAN_TRANCHE, useEcransStore } from '@/services/ecrans/ecrans.store';
 import { computed, onMounted, ref } from 'vue';
 
 
@@ -22,7 +22,9 @@ const menus: MenuItem[] = [
   { id: ECRAN_PLACEMENT,            label: 'Placement' },
   { id: ECRAN_BORDEREAU,            label: 'Bordereau réçu' },
   { id: ECRAN_ECHEANCE_PMD,         label: 'Echéance PMD'},
-  { id: ECRAN_COMPTE,               label: 'Compte réçu' }
+  { id: ECRAN_TRANCHE,              label: 'Gestion Tranche'},
+  { id: ECRAN_COMPTE,               label: 'Compte réçu' },
+  { id: ECRAN_CONSULTATION,         label: 'Consultation' }
 
 ];
 

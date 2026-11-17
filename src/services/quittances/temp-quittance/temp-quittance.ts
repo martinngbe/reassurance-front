@@ -20,19 +20,23 @@ export interface TempQuittance extends BaseEntity {
   coursDevise: number;
   avisEcheance?: number;
   nombreEcheancePmd: number;
+  nombrePlein: number;
+  nombreTranche: number;
   sinistreAuComptant?: number;
   avisSinistre?: number;
+ 
   ///////////////////////////// 
   ////// Capitaux 
   /////////////////////////////
   capitaux: number; 
-  //limiteCapitauxImpliques: number;
   lci: number;
   smp: number;
   limite: number;
   retention: number;
   conservation: number;
   capacite: number;
+  portee: number;
+  priorite: number;
  
   ///////////////////////////// 
   ////// Prime 
@@ -79,3 +83,43 @@ export type TempQuittanceFormData = Partial<Omit<TempQuittance, 'mouvementId'|'p
   deviseId: number | Devise;
 };
  
+/*     
+ 'mouvementId',
+  'deviseId',
+  'coursDevise',
+  'dateEmission',
+  'dateEffet',
+  'dateEcheance',
+  'avisEcheance',
+  'capitaux',
+  'lci',
+  'smp',
+  'limite',
+  'portee',
+  'priorite',
+  'retention',
+  'conservation',
+  'capacite',
+  
+  'estimationPrime',
+  'tauxCedante',
+  'tauxAccepte',
+  'tauxCommission',
+  'taxeSurCommission',
+  'primeBrute',
+  //'primeNette',
+  'taxeSurPrime',
+  'nombrePlein',
+  'nombreTranche',
+  'nombreEcheancePmd',
+  'sinistreAuComptant',
+  'avisSinistre',
+  'aliment',
+  'commissionFixe',
+
+
+
+
+
+
+*/
