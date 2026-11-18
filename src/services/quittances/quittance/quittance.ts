@@ -100,9 +100,10 @@ export type QuittanceFormData = Partial<Omit<Quittance,
 };
 
 
-export function quittanceAllColumns(natureOffre:NatureOffre | undefined ){
-
-        
+export function quittanceAllColumns(
+  natureOffre?:NatureOffre | undefined ,
+  isQuittancesProportionnelles?: boolean | null
+){     
           const allColumns: TableColumn[] = [
                           { key: 'police', label: 'Cedante',     width: 150,  minWidth: 100, },
                           { key: 'mouvement',    label: 'Mvt',          width: 20,   minWidth: 80 },    
@@ -146,20 +147,25 @@ export function quittanceAllColumns(natureOffre:NatureOffre | undefined ){
                         
                         ]
 
-          if(!natureOffre)  return allColumns;
+          // console.warn(' export function quittanceAllColumns')
+          // console.log('natureOffre:',natureOffre)
+          // console.log('isQuittancesProportionnelles:',isQuittancesProportionnelles)
+          if(!natureOffre && isQuittancesProportionnelles ===null)  return allColumns;
 
-          console.warn("---- QUITTANCES allColumns:",allColumns )
+          //console.warn("---- QUITTANCES allColumns:",allColumns )
+          const isProportionnelle =isQuittancesProportionnelles ?? natureOffre?.isProportionnelle 
+          const isQuotePart =natureOffre?.isQuotePart   
           const isEdp =natureOffre?.isEdp   
           const isFacultative =natureOffre?.isFacultative
           const isFacObligatoire =natureOffre?.isFacObligatoire
-          const isQuotePart =natureOffre?.isQuotePart
           const isXs =natureOffre?.isXs
 
           const excludedKeys = new Set<string>()
-          console.log("excludedKeys:",excludedKeys )
+          //console.log("excludedKeys:",excludedKeys )
+
           if (isEdp || isFacObligatoire || isQuotePart) {
           // OFFRE EDP : retirer les champs Non-Proportionnelle
-          console.log('---- OFFRE EDP isEdp :',isEdp)
+          //console.log('---- OFFRE EDP isEdp :',isEdp)
           excludedKeys.add( 'capitaux')
           excludedKeys.add( 'lci')
           excludedKeys.add( 'smp')
@@ -169,12 +175,8 @@ export function quittanceAllColumns(natureOffre:NatureOffre | undefined ){
           
           excludedKeys.add('estimationPrime')
           excludedKeys.add('primeBrute')
-        } if(isFacObligatoire || isFacultative || isQuotePart) {
-          //console.log('---- OFFRE FACOB  QP  isFacObligatoire :',isFacObligatoire)
-          //console.log('---- OFFRE FACOB  QP  isQuotePart :',isQuotePart)
-          //excludedKeys.add( 'capitaux'),
-          //excludedKeys.add( 'lci'),
-          //excludedKeys.add( 'smp'),
+        } 
+        if(isFacObligatoire || isFacultative || isQuotePart) {          
           excludedKeys.add( 'limite'),  
           excludedKeys.add( 'retention') 
           excludedKeys.add( 'conservation')
@@ -185,8 +187,9 @@ export function quittanceAllColumns(natureOffre:NatureOffre | undefined ){
           excludedKeys.add( 'nombreEcheancePmd')
           excludedKeys.add( 'estimationPrime')
           excludedKeys.add( 'taxeSurPrime')
-        } if (isXs){
-          console.log('---- OFFRE XS isXs :',isXs)
+        } 
+        if (isXs || !isProportionnelle){
+         
           excludedKeys.add( 'capitaux'),
           excludedKeys.add( 'lci'),
           excludedKeys.add( 'smp'),
@@ -443,7 +446,8 @@ export function quittanceTauxEtTaxesFields(natureOffre:NatureOffre | undefined){
             excludedKeys.add( 'tauxCommission' )
             excludedKeys.add( 'taxeSurPrime' )
             excludedKeys.add( 'taxeSurCommission' )  
-          } if(isQuotePart){
+          }
+           if(isQuotePart){
             excludedKeys.add( 'tauxCedante')
             excludedKeys.add( 'tauxAccepte')
             //excludedKeys.add( 'tauxCession' )
@@ -474,3 +478,4 @@ export function quittanceTauxEtTaxesFields(natureOffre:NatureOffre | undefined){
 
 
 }
+

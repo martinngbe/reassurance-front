@@ -19,7 +19,7 @@ const menus: MenuItem[] = [
   { id: ECRAN_TABLEAU_DE_BORD,      label: 'Tableau de bord'},
   { id: ECRAN_FACULTATIVE,          label: 'Facultative'},
   { id: ECRAN_TRAITE,               label: 'Traité',},
-  { id: ECRAN_PLACEMENT,            label: 'Placement' },
+  { id: ECRAN_PLACEMENT,            label: 'Sécurité' },
   { id: ECRAN_BORDEREAU,            label: 'Bordereau réçu' },
   { id: ECRAN_ECHEANCE_PMD,         label: 'Echéance PMD'},
   { id: ECRAN_TRANCHE,              label: 'Gestion Tranche'},

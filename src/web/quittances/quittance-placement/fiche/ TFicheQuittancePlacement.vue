@@ -1,14 +1,15 @@
 <script setup lang="ts">
-
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession';
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store';
 import { formatInteger } from '@/utilitaire/number';
 import { computed, ref, watch } from 'vue';
 
+//const ecranStore = useEcransStore()
 const quittanceStore = useQuittanceStore();
 const currentQuittance = computed(() => quittanceStore.currentQuittance);
-// ... imports existants ...
-
+const policeQuittance = computed(()=> currentQuittance.value?.police)
+const natureOffre = computed(()=> policeQuittance.value?.natureOffre)
+const isProportionnelle = computed(()=> natureOffre.value?.isProportionnelle)
 // ✅ AJOUT : composable de cumul des taux
 const quittanceIdRef = computed(() => currentQuittance.value?.id ?? null)
 const {
@@ -60,21 +61,23 @@ const formatPercent = (value: number | undefined | null) => {
             </th>
           </tr>
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors" >
-            <td colspan="2" class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Prime Brute</td>
-            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold">{{ formatNumber(currentQuittance.primeBrute) }}</td>
+            <td colspan="2" class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400" v-if="isProportionnelle">Prime Brute</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold"  v-if="isProportionnelle">{{ formatNumber(currentQuittance.primeBrute) }}</td>
+            <td colspan="2" class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400" v-if="!isProportionnelle">Estimation de prime</td>
+            <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-100 font-bold" v-if="!isProportionnelle">{{ formatNumber(currentQuittance.estimationPrime) }}</td>
            
           </tr>
         </tbody>
 
         <!-- SECTION: TAUX ET TAXES -->
-        <tbody   class="border-b-2 border-[#a8a29e] dark:border-stone-600">
+        <tbody   class="border-b-2 border-[#a8a29e] dark:border-stone-600"  v-if="isProportionnelle">
           <tr>
             <th colspan="4" class="bg-[#e7e5e4] dark:bg-stone-800 text-[#44403c] dark:text-stone-100 font-serif font-bold uppercase tracking-widest text-left px-4 py-3 border-b border-[#a8a29e] dark:border-stone-600">
               Taux
             </th>
           </tr>
        
-          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
+          <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">           
             <td  class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Tx Cédante</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(currentQuittance.tauxCedante) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Tx Notre part</td>
@@ -91,7 +94,7 @@ const formatPercent = (value: number | undefined | null) => {
           </tr>
        
           <tr class="hover:bg-[#f5f5f4] dark:hover:bg-stone-800/50 transition-colors">
-            <td  class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux</td>
+            <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">Taux</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatPercent(cumulTauxCession) }}</td>
             <td class="px-4 py-2.5 font-medium text-[#57534e] dark:text-stone-400">NB Placement</td>
             <td class="px-4 py-2.5 font-mono text-[#292524] dark:text-stone-200">{{ formatInteger(nombrePlacementsActifs) }}</td>

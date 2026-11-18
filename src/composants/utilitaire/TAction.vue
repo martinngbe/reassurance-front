@@ -39,12 +39,13 @@ const emit = defineEmits<{
   >
     <TToolTip :content=nouveauContente position="bottom" v-if="!masqueNouveau">
            
-        <i class="pi pi-plus pl-3 pr-3 cursor-pointer 
+        <i  v-if="activeNouveau" class="pi pi-plus pl-3 pr-3 cursor-pointer 
            transition-transform duration-200 hover:scale-225" 
             style="color: #02f75c;"
               @click="emit('nouveau')"
-            >
-            </i>
+            />
+           
+            <i v-else class="pi pi-plus  pl-3 pr-3 " style="color: gray;"></i>
     </TToolTip>
       
     <TToolTip content="Modifier" position="bottom"  v-if="!masqueModifier">

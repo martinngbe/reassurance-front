@@ -77,3 +77,33 @@ export const formatDecimal = (value: string | number, locale = 'fr-FR', digits =
 
 export const formatCurrency = (value: string | number, currency = 'EUR', locale = 'fr-FR') =>
   formatNumber(value, { locale, style: 'currency', currency, minimumFractionDigits: 2 })
+
+
+
+/**
+ * Formate un pourcentage.
+ * La valeur est attendue **déjà exprimée en pourcentage** (ex: 25 → "25 %").
+ *
+ * @param value - La valeur en pourcentage (ex: 25 pour 25 %)
+ * @param locale - La locale à utiliser (par défaut: 'fr-FR')
+ * @param digits - Le nombre de décimales (par défaut: 0)
+ * @returns La chaîne formatée, ou une chaîne vide si la valeur est invalide
+ *
+ * @example
+ * formatPercent(25)                // "25 %"
+ * formatPercent(25.6, 'fr-FR', 1)  // "25,6 %"
+ * formatPercent("50")              // "50 %"
+ */
+export const formatPercent = (value: string | number, locale = 'fr-FR', digits = 3): string => {
+  if (value === '' || value === null || value === undefined) return ''
+
+  const number = typeof value === 'string' ? parseNumber(value) : value
+  if (isNaN(number)) return ''
+
+  return formatNumber(number / 100, {
+    locale,
+    style: 'percent',
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  })
+}

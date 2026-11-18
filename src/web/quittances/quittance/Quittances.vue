@@ -16,7 +16,7 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import TAction from '@/composants/utilitaire/TAction.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_CONSULTATION, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import { ECRAN_BORDEREAU, ECRAN_COMPTE, ECRAN_CONSULTATION, ECRAN_ECHEANCE_PMD, ECRAN_FACULTATIVE, ECRAN_PLACEMENT, ECRAN_TRANCHE, MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import TQuittanceForm from './TQuittanceForm.vue'
 import TToolTip from '@/composants/display/TToolTip.vue'
 import TQuittanceVueSynoptique from './TQuittanceVueSynoptique.vue'
@@ -54,9 +54,11 @@ const isCession = ecranStore.currentModule ===MODULE_CESSION
 const isEcranBordereau = ecranStore.currentEcran ===ECRAN_BORDEREAU
 const isEcranFacultative = ecranStore.currentEcran ===ECRAN_FACULTATIVE
 const isEcranEcheancePmd = ecranStore.currentEcran ===ECRAN_ECHEANCE_PMD
-const isEcranPlacement = ecranStore.currentEcran ===ECRAN_PLACEMENT
+const isEcranPlacement = ecranStore.currentEcran ===ECRAN_PLACEMENT // sécurité
 const isEcranCompte = ecranStore.currentEcran ===ECRAN_COMPTE
 const isEcranConsultation = ecranStore.currentEcran ===ECRAN_CONSULTATION
+const isEcranTranche = ecranStore.currentEcran ===ECRAN_TRANCHE
+
 console.warn(" __________ Quittances.vue _________")
 console.log(" ----- currentPolice:",currentPolice)
 console.log(" ----- ecranStore.currentModule:",ecranStore.currentModule)
@@ -75,15 +77,15 @@ const acteurCedante   = ref<Acteur| undefined>(undefined)
 
 
 const policeIdVal = isEcranBordereau || isEcranPlacement || isEcranEcheancePmd ? null : toValue(policeId)
-const isFacVal    = isEcranBordereau || isEcranPlacement? true : // Quittances FAC  
+const isFacVal    = isEcranBordereau ? true : // Quittances FAC  
                     isEcranCompte? false :  // Quittances Traités
                      null  // Indifférent
 
-const isProportionnelleVal    =  isEcranEcheancePmd ? false : null
+const isProportionnelleVal   =  isEcranEcheancePmd || isEcranTranche ? false : null
 
 const titreQuittance = isCession?"QUITTANCES CESSION ":"QUITTANCES ACCEPTATION "
-titreFenetre.value = isEcranBordereau || isEcranPlacement? titreQuittance+" FAC" :
-                     isEcranEcheancePmd? titreQuittance+ "NON PROPORTIONNELLES" : 
+titreFenetre.value = isEcranBordereau ? titreQuittance+" FAC" :
+                     isEcranEcheancePmd || isEcranTranche? titreQuittance+ "NON PROPORTIONNELLES" : 
                      isEcranCompte?      titreQuittance+ " TRAITéS" : titreQuittance
 
 // ============================================
@@ -130,7 +132,7 @@ const { quittances, updateQuittance, deleteQuittance } = store
 
 type QuittanceRow = Quittance & { [key: string]: any }
 // ==================== COLONNES ====================
-const quittanceColumns = computed(()=> quittanceAllColumns(natureOffre))             
+const quittanceColumns = computed(()=> quittanceAllColumns(natureOffre , isProportionnelleVal))             
 
 
 console.log("quittanceColumns.value:",quittanceColumns.value )

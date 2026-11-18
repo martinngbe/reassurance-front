@@ -6,11 +6,9 @@ import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 import type { PaginationParams } from '@/type/pagination.ts'
 import TDisplayNumber from '@/composants/utilitaire/TDisplayNumber.vue'
-import { usePoliceStore } from '@/services/polices/police/police.store'
 import TModal from '@/composants/display/TModal.vue'
 import TAction from '@/composants/utilitaire/TAction.vue'
 import { useToast } from '@/composants/toast/useToast.ts'
-import { MODULE_CESSION, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import { useQuittancePlacementStore } from '@/services/quittances/quittance-placement/quittance-placement.store'
 import type { QuittancePlacement } from '@/services/quittances/quittance-placement/quittance-placement'
 import { useQuittancePlacements } from '@/services/quittances/quittance-placement/useQuittancePlacement'
@@ -19,20 +17,21 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import TDisplayDecimal from '@/composants/utilitaire/TDisplayDecimal.vue'
 import TQuittancePlacementForm from './TQuittancePlacementForm.vue'
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession.ts'
+import TDisplayPourCentage from '@/composants/utilitaire/TDisplayPourCentage.vue'
 
 const props = defineProps<{
   isPlacementQuittancePlacement?: boolean 
 }>()
 const { success, error, warning, info } = useToast()
-const ecranStore = useEcransStore()
-const policeStore = usePoliceStore()
-const currentPolice = computed(()=> policeStore.currentPolice)
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=> quittanceStore.currentQuittance)
 const quittancePlacementStore = useQuittancePlacementStore()
 const titreFenetre = ref('PLACEMENTS')
 titreFenetre.value =currentQuittance.value?  "PLACEMENTS QUITTANCE N°"+ currentQuittance.value.numero : "BORDEREAUX"
 
+const policeQuittance = computed(()=> currentQuittance.value?.police)
+const natureOffre = computed(()=> policeQuittance.value?.natureOffre)
+const isProportionnelle = computed(()=> natureOffre.value?.isProportionnelle)
 
 // ✅ AJOUT : composable de cumul des taux
 const quittanceIdRef = computed(() => currentQuittance.value?.id ?? null)
@@ -52,9 +51,7 @@ const emit = defineEmits<{
   (e: 'row-click',  quittancePlacement: any): void
   (e: 'form-success'): void
 }>()
-//const showModalFicheQuittancePlacement = ref(false)
 const showModal = ref(false)
-
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
   page: 1,
@@ -77,22 +74,32 @@ const quittancePlacementToEdit = ref<QuittancePlacement | null | undefined>(null
 // ==================== COLONNES ====================
 const quittancePlacementColumns = computed(()=>{
     const allColumns: TableColumn[] = [
-                    { key: 'numero',       label: 'N°',  width: 200,   minWidth: 80 , resizable:true},
-                   
-                    { key: 'primeBrute',      label: 'Prime Brute',    width: 150,  minWidth: 100,  align:'right' },
-                    //{ key: 'tauxCession',     label: 'Taux Cession',    width: 80,  minWidth: 100,  align:'right' },  
-                    
-                    { key: 'primeCedee',        label: 'Prime Cédée',    width: 150,  minWidth: 200,  align:'right' },
-                    { key: 'tauxCommission',    label: 'Taux Cie.',    width: 80,  minWidth: 200,  align:'right' },
-                    { key: 'commissionFixe',    label: 'Commission Fixe',    width: 150,  minWidth: 100,  align:'right' },
-                  
-                    { key: 'primeNette',    label: 'Prime Nette',    width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'acteur',       label: 'Rtrocessionnaire',  width: 400,   minWidth: 80 , resizable:true},
+                    { key: 'numero',          label: 'N°',               width: 200,  minWidth: 80 , },                   
+                    { key: 'primeBrute',      label: 'Prime Brute',      width: 150,  minWidth: 100,  align:'right' },
+                    { key: 'estimationPrime', label: 'Estimation Prime', width: 150,  minWidth: 100,  align:'right' },
+                    { key: 'tauxCession',     label: 'Taux Cession',     width: 80,   minWidth: 100,  align:'right' },  
+                    { key: 'primeCedee',      label: 'Prime Cédée',      width: 150,  minWidth: 200,  align:'right' },
+                    { key: 'tauxCommission',  label: 'Taux Cie.',        width: 80,   minWidth: 200,  align:'right' },
+                    { key: 'commissionFixe',  label: 'Commission Fixe',  width: 150,  minWidth: 100,  align:'right' },
+                    { key: 'primeNette',      label: 'Prime Nette',      width: 200,  minWidth: 200,  align:'right' },
+                    { key: 'acteur',          label: 'Rétrocessionnaire',width: 400,  minWidth: 80 , resizable:true},
                   
                   ]
-  console.warn("---- QUITTANCES allColumns:",allColumns )
- 
-  return allColumns
+
+
+      const excludedKeys = new Set<string>() 
+      if(isProportionnelle)  {
+            excludedKeys.add( 'primeBrute' )
+           // excludedKeys.add( 'tauxRetention' )    
+           // excludedKeys.add( 'tauxCommission' )
+      }  
+      
+         // 3. Application du filtre
+      if (excludedKeys.size === 0) return allColumns
+      return allColumns.filter(
+        (field) => !('key' in field) || !excludedKeys.has(field.key as string)
+      )
+       
 
 })
              
@@ -148,10 +155,6 @@ const handleConfirmeSuppression = async () => {
   }
 }
 const handleSupprimer = async () => {
-  // console.log("----- Polices.handleSupprimer ------")
-  // console.log("selectedQuittancePlacements.value.length:",selectedQuittancePlacements.value.length)
-  // console.log("selectedQuittancePlacements.value:",selectedQuittancePlacements.value)
-  // console.log("quittancePlacementRows.value:",quittancePlacementRows.value)
   if (selectedQuittancePlacements.value.length === 0) {
     warning('Veuillez sélectionner un placement',"Attention")
     return
@@ -284,7 +287,9 @@ watch(tableSearch, () => {
               "
             >
               <span class="font-semibold">Cumul :</span>
-              <span>{{ cumulTauxCession.toFixed(2) }}% / {{ tauxAccepte.toFixed(2) }}%</span>
+              <span v-if="isProportionnelle">{{ cumulTauxCession.toFixed(2) }}% / {{ tauxAccepte.toFixed(2) }}%</span>
+              <span v-else>{{ cumulTauxCession.toFixed(2) }}% / {{ tauxDisponible.toFixed(2) }}%</span>
+             
               <span class="opacity-75">•</span>
               <span class="font-semibold">Disponible :</span>
               <span>{{ tauxDisponible.toFixed(2) }}%</span>
@@ -292,6 +297,7 @@ watch(tableSearch, () => {
 
             <!-- Boutons d'action existants -->
             <TAction
+              :active-nouveau="true"
               :active-modifier="isLigneSelectionnee"
               :active-impression="isLigneSelectionnee"
               :active-supprimer="isLigneSelectionnee"
@@ -317,16 +323,16 @@ watch(tableSearch, () => {
           <TDisplayNumber :value="value" />
         </template>
         <template #cell-taxeSurPrime="{ value }">
-          <TDisplayDecimal :value="value" />
+          <TDisplayPourCentage :value="value" />
         </template>
         <template #cell-tauxCommission="{ value }">
-          <TDisplayDecimal :value="value" />
+          <TDisplayPourCentage :value="value" />
         </template>   
         <template #cell-commissionFixe="{ value }">
           <TDisplayNumber :value="value" />
         </template>                  
         <template #cell-taxeSurCommission="{ value }">
-          <TDisplayDecimal :value="value" />
+          <TDisplayPourCentage :value="value" />
         </template> 
         <template #cell-acteur="{ value }">
           <p  v-if="value">{{  value.raisonSociale }}</p>
@@ -335,7 +341,7 @@ watch(tableSearch, () => {
   </TTable>
 
   
-    <TModal v-model="showModal" :title="titleModal"
+    <TModal v-model="showModal" :title="titleModal" width="50%"
      >
       <TQuittancePlacementForm
         :loading="updateQuittancePlacement.isPending.value"

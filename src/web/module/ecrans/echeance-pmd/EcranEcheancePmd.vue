@@ -5,8 +5,6 @@ import TLayoutModule from '@/composants/layout/TLayoutModule.vue'
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
 import { usePoliceStore } from '@/services/polices/police/police.store';
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store';
-import Bordereaux from '@/web/flux-financier/bordereau/Bordereaux.vue';
-import TBordereau from '@/web/flux-financier/bordereau/TBordereau.vue';
 import EcheancesPmd from '@/web/flux-financier/echeance-pmd/EcheancesPmd.vue';
 import Quittances from '@/web/quittances/quittance/Quittances.vue';
 import { computed, ref, watch } from 'vue';

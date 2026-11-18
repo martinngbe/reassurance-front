@@ -15,7 +15,7 @@ const moduleComponents: Record<string, any> = {
   ecranBordereau: defineAsyncComponent(() => import('@/web/module/ecrans/bordereau/EcranBordereau.vue')),
   ecranEcheancePmd: defineAsyncComponent(() => import('@/web/module/ecrans/echeance-pmd/EcranEcheancePmd.vue')),
   ecranCompte: defineAsyncComponent(() => import('@/web/module/ecrans/compte/EcranCompte.vue')),
-  ecranTranche: defineAsyncComponent(() => import('@/web/module/ecrans/tranche/EcranTanche.vue')),
+  ecranTranche: defineAsyncComponent(() => import('@/web/module/ecrans/tranche/EcranTranche.vue')),
   ecranConsultation: defineAsyncComponent(() => import('@/web/module/ecrans/consultation/EcranConsultation.vue')),
 }
 

@@ -25,6 +25,13 @@ const currentQuittanceId =  currentQuittance.value?
 const quittancePlacementStore = useQuittancePlacementStore()
 // ✅ AJOUT : refs réactives pour le composable
 const placementEnEditionRef = computed(() => props.quittancePlacement ?? null)
+const policeQuittance = computed(()=> currentQuittance.value?.police)
+const natureOffre = computed(()=> policeQuittance.value?.natureOffre)
+const isProportionnelle = computed(()=> natureOffre.value?.isProportionnelle)
+console.warn(' _______ TQuittancePlacementForm.vue _________')
+console.log('isProportionnelle.value:',isProportionnelle.value)
+console.log('natureOffre.value:',natureOffre.value)
+//console.log('isProportionnelle.value:',isProportionnelle.value)
 
 // ✅ AJOUT : composable de cumul des taux
 const quittanceIdRef = computed(() => currentQuittance.value?.id ?? null)
@@ -49,10 +56,6 @@ const infoDepassement = computed(() => verifierDepassement(tauxSaisi.value))
 // ✅ AJOUT : max autorisé pour le champ tauxCession
 const maxTauxCessionAutorise = computed<number>(() => tauxDisponible.value)
 
-
-
-
-
 // cette propriété doit venir obligatoirement 
 // avec au minimum quittanceId  implémenté si Erreur
 // à editer
@@ -66,12 +69,6 @@ const emit = defineEmits<{
   cancel: []
   deleted: [id: number]
 }>()
-
-//const store = useQuittancePlacementStore()
-
-// const currentPlacement = computed<QuittancePlacement | null>(
-//   () => currentQuittance.value ?? store.currentQuittancePlacement,
-// )
 
 const isEditing = computed(() => !!props.quittancePlacement)
 const formMode = computed<'create' | 'edit'>(() => (isEditing.value ? 'edit' : 'create'))
@@ -251,37 +248,7 @@ function buildPayload(data: Record<string, any>): UpdateQuittancePlacementDto {
 }
 
 // ==================== HANDLERS ====================
-/*
-const handleSubmit = async (data: Record<string, any>) => {
-  errorMessage.value = null
-  const payload = buildPayload(data)
 
-  if (!payload.quittanceId) {
-    errorMessage.value = 'Quittance manquante : impossible d’enregistrer le placement.'
-    return
-  }
-  if (!payload.acteurId || !payload.naturePlacementId) {
-    errorMessage.value = 'Acteur et nature du placement sont obligatoires.'
-    return
-  }
-
-  try {
-    if (isEditing.value && props.quittancePlacement) {
-      const res = await updateQuittancePlacement.mutateAsync({ id: props.quittancePlacement.id, data: payload })
-      if (res) quittancePlacementStore.selectQuittancePlacement(res)
-      emit('success', 'Placement modifié avec succès')
-    } else {
-      const res = await createQuittancePlacement.mutateAsync(payload as CreateQuittancePlacementDto)
-      if (res) quittancePlacementStore.selectQuittancePlacement(res)
-      emit('success', 'Placement créé avec succès')
-    }
-  } catch (err: any) {
-    console.error('Erreur sauvegarde placement :', err)
-    const msg = err?.response?.data?.message
-    errorMessage.value = Array.isArray(msg) ? msg.join(' • ') : msg || err?.message || 'Erreur lors de la sauvegarde.'
-  }
-}
-*/
 const handleSubmit = async (data: Record<string, any>) => {
                 errorMessage.value = null
                 const payload = buildPayload(data)
@@ -359,7 +326,7 @@ const handleCancel = () => { errorMessage.value = null; emit('cancel') }
         <div class="text-xs opacity-75">Cumul actuel</div>
         <div class="text-lg font-semibold">{{ cumulTauxCession.toFixed(2) }}%</div>
       </div>
-      <div>
+      <div v-if="isProportionnelle">
         <div class="text-xs opacity-75">Taux accepté</div>
         <div class="text-lg font-semibold">{{ tauxAccepte.toFixed(2) }}%</div>
       </div>
@@ -392,7 +359,7 @@ const handleCancel = () => { errorMessage.value = null; emit('cancel') }
       :fields="quittancePlacementFields"
       :mode="formMode"
       :loading="loading"
-      :columns="1"
+      :columns="2"
       :submit-label="isEditing ? 'Mettre à jour' : 'Créer'"
       @submit="handleSubmit"
       @cancel="handleCancel"
