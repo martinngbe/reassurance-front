@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Acteur } from './acteur'
+import { useAssureStore } from '../assure/assure.store'
 
 export const useActeurStore = defineStore('acteurStore', () => {
+  const assureStore = useAssureStore()
   // ==================== STATE ====================
   const currentActeur = ref<Acteur | null>(null)
   // ==================== GETTERS ====================
@@ -11,11 +13,18 @@ export const useActeurStore = defineStore('acteurStore', () => {
 
   // ==================== ACTIONS ====================
   const selectActeur = (acteur: Acteur | null) => {
+    console.warn(' ________ useActeurStore.selectActeur ')
+    // le changement d'acteur pousse à la réinitialisation du store des assurés
+    assureStore.clearSelection()
+    console.log(' ___ AVANT currentActeur.value:',currentActeur.value)
     currentActeur.value = acteur
+    console.log(' ___ APRES currentActeur.value:',currentActeur.value)
   }
 
   const clearSelection = () => {
+    console.warn(' ________ useActeurStore.clearSelection ')
     currentActeur.value = null
+    assureStore.clearSelection()
   }
 
   // ⭐ Action utile : mettre à jour l'acteur en cache

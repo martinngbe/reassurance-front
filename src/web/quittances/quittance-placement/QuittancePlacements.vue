@@ -18,6 +18,7 @@ import TDisplayDecimal from '@/composants/utilitaire/TDisplayDecimal.vue'
 import TQuittancePlacementForm from './TQuittancePlacementForm.vue'
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession.ts'
 import TDisplayPourCentage from '@/composants/utilitaire/TDisplayPourCentage.vue'
+import QuittanceInfoPolice from '../quittance/fiche/QuittanceInfoPolice.vue'
 
 const props = defineProps<{
   isPlacementQuittancePlacement?: boolean 
@@ -75,14 +76,14 @@ const quittancePlacementToEdit = ref<QuittancePlacement | null | undefined>(null
 const quittancePlacementColumns = computed(()=>{
     const allColumns: TableColumn[] = [
                     { key: 'numero',          label: 'N°',               width: 200,  minWidth: 80 , },                   
+                    { key: 'acteur',          label: 'Rétrocessionnaire',width: 250,  minWidth: 80 , },
+                    { key: 'tauxCession',     label: 'Taux Cession',     width: 80,   minWidth: 100,  align:'right' },                     
                     { key: 'primeBrute',      label: 'Prime Brute',      width: 150,  minWidth: 100,  align:'right' },
                     { key: 'estimationPrime', label: 'Estimation Prime', width: 150,  minWidth: 100,  align:'right' },
-                    { key: 'tauxCession',     label: 'Taux Cession',     width: 80,   minWidth: 100,  align:'right' },  
                     { key: 'primeCedee',      label: 'Prime Cédée',      width: 150,  minWidth: 200,  align:'right' },
                     { key: 'tauxCommission',  label: 'Taux Cie.',        width: 80,   minWidth: 200,  align:'right' },
                     { key: 'commissionFixe',  label: 'Commission Fixe',  width: 150,  minWidth: 100,  align:'right' },
                     { key: 'primeNette',      label: 'Prime Nette',      width: 200,  minWidth: 200,  align:'right' },
-                    { key: 'acteur',          label: 'Rétrocessionnaire',width: 400,  minWidth: 80 , resizable:true},
                   
                   ]
 
@@ -288,13 +289,13 @@ watch(tableSearch, () => {
             >
               <span class="font-semibold">Cumul :</span>
               <span v-if="isProportionnelle">{{ cumulTauxCession.toFixed(2) }}% / {{ tauxAccepte.toFixed(2) }}%</span>
-              <span v-else>{{ cumulTauxCession.toFixed(2) }}% / {{ tauxDisponible.toFixed(2) }}%</span>
+              <span v-else>{{ cumulTauxCession.toFixed(2) }}% / 100%</span>
              
               <span class="opacity-75">•</span>
               <span class="font-semibold">Disponible :</span>
               <span>{{ tauxDisponible.toFixed(2) }}%</span>
             </div>
-
+            <QuittanceInfoPolice/>
             <!-- Boutons d'action existants -->
             <TAction
               :active-nouveau="true"
@@ -312,7 +313,10 @@ watch(tableSearch, () => {
        
         <template #cell-primeBrute="{ value }">
           <TDisplayNumber :value="value" />
-        </template>  
+        </template>
+        <template #cell-estimationPrime="{ value }">
+          <TDisplayNumber :value="value" />
+        </template>          
         <template #cell-primeNette="{ value }">
           <TDisplayNumber :value="value" />
         </template>           

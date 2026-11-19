@@ -9,8 +9,8 @@ type QuittanceQueryParams = PaginationParams & {
   policeId?: number 
 }
 export const quittanceApi = {
-  getAll: (params: QuittanceQueryParams = {}) => {
-    return apiClient.get<IResponse>(BASE, { params }).then((r) => r.data)
+  getAll: (params: QuittanceQueryParams = {}, signal?: AbortSignal) => {
+    return apiClient.get<IResponse>(BASE, { params , signal}).then((r) => r.data)
   },
   getById: (id: number) =>
     apiClient.get<Quittance>(`${BASE}/${id}`).then((r) => r.data),

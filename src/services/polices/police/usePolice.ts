@@ -11,6 +11,7 @@ import { usePoliceStore } from './police.store'
 const KEY = 'polices';
 export function usePolices(
   assureId: Ref<number> | number | null,
+  cedanteId: Ref<number> | number | null,
   isCession:  Ref<boolean> | boolean  | null,
   params: ComputedRef<PaginationParams>
 ) {
@@ -24,6 +25,7 @@ export function usePolices(
     sortDirection: params.value.sortDirection,
 
     assureId: toValue(assureId),
+    cedanteId: toValue(cedanteId),
     isCession: toValue(isCession),
   }))
   //////////////////////////////
@@ -32,12 +34,12 @@ export function usePolices(
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      //console.warn(" -- usePolice polices = useInfiniteList<Police> ")
-      // const response = await policeApi.getAll(params.value)
+    
         // ✅ Utiliser page et limit du queryFn, pas ceux de params
         // On Ajoute assureId si nous omme en FAC
         const response = await policeApi.getAll({
           ...toValue(params),
+          ...(cedanteId  != null && { cedanteId: toValue(cedanteId) }), // les polices d'une cédante
           ...(assureId  != null && { assureId: toValue(assureId) }), // les polices d'un assuré
           ...(isCession  != null && { isCession: toValue(isCession) }), // les police CESSION | ACCEPTATION
           page,      // ← page dynamique (1, 2, 3...)

@@ -15,7 +15,7 @@ export interface PaginatedResponse<T> {
 
 export interface UseInfiniteListOptions<T> {
   // Fonction de fetch paginée
-  queryFn: (params: { page: number; limit: number }) => Promise<PaginatedResponse<T>>
+  queryFn: (params:  { page: number; limit: number; signal?: AbortSignal }) => Promise<PaginatedResponse<T>>
   // Taille de page
   limit?: number
   // Réactivité : refetch automatique quand ces valeurs changent
@@ -35,6 +35,9 @@ export function useInfiniteList<T>(options: UseInfiniteListOptions<T>) {
   const error = ref<Error | null>(null)
   const pageInfo = ref<PaginatedResponse<T>['pageInfo'] | null>(null)
 
+    // ✅ Déclarer un contrôleur d'annulation
+  let currentAbortController: AbortController | null = null
+
   // ==================== COMPUTED ====================
   const hasMore = computed(() => {
     if (!pageInfo.value) return false
@@ -48,6 +51,13 @@ export function useInfiniteList<T>(options: UseInfiniteListOptions<T>) {
 
   // ==================== FETCH ====================
   async function fetchPage(targetPage: number, append = false) {
+  // ✅ 1. Annuler la requête précédente si elle est encore en cours
+    if (currentAbortController) {
+      currentAbortController.abort('Nouvelle requête en cours')
+    }
+    // ✅ 2. Créer un nouveau contrôleur pour la requête actuelle
+    currentAbortController = new AbortController()
+
     isFetching.value = true
     if (targetPage === 1) isLoading.value = true
     error.value = null
@@ -56,6 +66,7 @@ export function useInfiniteList<T>(options: UseInfiniteListOptions<T>) {
       const response = await options.queryFn({
         page: targetPage,
         limit,
+        signal: currentAbortController.signal, // ✅ 3. Passer le signal à Axios
       })
 
       if (!response.success) {
@@ -70,7 +81,11 @@ export function useInfiniteList<T>(options: UseInfiniteListOptions<T>) {
       } else {
         items.value = response.data
       }
-    } catch (err) {
+    } catch (err: any) {
+      // ✅ Ignorer silencieusement les erreurs d'annulation
+      if (err.name === 'AbortError' || err.message === 'Nouvelle requête en cours') {
+        return 
+      }
       error.value = err instanceof Error ? err : new Error(String(err))
       console.error('[useInfiniteList] Erreur:', err)
     } finally {
@@ -104,7 +119,7 @@ export function useInfiniteList<T>(options: UseInfiniteListOptions<T>) {
         reset()
         fetchPage(1, false)
       },
-      { deep: true },
+      { deep: false },// ✅ Changer deep: true en false pour éviter les déclenchements multiples au montage
     )
   }
 

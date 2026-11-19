@@ -1,32 +1,41 @@
 // /referentiel/acteur/useActeur.ts
 import { computed, ref, toRefs, toValue, type ComputedRef } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { Acteur } from './acteur'
+import type { Acteur, ActeurTypeFilter, ActeurTypeKey } from './acteur'
 import { acteurApi } from './acteur.api'
-import type { PaginationParams } from '@/type/pagination'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 import { useActeurStore } from './acteur.store'
+import type { ActeurParams } from './acteur'; // ⭐ Importer le nouveau type
 
 const KEY = 'acteurs';
-export function useActeurs(params: ComputedRef<PaginationParams>) {
+export function useActeurs(params: ComputedRef<ActeurParams>) {
   const queryClient = useQueryClient()
   const acteurStore = useActeurStore() // ⭐ 
   const watchKeys = computed(() => ({
     search: params.value.search,
     sortKey: params.value.sortKey,
     sortDirection: params.value.sortDirection,
+    roles: params.value.roles, // ⭐ Surveiller le rôle
+    //typesFiltre: params.value.typesFiltre?.join(','), // ⭐ Surveiller la chaîne jointe
   }))
   //////////////////////////////
   const acteurs = useInfiniteList<Acteur>({
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
     queryFn: async ({ page, limit }) => {
-      console.warn(" -- useActeur acteurs = useInfiniteList<Acteur> ")
-      // const response = await acteurApi.getAll(params.value)
-        // ✅ Utiliser page et limit du queryFn, pas ceux de params
+       
+        console.warn(' __ useActeur.ts ')
+        // ✅ Si le tableau est vide ou undefined, role sera undefined (non envoyé)
+         params.value.roles = params.value.typesFiltre?.length 
+            ? params.value.typesFiltre.join(',') 
+            : undefined; 
+        console.log(' _____ params.value.role:',params.value.roles)  
+         console.log(' _____ params.value:',params.value) 
+         delete params.value.typesFiltre    
         const response = await acteurApi.getAll({
           ...toValue(params),
+        //  role, // ⭐ Ajouter les filtres booléens
           page,      // ← page dynamique (1, 2, 3...)
           limit,     // ← limit dynamique
         })

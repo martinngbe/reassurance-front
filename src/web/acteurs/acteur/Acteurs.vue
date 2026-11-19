@@ -11,16 +11,20 @@ import type { PaginationParams } from '@/type/pagination.ts'
 import TActeurForm from './TActeurForm.vue'
 import { useActeurs } from '@/services/acteurs/acteur/useActeur.ts'
 import { useToast } from '@/composants/toast/useToast.ts'
-import type { Acteur } from '@/services/acteurs/acteur/acteur.ts'
+import type { Acteur, ActeurTypeFilter, ActeurTypeKey } from '@/services/acteurs/acteur/acteur.ts'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import IconeValider from '@/composants/icone/IconeValider.vue'
+import { useActeurStore } from '@/services/acteurs/acteur/acteur.store.ts'
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
-
-const props =  defineProps<{ masquerBoutonAction?:boolean}>()  
+ 
+const props = defineProps<{
+  masquerBoutonAction?: boolean;
+  typesFiltre?: ActeurTypeKey[]; // ⭐ Nouveau prop
+}>();
 const emit = defineEmits<{ 
   (e: 'row-click',  acteur: any): void
 }>()
@@ -33,12 +37,17 @@ const params = computed<PaginationParams>(() => ({
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
+  typesFiltre: props.typesFiltre, // ⭐ Passer le filtre
 }))
+console.warn(' ___  Acteurs.vue ___ ')
+console.log(' params:', params)
+console.log(' props.typesFiltre:', props.typesFiltre)
 // ==================== API + CRUD ====================
 // Ne pas destructurer acteurs
 const store = useActeurs(params)
 const { acteurs, createActeur, updateActeur, deleteActeur } = store
 const { success, error, warning, info } = useToast()
+const acteurStore = useActeurStore()
 
 console.warn(" -- Acteurs.vue acteurs:",acteurs)
 
@@ -153,8 +162,10 @@ const handleConfirmeSuppression = async () => {
   }
 }
 
-const onRowClick = ( row: any, index: number)=>{       
-    emit('row-click',row as Acteur)
+const onRowClick = ( row: any, index: number)=>{  
+  acteurStore.selectActeur(row as Acteur)     
+  emit('row-click',row as Acteur)
+    
 }
 const handleActualise =()=>{
   acteurs.refresh()

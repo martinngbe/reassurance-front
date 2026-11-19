@@ -21,6 +21,7 @@ import TAction from '@/composants/utilitaire/TAction.vue'
 import TPoliceForm from './TPoliceForm.vue'
 import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.vue'
 import { policeAllTableColumns, type Police } from '@/services/polices/police/police.ts'
+import { useActeurStore } from '@/services/acteurs/acteur/acteur.store.ts'
 
 
 const ecransStore = useEcransStore()
@@ -34,11 +35,17 @@ const tableSearch = ref('')
 const sortState = ref<SortState>({ key: null, direction: null })
 const { success, error, warning, info } = useToast()
 const assureStore = useAssureStore()
+const acteurStore = useActeurStore()
 const currentAssure = computed(()=> assureStore.currentAssure)
+const currentActeur = computed(()=> acteurStore.currentActeur)
+const tempPoliceStore = useTempPoliceStore()
+
+const policeStore = usePoliceStore()
 const showModalConfirmation = ref(false)
 const emit = defineEmits<{ 
   (e: 'row-click',  police: any): void
 }>()
+
 const closeModal = () => {
   showModal.value = false
 }
@@ -50,6 +57,7 @@ const onFormSuccess = async (message: string) => {
   showModalModification.value = false
   await polices.refresh()
 }
+console.warn(' ________  Polices.vue')
 // ✅ Corrigé
 const params = computed<PaginationParams>(() => ({
   page: 1,
@@ -59,8 +67,15 @@ const params = computed<PaginationParams>(() => ({
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
 }))
 const  assureId = currentAssure.value?currentAssure.value.id : 0
+const  cedanteId = currentActeur.value? currentActeur.value.id : 0
+console.log(' ________  Polices.vue  cedanteId:', cedanteId)
+console.log(' ________  isEcranConsultation.value:', isEcranConsultation.value)
 const {polices , refresh: refreshPolices, updatePolice , deletePolice } =
- usePolices(isEcranTraite.value || isEcranConsultation? null: assureId,isModuleCession.value ,params)
+ usePolices(
+  isEcranTraite.value || isEcranConsultation.value ? null: assureId,
+  isEcranConsultation.value ?  cedanteId : null, // Dans EcranConsultation il y un TAB Cédante
+  isModuleCession.value 
+  ,params)
 
 const titreConsultation = computed(()=>isModuleCession.value? "Polices cession" : "Polices acceptations")
 const titreTraite = computed(()=>isModuleCession.value? "Polices traités :cession " : "Polices traités: acceptations")
@@ -69,9 +84,7 @@ const titreFenetre = computed(()=>isEcranConsultation.value? titreConsultation.v
  isEcranTraite.value? titreTraite.value:"Polices assurés")
 
 type PoliceRow = Police & { [key: string]: any }
-const tempPoliceStore = useTempPoliceStore()
 
-const policeStore = usePoliceStore()
 const isAffaireNouvelleExecutee = computed(()=> tempPoliceStore.isAffaireNouvelleExecutee )
 
 // ==================== COLONNES ====================

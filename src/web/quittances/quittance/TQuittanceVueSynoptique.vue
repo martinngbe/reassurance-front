@@ -12,6 +12,7 @@ import QuittancePlacements from '../quittance-placement/QuittancePlacements.vue'
 import EcheancesPmd from '@/web/flux-financier/echeance-pmd/EcheancesPmd.vue';
 import Comptes from '@/web/flux-financier/comptes/compte/Comptes.vue';
 import QuittanceJsonNode from '@/web/quittances/quittance/QuittanceJsonNode.vue';
+import QuittanceInfoPolice from './fiche/QuittanceInfoPolice.vue';
 
 
 
@@ -40,7 +41,7 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
     >
           <template #left>
                 <div class="flex flex-col gap-2">
-                        <TFichePolice />
+                        <QuittanceInfoPolice />
                         <TFicheQuittance />
                 </div>
 

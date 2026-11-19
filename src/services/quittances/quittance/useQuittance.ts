@@ -10,15 +10,19 @@ import { useQuittanceStore } from './quittance.store'
 
 const KEY = 'quittances'
 
-// ⭐ Interface pour les options
+// ⭐ Interface corrigée : Ref<number | null> au lieu de Ref<number>
 export interface UseQuittancesOptions {
-  policeId?: Ref<number> | number | null      // POLICE_ID | (NULL)INDIFFERENTS
-  cedanteId?: Ref<number| null> | number   
-  isCession?: Ref<boolean> | boolean | null   // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
-  isFac?: Ref<boolean> | boolean | null       // FAC  |  TRAITE  | (NULL)INDIFFERENTS
-  isProportionnelle?: Ref<boolean> | boolean | null  //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
+  policeId?: Ref<number | null> | number | null
+  cedanteId?: Ref<number | null> | number | null
+  courtierId?: Ref<number | null> | number | null
+  campagneId?: Ref<number | null> | number | null       // ✅ NOUVEAU
+  sousBrancheId?: Ref<number | null> | number | null    // ✅ NOUVEAU
+  isCession?: Ref<boolean | null> | boolean | null
+  isFac?: Ref<boolean | null> | boolean | null
+  isProportionnelle?: Ref<boolean | null> | boolean | null
   params?: ComputedRef<PaginationParams>
 }
+
 const DEFAULT_PAGINATION: PaginationParams = {
   page: 1,
   limit: PAGE_SIZE,
@@ -26,14 +30,17 @@ const DEFAULT_PAGINATION: PaginationParams = {
   sortKey: '',
   sortDirection: undefined
 }
+
 export function useQuittances(options: UseQuittancesOptions = {}) {
-  // ⭐ Déstructuration avec valeurs par défaut
   const {
-    policeId = null, // POLICE_ID | (NULL)INDIFFERENTS
-    cedanteId= null , 
-    isCession = null, // ACCEPTATION  | CESSION | (NULL)INDIFFERENTS
-    isFac = null, // FAC  |  TRAITE  | (NULL)INDIFFERENTS
-    isProportionnelle= null , //   TRAITE PROPORTIONNEL  TRAITE NON PROPORTIONNEL   | (NULL)INDIFFERENTS
+    policeId = null,
+    cedanteId = null,
+    courtierId = null,
+    campagneId = null,          // ✅ NOUVEAU
+    sousBrancheId = null,       // ✅ NOUVEAU
+    isCession = null,
+    isFac = null,
+    isProportionnelle = null,
     params = computed(() => DEFAULT_PAGINATION)
   } = options
 
@@ -49,38 +56,45 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     sortDirection: params.value.sortDirection,
     policeId: toValue(policeId),
     cedanteId: toValue(cedanteId),
-    isCession: toValue(isCession)
+    courtierId: toValue(courtierId),
+    campagneId: toValue(campagneId),       // ✅
+    sousBrancheId: toValue(sousBrancheId), // ✅
+    isCession: toValue(isCession),
+    isFac: toValue(isFac),
+    isProportionnelle: toValue(isProportionnelle)
   }))
 
   const quittances = useInfiniteList<Quittance>({
     limit: params.value.limit ?? PAGE_SIZE,
     watchKeys,
-    queryFn: async ({ page, limit }) => {
+    queryFn: async ({ page, limit, signal }) => {
       const policeIdVal = toValue(policeId)
       const cedanteIdVal = toValue(cedanteId)
+      const courtierIdVal = toValue(courtierId)
+      const campagneIdVal = toValue(campagneId)       // ✅
+      const sousBrancheIdVal = toValue(sousBrancheId) // ✅
       const isCessionVal = toValue(isCession)
-      const isFacVal = toValue(isFac) 
-      const isProportionnelleVal = toValue(isProportionnelle)   
-        
+      const isFacVal = toValue(isFac)
+      const isProportionnelleVal = toValue(isProportionnelle)
       const paramsVal = toValue(params)
-    
-        const response = await quittanceApi.getAll({
-            page,
-            limit,
-            // Recherche uniquement si non vide
-            ...(paramsVal.search && { search: paramsVal.search }),
-            // Tri uniquement si défini
-            ...(paramsVal.sortKey && { sortKey: paramsVal.sortKey }),
-            ...(paramsVal.sortDirection && { sortDirection: paramsVal.sortDirection }),
-            // Filtres uniquement si non null
-            ...(policeIdVal != null && { policeId: policeIdVal }),
-            ...(cedanteIdVal != null && { cedanteId: cedanteIdVal }),
-            ...(isCessionVal != null && { isCession: isCessionVal }),
-            // //////////////////////////////////
-            ...(isFacVal != null && { isFac: isFacVal }),
-            ...(isProportionnelleVal != null && { isProportionnelle: isProportionnelleVal }),
-            
-          })
+
+      const response = await quittanceApi.getAll({
+        page,
+        limit,
+        ...(paramsVal.search && { search: paramsVal.search }),
+        ...(paramsVal.sortKey && { sortKey: paramsVal.sortKey }),
+        ...(paramsVal.sortDirection && { sortDirection: paramsVal.sortDirection }),
+        ...(policeIdVal != null && { policeId: policeIdVal }),
+        ...(cedanteIdVal != null && { cedanteId: cedanteIdVal }),
+        ...(courtierIdVal != null && { courtierId: courtierIdVal }),
+        ...(campagneIdVal != null && { campagneId: campagneIdVal }),       // ✅
+        ...(sousBrancheIdVal != null && { sousBrancheId: sousBrancheIdVal }), // ✅
+        ...(isCessionVal != null && { isCession: isCessionVal }),
+        ...(isFacVal != null && { isFac: isFacVal }),
+        ...(isProportionnelleVal != null && { isProportionnelle: isProportionnelleVal }),
+      },
+      signal // ✅ Passer le signal à l'API
+    )
       return response as PaginatedResponse<Quittance>
     },
   })

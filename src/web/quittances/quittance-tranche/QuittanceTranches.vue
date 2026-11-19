@@ -20,6 +20,7 @@ import { useQuittanceTranches } from '@/services/quittances/quittance-tranche/us
 import type { QuittanceTranche } from '@/services/quittances/quittance-tranche/quittance-tranche.ts'
 import TAlert from '@/composants/display/TAlert.vue'
 import TDisplayPourCentage from '@/composants/utilitaire/TDisplayPourCentage.vue'
+import QuittanceInfoPolice from '../quittance/fiche/QuittanceInfoPolice.vue'
 
 const props = defineProps<{
   isTrancheQuittanceTranche?: boolean 
@@ -253,15 +254,7 @@ watch(tableSearch, () => {
         <template #caption="{selectedCount , total}">
           <div class="flex items-center justify-between gap-4">
                 
-                      <TAlert v-if="policeQuittance">
-                          <div class="flex  gap-12">
-                                  <p>{{ policeQuittance.acteurCedante.sigle }}</p>
-                                  <p>{{ policeQuittance.natureOffre.code }}</p>
-                                  <p>{{ policeQuittance.sousBranche.libelle }}</p>
-                          </div>
-                      </TAlert>
-               
-
+                <QuittanceInfoPolice />
                 <!-- Boutons d'action existants -->
                 <TAction
                   :active-nouveau="total < nombreTrancheMax"

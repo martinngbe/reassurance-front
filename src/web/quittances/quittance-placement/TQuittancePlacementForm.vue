@@ -232,10 +232,12 @@ function buildPayload(data: Record<string, any>): UpdateQuittancePlacementDto {
    const quittanceId = extractId(data.quittanceId) ?? 
        currentQuittanceId
    const primeBrute = currentQuittance.value? currentQuittance.value.primeBrute  : 0  
+   const estimationPrime = currentQuittance.value? currentQuittance.value.estimationPrime  : 0  
 
   return {
     quittanceId,
     primeBrute,
+    estimationPrime,
     tauxCession: toNumber(data.tauxCession)?? 0,
     tauxCommission: toNumber(data.tauxCommission)?? 0,
     commissionFixe: toNumber(data.commissionFixe)?? 0,
