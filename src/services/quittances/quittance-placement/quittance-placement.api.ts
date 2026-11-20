@@ -19,7 +19,7 @@ export const quittancePlacementApi = {
     apiClient.post<IResponse>(BASE, data).then((r) => r.data.data),
 
   update: (id: number, data: UpdateQuittancePlacementDto) =>
-    apiClient.patch<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),
+    apiClient.put<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),
 
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),

@@ -11,7 +11,7 @@ import type { PaginationParams } from '@/type/pagination.ts'
 import TActeurForm from './TActeurForm.vue'
 import { useActeurs } from '@/services/acteurs/acteur/useActeur.ts'
 import { useToast } from '@/composants/toast/useToast.ts'
-import type { Acteur, ActeurTypeFilter, ActeurTypeKey } from '@/services/acteurs/acteur/acteur.ts'
+import type { Acteur,  ActeurTypeKey } from '@/services/acteurs/acteur/acteur.ts'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import { useActeurStore } from '@/services/acteurs/acteur/acteur.store.ts'
@@ -223,6 +223,7 @@ watch(tableSearch, () => {
     <template #caption="{selectedCount , total}">
       <TAction v-if="!masquerBoutonAction"
         :active-modifier="isLigneSelectionnee"
+        :active-nouveau="true"
         :active-actualiser="total>0"
         :masque-impression="true"
         :masque-supprimer="true"

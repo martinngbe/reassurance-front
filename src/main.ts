@@ -3,6 +3,7 @@ import 'primeicons/primeicons.css';
 import App from './App.vue'
 import './assets/tailwind.css'
 import './assets/css/custom-scrollbar.css'
+import '@/assets/css/context-menu.css'
 import { useTheme } from './theme/useTheme'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools'

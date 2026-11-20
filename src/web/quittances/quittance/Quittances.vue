@@ -25,15 +25,21 @@ import TButton from '@/composants/forms/TButton.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import QuittanceInfoPolice from './fiche/QuittanceInfoPolice.vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue'
+import type { MenuItem } from '@/composants/menu-contextuel/contextMenu.ts'
+import { useContextMenu } from '@/composants/menu-contextuel/useContextMenu.ts'
+import TQuittancePlacement from '../quittance-placement/TQuittancePlacement.vue'
+import { useQuittancePlacementStore } from '@/services/quittances/quittance-placement/quittance-placement.store.ts'
 
 const titreFenetre = ref('QUITTANCES')
 const { success, info } = useToast()
 const ecranStore = useEcransStore()
 const policeStore = usePoliceStore()
 const quittanceStore = useQuittanceStore()
+const quittancePlacementStore = useQuittancePlacementStore()
 
 const currentPolice = policeStore.currentPolice
 const natureOffre = currentPolice?.natureOffre
+const quittanceSelected = ref<QuittanceRow | null>(null)
 
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
@@ -42,6 +48,7 @@ const sortState = ref<SortState>({ key: null, direction: null })
 const showModalFicheQuittance = ref(false)
 const showModalModification = ref(false)
 const showModaleVueSynotique = ref(false)
+const showModalSecurite = ref(false)
 
 const policeId = currentPolice?.id ?? null
 
@@ -130,7 +137,8 @@ async function handleLoadMore() {
 }
 
 // ==================== MODALES & CRUD ====================
-const onRowClick = (row: any) => {
+const onRowClick = (row: any , index : number) => {
+  quittanceSelected.value = row as Quittance
   quittanceStore.selectQuittance(row as Quittance)       
 }
 
@@ -163,6 +171,129 @@ const handleModifier = () => {
 const handleActualiser = () => { quittances.refresh() }
 const isModifierQuittance = ref(true)
 
+
+// //////////////////////////////////////////
+// MENU CONTEXTUEL 
+// //////////////////////////////////////////
+// const handleMenuContextuel =(event: any)=>{
+//   openMenu(event)
+// }
+// ============ Clic droit SUR une ligne ============
+const onRowContextMenu = (
+  event: MouseEvent,
+  row: Quittance,
+  index: number
+): void => {
+  // La ligne est déjà sélectionnée par TTable, on ouvre juste le menu
+  onRowClick(row, index)
+  open(event, getQuittanceMenu(row))
+}
+
+// ============ Clic droit HORS ligne (fond du tableau) ============
+const onTableContextMenu = (event: MouseEvent): void => {
+  open(event, getTableMenu())
+}
+
+
+const { open } = useContextMenu();
+const getQuittanceMenu = (row: Quittance): MenuItem[] => [
+  {
+    label: 'Voir le détail',
+    shortcut: 'Entrée',
+    action: () => showModaleVueSynotique.value=true
+  },
+ {
+    label: 'Modifier',
+    shortcut: 'F2',
+    disabled:  false,
+    action: () => showModalModification.value=true
+  },
+  { type: 'separator' },
+  {
+    label: 'Sécurité',
+    shortcut: 'Ctrl+S',
+    action: () => {
+      quittancePlacementStore.clearSelection()
+      showModalSecurite.value=true;
+    }
+  },
+  /*{
+    label: 'Envoyer par email',
+    action: () => envoyerEmail(row)
+  },
+  {
+    label: 'Télécharger PDF',
+    action: () => telechargerPDF(row)
+  },
+  { type: 'separator' },
+  {
+    label: 'Annuler la quittance',
+    danger: true,
+    disabled: row.statut === 'ANNULÉE',
+    action: () => annuler(row)
+  }
+  */
+]
+
+const getTableMenu = (): MenuItem[] => [
+  {
+    label: 'Nouvelle quittance',
+    shortcut: 'Ctrl+N',
+   // action: () => nouvelleQuittance()
+  },
+  {
+    label: 'Rafraîchir',
+    shortcut: 'F5',
+    //action: () => rafraichir()
+  },
+  { type: 'separator' },
+  {
+    label: 'Exporter en Excel',
+    //action: () => exporterExcel()
+  }
+]
+// const openMenu = (event: MouseEvent): void => {
+//   const menuItems: MenuItem[] = [
+//     { 
+//       icon: '👁️', 
+//       label: 'Vue synoptique', 
+//       action: () => showModaleVueSynotique.value=true 
+//     },
+//     { 
+//       icon: '🖨️', 
+//       label: 'Imprimer', 
+//       shortcut: 'Ctrl+P',
+//       action: () => console.log('Imprimer') 
+//     },
+//     { type: 'separator' },
+//     { 
+//       icon: '📧', 
+//       label: 'Sécurité', 
+//       action: () => showModalSecurite.value=true 
+//     },
+//     // { type: 'separator' },
+//     // { 
+//     //   icon: '📧', 
+//     //   label: 'Envoyer par email', 
+//     //   action: () => console.log('Email', quittance.id) 
+//     // },
+//     // { 
+//     //   icon: '📥', 
+//     //   label: 'Télécharger PDF', 
+//     //   action: () => console.log('PDF', quittance.id) 
+//     // },
+//     // { type: 'separator' },
+//     // { 
+//     //   icon: '🗑️', 
+//     //   label: 'Annuler la quittance', 
+//     //   danger: true,
+//     //   disabled: quittance.statut === 'ANNULÉE',
+//     //   action: () => console.log('Annuler', quittance.id) 
+//     // },
+
+//   ];  
+//   open(event, menuItems);
+// };
 // ==================== DEBOUNCE RECHERCHE ====================
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
@@ -198,6 +329,9 @@ watch(tableSearch, () => {
     @row-click="onRowClick"
     @row-double-click="onRowDoubleClick"
     @load-more="handleLoadMore"
+   
+    @row-contextmenu="onRowContextMenu"
+    @table-contextmenu="onTableContextMenu"
   >
     <template #caption-extra>
       <div class="flex justify-between">
@@ -288,4 +422,12 @@ watch(tableSearch, () => {
   <TModal v-model="showModalModification" :title="titleModal" width="60%" height="75%">
     <TQuittanceForm :loading="updateQuittance.isPending.value" @success="onFormSuccess" @cancel="closeModal" />
   </TModal>
+  <TModal v-model="showModalSecurite" title="Sécurité" width="80%" height="75%">   
+    <template #default><TQuittancePlacement/></template>
+    <template #footer>
+      <div class="flex justify-between">
+        <TButton variant="solid" width="xl" @click="showModalSecurite=false">Fermer</TButton>
+      </div>
+    </template>    
+  </TModal>  
 </template>

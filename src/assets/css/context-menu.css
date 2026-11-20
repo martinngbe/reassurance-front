@@ -1,0 +1,29 @@
+/* assets/styles/context-menu.css */
+
+/* ===== MODE LIGHT ===== */
+:root {
+  --ctx-bg: #ffffff;
+  --ctx-border: #e5e7eb;
+  --ctx-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ctx-text: #374151;
+  --ctx-text-muted: #9ca3af;
+  --ctx-hover: rgb(var(--tw-primary-50));
+  --ctx-primary: rgb(var(--tw-primary-500));
+  --ctx-danger: #ef4444;
+  --ctx-danger-hover: #fee2e2;
+  --ctx-separator: #e5e7eb;
+}
+
+/* ===== MODE DARK ===== */
+html.dark {
+  --ctx-bg: #1f2937;
+  --ctx-border: #374151;
+  --ctx-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --ctx-text: #f3f4f6;
+  --ctx-text-muted: #9ca3af;
+  --ctx-hover: rgb(var(--tw-primary-900) / 0.3);
+  --ctx-primary: rgb(var(--tw-primary-400));
+  --ctx-danger: #f87171;
+  --ctx-danger-hover: #7f1d1d;
+  --ctx-separator: #4b5563;
+}

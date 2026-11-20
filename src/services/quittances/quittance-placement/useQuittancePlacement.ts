@@ -55,7 +55,6 @@ export function useQuittancePlacements(
   const updateQuittancePlacement = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateQuittancePlacementDto }) =>
       quittancePlacementApi.update(id, data),
-
     onMutate: async ({ id, data }) => {
       const previousItems = [...quittancePlacements.items.value]
       const index = previousItems.findIndex((d) => d.id === id)
@@ -71,6 +70,7 @@ export function useQuittancePlacements(
     },
 
     onSuccess: (fresh) => {
+      console.warn('useQuittancePlacement.ts updateQuittancePlacement.onSuccess')
       if (fresh) store.selectQuittancePlacement(fresh) // ⭐ données fraîches du serveur
     },
 

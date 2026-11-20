@@ -8,6 +8,9 @@ import TToastContainer from './composants/toast/TToastContainer.vue'
 import { useNetworkStatus } from './composants/toast/useNetworkStatus.ts'
 import { utilisateurApi } from './services/referentiel/utilisateur/utilisateur.api.ts'
 import { useAuthStore } from './auth/auth.store.ts'
+import ContextMenu from './composants/menu-contextuel/ContextMenu.vue'
+import { useContextMenu } from './composants/menu-contextuel/useContextMenu.ts'
+import type { MenuItem } from './composants/menu-contextuel/contextMenu.ts'
 
 type Theme = 'light' | 'dark'
 
@@ -70,6 +73,16 @@ function handleLogout() {
   authService.logout()
 }
 
+
+
+
+const { visible, items, position, close } = useContextMenu();
+
+const onSelect = (item: MenuItem): void => {
+  if (item.action && typeof item.action === 'function') {
+    item.action();
+  }
+};
 useNetworkStatus()
 </script>
 
@@ -96,4 +109,11 @@ useNetworkStatus()
    <TToastContainer position="top-right" :max="5" />
   <!-- ✅ Utiliser la variable, pas import.meta directement -->
   <VueQueryDevtools v-if="isDev" />
+    <ContextMenu 
+    :items="items"
+    :position="position"
+    :visible="visible"
+    @select="onSelect"
+    @close="close"
+  />
 </template>

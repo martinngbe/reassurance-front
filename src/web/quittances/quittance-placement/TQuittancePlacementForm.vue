@@ -16,6 +16,7 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 
 import type { PaginationParams } from '@/type/pagination'
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession'
+import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=> quittanceStore.currentQuittance)
@@ -92,7 +93,7 @@ const errorMessage = ref<string | null>(null)
 // ==================== FETCH ASYNC ====================
 function makeFetcher(url: string) {
   return async (query: string, page: number) => {
-    const res = await apiClient.get(url, { params: { search: query, page, limit: 20 } })
+    const res = await apiClient.get(url, { params: { search: query, page, limit: PAGE_SIZE } })
     return {
       options: res.data.items ?? res.data.data ?? [],
       hasMore: (res.data.meta?.current_page ?? 1) < (res.data.meta?.last_page ?? 1),
@@ -254,6 +255,8 @@ function buildPayload(data: Record<string, any>): UpdateQuittancePlacementDto {
 const handleSubmit = async (data: Record<string, any>) => {
                 errorMessage.value = null
                 const payload = buildPayload(data)
+                console.warn('TQuittancePlacementForm.vue 257')
+                console.log('payload:',payload)
 
                 if (!payload.quittanceId) {
                   errorMessage.value = 'Quittance manquante : impossible d’enregistrer le placement.'
@@ -276,10 +279,12 @@ const handleSubmit = async (data: Record<string, any>) => {
 
                 try {
                   if (isEditing.value && props.quittancePlacement) {
+                    console.log('__ MISE A JOUR __ ')
                     const res = await updateQuittancePlacement.mutateAsync({
                       id: props.quittancePlacement.id,
                       data: payload,
                     })
+                    console.log('res:',res)
                     if (res) quittancePlacementStore.selectQuittancePlacement(res)
                     await fetchCumulTaux() // ← ✅ ACTUALISATION APRÈS UPDATE
                     emit('success', 'Placement modifié avec succès')

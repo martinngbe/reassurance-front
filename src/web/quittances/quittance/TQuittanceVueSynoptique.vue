@@ -51,7 +51,7 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
                 <TTab v-model="active" variant="underline" size="md">
                             <TTabItem value="accueil"      label="Accueil"    />
                             <TTabItem value="bordereau"    label="Bordereau"  v-if="isFacultative"/>
-                            <TTabItem value="placement"    label="Placement" />
+                            <TTabItem value="placement"    label="Sécurité" />
                         
                             <TTabItem value="echeancePmd"  label="Echeance Pmd" v-if="!isProportionnelle" />
                             <TTabItem value="compte"       label="Compte"      v-if="!isFacultative"  />

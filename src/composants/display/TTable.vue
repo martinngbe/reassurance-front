@@ -73,6 +73,10 @@ const emit = defineEmits<{
   (e: 'row-double-click', row: T, index: number): void
   // ✨ NOUVEAU : Infinite Scroll
   (e: 'load-more'): void
+   // ✨ NOUVEAU : Menu contextuel sur une ligne
+  (e: 'row-contextmenu', event: MouseEvent, row: T, index: number): void
+  // ✨ NOUVEAU : Menu contextuel hors ligne (fond du tableau)
+  (e: 'table-contextmenu', event: MouseEvent): void
 }>()
 
 const selectedKeys = defineModel<(string | number)[]>('selectedKeys', { default: () => [] })
@@ -267,13 +271,6 @@ function triggerLoadMore() {
  * rootMargin négatif = déclenche avant d'atteindre le bas (anticipation).
  */
 function setupInfiniteObserver() {
-  // console.log(" -- --------------------------------- --")
-  // console.warn(" -- TTable.setupInfiniteObserver -- ")
-  // console.log(" -- --------------------------------- --")
-  // console.log(" props:",props)
-  // console.log(" sentinelEl.value:",sentinelEl.value)
-  // console.log(" scrollEl.value:",scrollEl.value)
-  // //console.log(" -- --------------------------------- --")
   teardownInfiniteObserver()
   if (!props.infiniteScroll || !sentinelEl.value || !scrollEl.value) return
   if (typeof IntersectionObserver === 'undefined') return
@@ -433,6 +430,37 @@ const showInfiniteEnd = computed(
     props.rows.length > 0 &&
     !props.loading,
 )
+
+// ==================== MENU CONTEXTUEL ====================
+/**
+ * Gère le clic droit sur une ligne :
+ * 1. Sélectionne la ligne (comme un clic gauche)
+ * 2. Émet l'événement row-contextmenu pour que le parent ouvre le menu
+ */
+function handleRowContextMenu(e: MouseEvent, row: T, index: number): void {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  // Sélectionne la ligne (comme un clic gauche)
+  selectRow(row, index)
+  
+  // Émet l'événement pour le parent
+  emit('row-contextmenu', e, row, index)
+}
+
+/**
+ * Gère le clic droit en dehors des lignes (fond du tableau)
+ */
+function handleTableContextMenu(e: MouseEvent): void {
+  // Ignore si le clic vient d'une ligne (déjà géré)
+  const target = e.target as HTMLElement
+  if (target.closest('tr[data-row-index]')) return
+  
+  e.preventDefault()
+  emit('table-contextmenu', e)
+}
+
+
 // ✅ NOUVEAU : Réactive l'observer quand le sentinel apparaît/disparaît
 watch(
   () => [props.infiniteScroll, props.scrollThreshold, scrollEl.value, showInfiniteSentinel.value],
@@ -447,6 +475,7 @@ watch(
     class="ttable flex flex-col overflow-hidden h-full w-full min-w-0 min-h-0
            rounded-xl ring-1 ring-neutral-200 dark:ring-neutral-800 bg-white dark:bg-neutral-900"
     :style="{ ...wrapperStyle, ...themeVars, boxSizing: 'border-box' }"
+    @contextmenu="handleTableContextMenu"
   >
     <!-- ================= CAPTION (haut) ================= -->
     <div
@@ -606,6 +635,7 @@ watch(
             ]"
             @click="selectRow(row, rowIndex); emit('row-click', row, rowIndex)"
             @dblclick="emit('row-double-click', row, rowIndex)"
+            @contextmenu="handleRowContextMenu($event, row, rowIndex)"
             >
             <!-- ✨ Cellule d'index -->
             <td
