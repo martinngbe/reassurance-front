@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import type { PaginationParams } from '@/type/pagination';
-import type { CreateSousBrancheDto, UpdateSousBrancheDto } from './sous-branche';
+import type { CreateSousBrancheDto, SousBrancheParams, UpdateSousBrancheDto } from './sous-branche';
 import { sousBrancheApi } from './sous-branche.api';
 
 const KEY = 'sousBranches';
 
-export function useSousBranches(params: MaybeRefOrGetter<PaginationParams> = {}) {
+export function useSousBranches(params: MaybeRefOrGetter<SousBrancheParams> = {}) {
   const qc = useQueryClient();
 
   // ─── Queries ───────────────────────────────────────────────

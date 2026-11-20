@@ -259,6 +259,7 @@ watch(tableSearch, () => {
           placeholder="Rechercher…"
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
+        <i class="pi pi-eye"></i>
       </div>
     </template>
 

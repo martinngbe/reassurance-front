@@ -14,8 +14,12 @@ import type { Branche } from '@/services/referentiel/branche/branche.ts'
 import TBrancheForm from './TBrancheForm.vue'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import { MODULE_CESSION, MODULE_PARAMETRAGE, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 
 // ==================== PAGINATION ====================
+const ecranStore = useEcransStore()
+const isCession = ecranStore.currentModule === MODULE_CESSION
+const isModuleParametrage = ecranStore.currentModule === MODULE_PARAMETRAGE
 const page = ref(1)
 const pageSize = ref(PAGE_SIZE)
 
@@ -32,6 +36,7 @@ const params = computed(() => ({
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
+  isCession: isModuleParametrage? null:  isCession
 }))
 
 const { branches ,deleteBranche } = useBranches(params)

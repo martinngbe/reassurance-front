@@ -17,6 +17,7 @@ export interface UseQuittancesOptions {
   courtierId?: Ref<number | null> | number | null
   campagneId?: Ref<number | null> | number | null       // ✅ NOUVEAU
   sousBrancheId?: Ref<number | null> | number | null    // ✅ NOUVEAU
+  natureOffreId?: Ref<number | null> | number | null
   isCession?: Ref<boolean | null> | boolean | null
   isFac?: Ref<boolean | null> | boolean | null
   isProportionnelle?: Ref<boolean | null> | boolean | null
@@ -38,6 +39,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     courtierId = null,
     campagneId = null,          // ✅ NOUVEAU
     sousBrancheId = null,       // ✅ NOUVEAU
+    natureOffreId = null,
     isCession = null,
     isFac = null,
     isProportionnelle = null,
@@ -59,6 +61,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
     courtierId: toValue(courtierId),
     campagneId: toValue(campagneId),       // ✅
     sousBrancheId: toValue(sousBrancheId), // ✅
+    natureOffreId: toValue(natureOffreId),
     isCession: toValue(isCession),
     isFac: toValue(isFac),
     isProportionnelle: toValue(isProportionnelle)
@@ -73,6 +76,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
       const courtierIdVal = toValue(courtierId)
       const campagneIdVal = toValue(campagneId)       // ✅
       const sousBrancheIdVal = toValue(sousBrancheId) // ✅
+      const natureOffreIdVal = toValue(natureOffreId)
       const isCessionVal = toValue(isCession)
       const isFacVal = toValue(isFac)
       const isProportionnelleVal = toValue(isProportionnelle)
@@ -89,6 +93,7 @@ export function useQuittances(options: UseQuittancesOptions = {}) {
         ...(courtierIdVal != null && { courtierId: courtierIdVal }),
         ...(campagneIdVal != null && { campagneId: campagneIdVal }),       // ✅
         ...(sousBrancheIdVal != null && { sousBrancheId: sousBrancheIdVal }), // ✅
+        ...(natureOffreIdVal != null && { natureOffreId: natureOffreIdVal }),
         ...(isCessionVal != null && { isCession: isCessionVal }),
         ...(isFacVal != null && { isFac: isFacVal }),
         ...(isProportionnelleVal != null && { isProportionnelle: isProportionnelleVal }),

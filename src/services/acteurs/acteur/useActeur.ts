@@ -1,7 +1,7 @@
 // /referentiel/acteur/useActeur.ts
 import { computed, ref, toRefs, toValue, type ComputedRef } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { Acteur, ActeurTypeFilter, ActeurTypeKey } from './acteur'
+import type { Acteur } from './acteur'
 import { acteurApi } from './acteur.api'
 import { useInfiniteList, type PaginatedResponse } from '@/utilitaire/infinity-scroll/useInfiniteList'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'

@@ -1,5 +1,6 @@
 
 import type { BaseEntity } from "@/type/base-entity";
+import type { PaginationParams } from "@/type/pagination";
 
 export interface Branche extends BaseEntity {
   code: string;
@@ -9,3 +10,7 @@ export interface Branche extends BaseEntity {
 
 export type CreateBrancheDto = Omit<Branche, keyof BaseEntity>;
 export type UpdateBrancheDto = Partial<CreateBrancheDto>;
+
+export interface BrancheParams extends PaginationParams {
+  isCession?: boolean | null;
+}

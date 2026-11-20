@@ -32,40 +32,28 @@ export type ActeurFormData = Partial<Omit<Acteur, 'paysId' >> & {
 
 
 // acteur.ts
-export interface ActeurFilters {
-  isCourtier?: boolean;
-  isCompagnieAssurance?: boolean;
-  isReassureur?: boolean;
-  isNous?: boolean;
-}
-
-// // Type pour les "chips" de sélection
-// export type ActeurTypeKey = keyof Omit<ActeurFilters, never>;
-
-// export const ACTEUR_TYPES: { key: ActeurTypeKey; label: string }[] = [
-//   { key: 'isCourtier', label: 'Courtiers' },
-//   { key: 'isCompagnieAssurance', label: 'Compagnies d\'assurance' },
-//   { key: 'isReassureur', label: 'Réassureurs' },
-//   { key: 'isNous', label: 'Nous' },
-// ];
-
-
-// ✅ Nouveau type pour les paramètres de requête avec filtres
-export interface ActeurParams extends PaginationParams {
-  filters?: {
-    isCourtier?: boolean;
-    isCompagnieAssurance?: boolean;
-    isReassureur?: boolean;
-    isNous?: boolean;
-  };
-}
+// export interface ActeurFilters {
+//   isCourtier?: boolean;
+//   isCompagnieAssurance?: boolean;
+//   isReassureur?: boolean;
+//   isNous?: boolean;
+// }
+// // ✅ Nouveau type pour les paramètres de requête avec filtres
+// export interface ActeurParams extends PaginationParams {
+//   filters?: {
+//     isCourtier?: boolean;
+//     isCompagnieAssurance?: boolean;
+//     isReassureur?: boolean;
+//     isNous?: boolean;
+//   };
+// }
 
 // acteur.ts
-export type ActeurTypeFilter = 'courtier' | 'cedante' | 'reassureur' | 'nous' | null;
+//export type ActeurTypeFilter = 'courtier' | 'cedante' | 'reassureur' | 'nous' | null;
 
-export interface ActeurParams extends PaginationParams {
-  typeFiltre?: ActeurTypeFilter;
-}
+// export interface ActeurParams extends PaginationParams {
+//   typeFiltre?: ActeurTypeFilter;
+// }
 
 
 

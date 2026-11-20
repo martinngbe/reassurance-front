@@ -13,6 +13,11 @@ import { useSousBranches } from '@/services/referentiel/sous-branche/useSousBran
 import TSousBrancheForm from './TSousBrancheForm.vue'
 import type { Branche } from '@/services/referentiel/branche/branche.ts'
 import TAction from '@/composants/utilitaire/TAction.vue'
+import { MODULE_CESSION, MODULE_PARAMETRAGE, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+
+const ecranStore = useEcransStore()
+const isCession = ecranStore.currentModule === MODULE_CESSION
+const isModuleParametrage = ecranStore.currentModule === MODULE_PARAMETRAGE
 
 const props = withDefaults(
   defineProps<{
@@ -42,8 +47,13 @@ const params = computed(() => ({
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
-  brancheId : props.branche?  props.branche.id : null
+  brancheId : props.branche?  props.branche.id : null,
+  isCession: isModuleParametrage? null : isCession
 }))
+
+console.warn(' __ SOUS-BRANCHE __ ')
+console.log(' params:',params)
+
 const titreTableau = computed(()=> props.branche? `Sous branche : ${props.branche.libelle}` : `Sous branche`  )
 const { sousBranches ,deleteSousBranche } = useSousBranches(params)
 const { success, error , info } = useToast()

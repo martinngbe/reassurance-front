@@ -1,5 +1,6 @@
 
 import type { BaseEntity } from "@/type/base-entity";
+import type { PaginationParams } from "@/type/pagination";
 
 export interface SousBranche extends BaseEntity {
   brancheId: number;
@@ -9,3 +10,7 @@ export interface SousBranche extends BaseEntity {
 
 export type CreateSousBrancheDto = Omit<SousBranche, keyof BaseEntity>;
 export type UpdateSousBrancheDto = Partial<CreateSousBrancheDto>;
+
+export interface SousBrancheParams extends PaginationParams {
+  isCession?: boolean | null;
+}

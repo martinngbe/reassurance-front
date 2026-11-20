@@ -63,6 +63,7 @@ const cedanteIdVal = computed(() => quittanceStore.filtreCedanteId)
 const courtierIdVal = computed(() => quittanceStore.filtreCourtierId)
 const campagneIdVal = computed(() => quittanceStore.filtreCampagneId)
 const sousBrancheIdVal = computed(() => quittanceStore.filtreSousBrancheId)
+const natureOffreIdVal = computed(() => quittanceStore.filtreNatureOffreId)
 
 const policeIdVal = (isEcranBordereau || isEcranPlacement || isEcranEcheancePmd) ? null : toValue(policeId)
 const isFacVal = isEcranBordereau ? true : isEcranCompte ? false : null
@@ -91,6 +92,7 @@ const store = useQuittances({
   courtierId: courtierIdVal,         // ✅ Computed
   campagneId: campagneIdVal,         // ✅ Computed
   sousBrancheId: sousBrancheIdVal,   // ✅ Computed
+  natureOffreId: natureOffreIdVal,
   isCession: isCession,
   isFac: isFacVal,
   isProportionnelle: isProportionnelleVal,
@@ -205,6 +207,11 @@ watch(tableSearch, () => {
           placeholder="Rechercher…"
           class="h-8 rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
+         <i v-if="isLigneSelectionnee"  class="pi pi-eye pl-3 pr-3 cursor-pointer 
+              transition-transform duration-200 dark:text-primary-500 text-primary-800  text-xl  hover:scale-225" 
+           
+              @click="showModaleVueSynotique=true"
+            />
       </div>
     </template>
     <template #caption>
