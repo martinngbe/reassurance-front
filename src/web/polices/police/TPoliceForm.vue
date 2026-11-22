@@ -21,7 +21,7 @@ const currentPolice = computed(()=> policeStore.currentPolice)
 const natureOffre =computed(()=> currentPolice.value?.natureOffre)
 const params = computed<PaginationParams>(() => ({}))
   // API
-const { updatePolice } = usePolices(null ,
+const { updatePolice } = usePolices(null ,null,
  currentPolice.value? currentPolice.value.isCession: null,
   params)
 

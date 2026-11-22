@@ -4,6 +4,7 @@ import Acteurs from './Acteurs.vue';
 import Contacts from '../contact/Contacts.vue';
 import { onUnmounted, ref } from 'vue';
 import type { Acteur } from '@/services/acteurs/acteur/acteur.ts';
+import CessionsLegales from '@/web/referentiel/cession-legale/CessionsLegales.vue';
 
 
 const acteurSelected = ref<Acteur| null>(null)
@@ -44,7 +45,8 @@ onUnmounted(() => {
           <Acteurs   @row-click="onSelection"/>
     </template>
     <template #footer>
-          <Contacts  :acteur="acteurSelected" v-if="acteurSelected"/>
+          <CessionsLegales  :acteur="acteurSelected" v-if="acteurSelected"/>
+          <!--Contacts  :acteur="acteurSelected" v-if="acteurSelected"/-->
     </template>
     
     

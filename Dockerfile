@@ -5,6 +5,8 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 # Copie des fichiers de dépendances en premier (optimisation du cache Docker)
 COPY package*.json ./
+# Ajoutez cette ligne pour utiliser un miroir rapide
+RUN npm config set registry https://registry.npmmirror.com
 # Installation des dépendances (utilise npm ci si package-lock.json existe)
 RUN npm ci
 

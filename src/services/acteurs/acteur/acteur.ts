@@ -32,12 +32,12 @@ export type ActeurFormData = Partial<Omit<Acteur, 'paysId' >> & {
 
 
 // acteur.ts
-// export interface ActeurFilters {
-//   isCourtier?: boolean;
-//   isCompagnieAssurance?: boolean;
-//   isReassureur?: boolean;
-//   isNous?: boolean;
-// }
+export interface ActeurFilters {
+  isCourtier?: boolean;
+  isCompagnieAssurance?: boolean;
+  isReassureur?: boolean;
+  isNous?: boolean;
+}
 // // ✅ Nouveau type pour les paramètres de requête avec filtres
 // export interface ActeurParams extends PaginationParams {
 //   filters?: {

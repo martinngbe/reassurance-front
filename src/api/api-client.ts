@@ -2,7 +2,7 @@ import { useToast } from '@/composants/toast/useToast'
 import axios from 'axios'
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://api.reass.local',
 })
 
 apiClient.interceptors.request.use((config) => {
