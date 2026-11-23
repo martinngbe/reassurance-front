@@ -4,6 +4,7 @@ import type {
   QuittancePlacement,
   CreateQuittancePlacementDto,
   UpdateQuittancePlacementDto,
+  QuittanceCessionLegale,
 } from './quittance-placement'
 
 const BASE = '/quittance-placement'
@@ -17,6 +18,10 @@ export const quittancePlacementApi = {
 
   create: (data: CreateQuittancePlacementDto) =>
     apiClient.post<IResponse>(BASE, data).then((r) => r.data.data),
+
+  createCessionLegale: (data: QuittanceCessionLegale) =>
+    apiClient.post<IResponse>(`${BASE}/cession-legale/${data.quittanceId}/${data.cessionLegaleId}`, {}).then((r) => r.data.data),
+
 
   update: (id: number, data: UpdateQuittancePlacementDto) =>
     apiClient.put<IResponse>(`${BASE}/${id}`, data).then((r) => r.data.data),

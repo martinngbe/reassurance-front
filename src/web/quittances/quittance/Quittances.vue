@@ -422,7 +422,7 @@ watch(tableSearch, () => {
   <TModal v-model="showModalModification" :title="titleModal" width="60%" height="75%">
     <TQuittanceForm :loading="updateQuittance.isPending.value" @success="onFormSuccess" @cancel="closeModal" />
   </TModal>
-  <TModal v-model="showModalSecurite" title="Sécurité" width="80%" height="75%">   
+  <TModal v-model="showModalSecurite" title="Sécurité" width="90%" height="85%">   
     <template #default><TQuittancePlacement/></template>
     <template #footer>
       <div class="flex justify-between">

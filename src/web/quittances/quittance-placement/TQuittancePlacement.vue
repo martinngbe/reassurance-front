@@ -8,6 +8,7 @@ import { useQuittanceStore } from '@/services/quittances/quittance/quittance.sto
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession.ts';
 import TPatientez from '@/composants/utilitaire/TPatientez.vue';
 import TAlert from '@/composants/display/TAlert.vue';
+import TQuittanceCessionsLegales from './TQuittanceCessionsLegales.vue';
 
 const quittanceStore = useQuittanceStore();
 const currentQuittance = computed(() => quittanceStore.currentQuittance);
@@ -20,6 +21,10 @@ const {
   // nombrePlacementsActifs
 } = useCumulTauxCession(quittanceIdRef)
 
+const isExecuteCessionLegale = ref(false)
+const onCessionLegaleExecute = ()=>{
+     actualiseQuittancePlacement()
+}
 const isPatientez = ref(false)
 let searchTimeout: number | undefined
 const actualiseFiche=()=>{
@@ -27,6 +32,13 @@ const actualiseFiche=()=>{
     window.clearTimeout(searchTimeout)
     searchTimeout = window.setTimeout(() => {
             isPatientez.value=false
+    }, 300)
+}
+const actualiseQuittancePlacement=()=>{
+    isExecuteCessionLegale.value=true
+    window.clearTimeout(searchTimeout)
+    searchTimeout = window.setTimeout(() => {
+            isExecuteCessionLegale.value=false
     }, 300)
 }
 
@@ -40,16 +52,31 @@ const actualiseFiche=()=>{
     :show-top="false"
     >    
         <template #left>
-              <TFicheQuittancePlacement  v-if="currentQuittance && !isPatientez"/>           
-              <TPatientez v-else-if="isPatientez"/> 
-              <div v-else class="flex w-full  p-4 h-full items-center justify-center">                 
-                      <TAlert variant="info">
-                          <p class="text-2xl font-bold">Selectionnez une quittance svp..</p> 
-                      </TAlert> 
-                </div>
+                <TLayoutModule
+                :show-bottom="false"
+                topSize="50%"
+                :show-left="false"
+                >
+                    <template  #header>
+                              <TFicheQuittancePlacement  v-if="currentQuittance && !isPatientez"/>           
+                              <TPatientez v-else-if="isPatientez"/> 
+                              <div v-else class="flex w-full  p-4 h-full items-center justify-center">                 
+                                      <TAlert variant="info">
+                                          <p class="text-2xl font-bold">Selectionnez une quittance svp..</p> 
+                                      </TAlert> 
+                                </div>
+                    </template>
+                    <template #default>
+                          <TQuittanceCessionsLegales @cession-legale-execute="onCessionLegaleExecute"/>
+                    </template>
+
+                </TLayoutModule>
+
+
         </template>
         <template #default>
-              <QuittancePlacements @form-success="actualiseFiche" />
+              <TPatientez v-if="isExecuteCessionLegale"/>
+              <QuittancePlacements @form-success="actualiseFiche" v-else/>
         </template>
 
   </TLayoutModule>

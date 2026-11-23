@@ -10,14 +10,27 @@ import TDemandeConfirmation from '@/composants/utilitaire/TDemandeConfirmation.v
 import { useToast } from '@/composants/toast/useToast.ts'
 import TCessionLegaleForm from './TCessionLegaleForm.vue'
 import TAction from '@/composants/utilitaire/TAction.vue'
-import { MODULE_CESSION, MODULE_PARAMETRAGE, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
+import {  MODULE_PARAMETRAGE, useEcransStore } from '@/services/ecrans/ecrans.store.ts'
 import type { Acteur } from '@/services/acteurs/acteur/acteur.ts'
 import type { CessionLegale } from '@/services/referentiel/cession-legale/cession-legale.ts'
 import { useCessionLegales } from '@/services/referentiel/cession-legale/useCessionLegale.ts'
+import TDisplayPourCentage from '@/composants/utilitaire/TDisplayPourCentage.vue'
+import IconeValider from '@/composants/icone/IconeValider.vue'
+import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
+import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store.ts'
+import { useCessionLegaleStore } from '@/services/referentiel/cession-legale/cession-legale.store.ts'
 
 const ecranStore = useEcransStore()
-const isCession = ecranStore.currentModule === MODULE_CESSION
-const isModuleParametrage = ecranStore.currentModule === MODULE_PARAMETRAGE
+const isModuleParametrage = ecranStore.currentModule==MODULE_PARAMETRAGE
+
+const quittanceStore = useQuittanceStore()
+const cessionLegaleStore = useCessionLegaleStore()
+const currentQuittance = quittanceStore.currentQuittance
+const policeQuittance = currentQuittance?.police
+const natureOffre = policeQuittance?.natureOffre
+const isFacultative = natureOffre?.isFacultative
+const cessionLegaleSelected = ref<CessionLegaleRow | null>(null)
+
 
 const props = withDefaults(
   defineProps<{
@@ -47,14 +60,14 @@ const params = computed(() => ({
   search: tableSearch.value.trim() || undefined,
   sortKey: sortState.value.key ?? undefined,
   sortDirection: sortState.value.direction as 'ASC' | 'DESC' | undefined,
-  brancheId : props.acteur?  props.acteur.id : null,
-  isCession: isModuleParametrage? null : isCession
+  acteurId : props.acteur?  props.acteur.id : null,
+  isFacultative: isModuleParametrage? null : isFacultative 
 }))
 
-console.warn(' __ SOUS-BRANCHE __ ')
+console.warn(' __ CESSION-LEGALE __ ')
 console.log(' params:',params)
 
-const titreTableau = computed(()=> props.acteur? `Cession légale : ${props.acteur.raisonSociale}` : `Acteur`  )
+const titreTableau = computed(()=> props.acteur && isModuleParametrage? `Cession légale : ${props.acteur.raisonSociale}` : `Cession légale`  )
 const { cessionLegales ,deleteCessionLegale } = useCessionLegales(params)
 const { success, error , info } = useToast()
 
@@ -63,8 +76,8 @@ type CessionLegaleRow = CessionLegale & { [key: string]: any }
 
 // ==================== DONNÉES TABLE ====================
 const cessionLegaleColumns: TableColumn[] = [ 
-  { key: 'taux',      label: 'Taux%',     width: '15%',  minWidth: 150 },
-  { key: 'isFac',     label: 'FAC',       width: '15%',  minWidth: 150}, 
+  { key: 'taux',      label: 'Taux%',     width: '15%',  minWidth: 150 , align:'center'},
+  { key: 'isFac',     label: 'FAC',       width: '15%',  minWidth: 150, align:'center'}, 
   { key: 'acteur',    label: 'Acteur',    width: '70%',  minWidth: 150 },
  
 ]
@@ -144,7 +157,6 @@ const handleModifier = () => {
  // console.log('>>>>>> handleModifier cessionLegale:',cessionLegale)
   if (cessionLegale) openEdit(cessionLegale)
 }
-
 const handleSupprimer = async () => {
   if (selectedCessionLegales.value.length === 0) {
     info('Veuillez sélectionner une Sous Acteur svp', 'Info')
@@ -156,7 +168,6 @@ const handleSupprimer = async () => {
   showModalfirmation.value=true 
   
 }
-
 const handlConfirmeSuppression = async ()=>{
   const cessionLegale = cessionLegaleToEdit.value?? null
   if (!cessionLegale ) return
@@ -176,7 +187,6 @@ const handlConfirmeSuppression = async ()=>{
        
       }
 }
-
 // 🔑 Watcher qui réinitialise la sélection à chaque changement de acteur
 
 watch(
@@ -201,8 +211,11 @@ watch(tableSearch, () => {
   }, 300)
 })
 
-const onRowClick = ( row: any, index: number)=>{       
-    emit('row-click',row as CessionLegale)
+
+const onRowClick = (row: any , index : number) => {
+  cessionLegaleSelected.value = row as CessionLegale
+  cessionLegaleStore.selectCessionLegale(row as CessionLegale)
+   emit('row-click',row as CessionLegale)       
 }
 
 </script>
@@ -261,11 +274,11 @@ const onRowClick = ( row: any, index: number)=>{
       <span class="font-mono  text-xl uppercase" v-if="value"
       >{{ (value as Acteur).raisonSociale }}</span>
     </template>
-    <template #cell-code="{ value }">
-      <span class="font-mono  text-xl uppercase">{{ value }}</span>
+    <template #cell-taux="{ value }">
+       <TDisplayPourCentage :value="value" />
     </template>
-    <template #cell-libelle="{ value }">
-      <span class="font-mono text-xl uppercase">{{ value }}</span>
+    <template #cell-isFac="{ value }">
+      <IconeValider  v-if="value" /><IconeNonValider v-else/>
     </template>
    
   

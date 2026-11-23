@@ -27,8 +27,8 @@ const { success, error, warning, info } = useToast()
 const quittanceStore = useQuittanceStore()
 const currentQuittance = computed(()=> quittanceStore.currentQuittance)
 const quittancePlacementStore = useQuittancePlacementStore()
-const titreFenetre = ref('PLACEMENTS')
-titreFenetre.value =currentQuittance.value?  "PLACEMENTS QUITTANCE N°"+ currentQuittance.value.numero : "BORDEREAUX"
+const titreFenetre = ref('SéCURITé')
+titreFenetre.value =currentQuittance.value?  "SéCURITé QUITTANCE N°"+ currentQuittance.value.numero : "BORDEREAUX"
 
 const policeQuittance = computed(()=> currentQuittance.value?.police)
 const natureOffre = computed(()=> policeQuittance.value?.natureOffre)
@@ -302,7 +302,7 @@ watch(tableSearch, () => {
               :active-modifier="isLigneSelectionnee"
               :active-impression="isLigneSelectionnee"
               :active-supprimer="isLigneSelectionnee"
-              :active-actualiser="totalItems>0"
+              :active-actualiser="true"
               @modifier="handleModifier"
               @nouveau="handleNouveau"
               @supprimer="handleSupprimer"

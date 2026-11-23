@@ -24,7 +24,10 @@ export interface QuittancePlacement extends BaseEntity {
   quittancePlacementAnnule?: QuittancePlacement | null
   quittancePlacementIdAnnule?: number | null
 }
-
+export interface QuittanceCessionLegale {
+  quittanceId: number
+  cessionLegaleId: number
+}
 // export type CreateQuittancePlacementDto = Omit<
 //   QuittancePlacement,
 //   keyof BaseEntity | 'quittance' | 'acteur' | 'naturePlacement' | 'quittancePlacementAnnule'

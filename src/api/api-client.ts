@@ -2,20 +2,14 @@ import { useToast } from '@/composants/toast/useToast'
 import axios from 'axios'
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://api.reass.local',
+  baseURL: import.meta.env.VITE_API_URL || 'http://reass.local/api',
 })
 
 apiClient.interceptors.request.use((config) => {
   const token =
     localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token')
-  //console.log("apiClient.interceptors.request token:",token)  
   if (token) {
-    //config.headers.Authorization = `Bearer ${token}`
-     // ✅ Utiliser .set() au lieu de l'assignation directe
     config.headers.set('Authorization', `Bearer ${token}`)
-    // console.log("config:",config)
-    // console.log("config.headers:",config.headers)
-    // console.log("config.headers.Authorization:",config.headers.Authorization)
   }
   return config
 })

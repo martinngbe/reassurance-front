@@ -6,7 +6,8 @@ import { useQuittancePlacementStore } from './quittance-placement.store'
 import { quittancePlacementApi } from './quittance-placement.api'
 import type {
   QuittancePlacement, CreateQuittancePlacementDto,
-  UpdateQuittancePlacementDto, 
+  UpdateQuittancePlacementDto,
+  QuittanceCessionLegale, 
 } from './quittance-placement'
 import type { PaginationParams } from '@/type/pagination'
 
@@ -50,7 +51,14 @@ export function useQuittancePlacements(
       invalidate()
     },
   })
-
+  const createQuittanceCessionLegale = useMutation({
+    mutationFn: (data:QuittanceCessionLegale) => quittancePlacementApi
+     .createCessionLegale(data),
+    onSuccess: (created) => {
+      if (created) store.selectQuittancePlacement(created) // ⭐ sélection auto
+      invalidate()
+    },
+  })
   // ==================== UPDATE ====================
   const updateQuittancePlacement = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateQuittancePlacementDto }) =>
@@ -92,5 +100,12 @@ export function useQuittancePlacements(
     onSettled: invalidate,
   })
 
-  return { quittancePlacements, createQuittancePlacement, updateQuittancePlacement, deleteQuittancePlacement, refresh: quittancePlacements.refresh }
+  return { 
+    quittancePlacements, 
+    createQuittanceCessionLegale,
+    createQuittancePlacement, 
+    updateQuittancePlacement, 
+    deleteQuittancePlacement, 
+    refresh: quittancePlacements.refresh 
+  }
 }
