@@ -3,9 +3,10 @@ import type { Quittance } from '../quittance/quittance'
 
 export interface QuittanceTranche extends BaseEntity {
   numeroTranche: number
+  estimationPrime: number;
   tauxPrime: number 
   tauxCommission: number 
- 
+  primeTranche?: number
   isAnnule?: boolean
 
   // Relations

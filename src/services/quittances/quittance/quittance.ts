@@ -8,13 +8,11 @@ import type { QuittancePlacement } from "../quittance-placement/quittance-placem
 import type { NatureOffre } from "@/services/referentiel/nature-offre/nanture-offre";
 import type { TableColumn } from "@/composants/forms/common";
 import type { FormField } from "@/composants/forms/generic-form/types-form";
+import type { QuittanceTranche } from "../quittance-tranche/quittance-tranche";
 
 export interface Quittance extends BaseEntity {
  numero: string;
-  ////// Hérité de l'entité TempPolice
-  // isCession?: boolean; 
-  //isProportionnel?: boolean;
-  //isFac?: boolean;
+ 
   ///////////////////////////// 
   ////// Emission 
   /////////////////////////////  
@@ -77,6 +75,7 @@ export interface Quittance extends BaseEntity {
   deviseId: number;
 
   quittancePlacements: QuittancePlacement[]
+  quittanceTranches: QuittanceTranche[]
  
 }
 

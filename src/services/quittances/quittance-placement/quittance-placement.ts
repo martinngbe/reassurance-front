@@ -5,9 +5,11 @@ import type { NaturePlacement } from '@/services/referentiel/nature-placement/na
 
 export interface QuittancePlacement extends BaseEntity {
   numero: string
+  estimationPrime: number 
   tauxCession: number 
   tauxCommission: number 
   commissionFixe: number 
+  primeNette?: number
 
   isAnnule?: boolean
 

@@ -6,6 +6,7 @@ import type { PaginationParams } from "@/type/pagination";
 export interface CessionLegale extends BaseEntity {
   acteurId: number;
   acteur: Acteur;
+
   taux: number;
   isFac: boolean;
 
@@ -17,3 +18,8 @@ export type UpdateCessionLegaleDto = Partial<CreateCessionLegaleDto>;
 export interface CessionLegaleParams extends PaginationParams {
   isFacultative?: boolean | null;
 }
+
+export type CessionLegaleFormData = Partial<Omit<CessionLegale,'acteurId' >> & {
+  acteurId: number | Acteur  |  null  ;
+  
+};

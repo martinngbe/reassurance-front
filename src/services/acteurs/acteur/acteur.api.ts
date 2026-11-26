@@ -17,4 +17,19 @@ export const acteurApi = {
     apiClient.patch<Acteur>(`${BASE}/${id}`, data).then((r) => r.data),
   delete: (id: number) =>
     apiClient.delete<void>(`${BASE}/${id}`).then((r) => r.data),
+
+    // ⭐ NOUVELLES MÉTHODES POUR LE PDF
+  printOne: (id: number) => {
+    return apiClient.get(`${BASE}/${id}/print`, {
+      responseType: 'blob', // Très important pour le binaire
+    }).then((r) => r.data)
+  },
+
+  printList: (params: ActeurParams = {}) => {
+    return apiClient.get(`${BASE}/print/all`, {
+      params,
+      responseType: 'blob',
+    }).then((r) => r.data)
+  },
+
 }

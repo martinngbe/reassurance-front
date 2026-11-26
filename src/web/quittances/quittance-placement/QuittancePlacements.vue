@@ -77,6 +77,8 @@ const quittancePlacementColumns = computed(()=>{
     const allColumns: TableColumn[] = [
                     { key: 'numero',          label: 'N°',               width: 200,  minWidth: 80 , },                   
                     { key: 'acteur',          label: 'Rétrocessionnaire',width: 250,  minWidth: 80 , },
+                    { key: 'naturePlacement', label: 'Nature'           ,width: 250,  minWidth: 80 , },
+                   
                     { key: 'tauxCession',     label: 'Taux Cession',     width: 80,   minWidth: 100,  align:'right' },                     
                     { key: 'primeBrute',      label: 'Prime Brute',      width: 150,  minWidth: 100,  align:'right' },
                     { key: 'estimationPrime', label: 'Estimation Prime', width: 150,  minWidth: 100,  align:'right' },
@@ -310,7 +312,9 @@ watch(tableSearch, () => {
             />
           </div>
         </template> 
-       
+             
+
+        
         <template #cell-primeBrute="{ value }">
           <TDisplayNumber :value="value" />
         </template>
@@ -341,7 +345,9 @@ watch(tableSearch, () => {
         <template #cell-acteur="{ value }">
           <p  v-if="value">{{  value.raisonSociale }}</p>
         </template>
-
+        <template #cell-naturePlacement="{ value }">
+          <p  v-if="value">{{  value.libelle }}</p>
+        </template> 
   </TTable>
 
   

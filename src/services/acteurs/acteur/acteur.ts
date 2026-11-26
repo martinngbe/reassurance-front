@@ -38,23 +38,6 @@ export interface ActeurFilters {
   isReassureur?: boolean;
   isNous?: boolean;
 }
-// // ✅ Nouveau type pour les paramètres de requête avec filtres
-// export interface ActeurParams extends PaginationParams {
-//   filters?: {
-//     isCourtier?: boolean;
-//     isCompagnieAssurance?: boolean;
-//     isReassureur?: boolean;
-//     isNous?: boolean;
-//   };
-// }
-
-// acteur.ts
-//export type ActeurTypeFilter = 'courtier' | 'cedante' | 'reassureur' | 'nous' | null;
-
-// export interface ActeurParams extends PaginationParams {
-//   typeFiltre?: ActeurTypeFilter;
-// }
-
 
 
 // ✅ Clés possibles pour le filtre

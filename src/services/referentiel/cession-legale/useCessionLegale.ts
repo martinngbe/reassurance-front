@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import type { CreateCessionLegaleDto, CessionLegaleParams, UpdateCessionLegaleDto } from './cession-legale';
+import type { CreateCessionLegaleDto, CessionLegaleParams, UpdateCessionLegaleDto, CessionLegale } from './cession-legale';
 import { cessionLegaleApi } from './cession-legale.api';
 
 const KEY = 'cessionLegales';
@@ -23,11 +23,13 @@ export function useCessionLegales(params: MaybeRefOrGetter<CessionLegaleParams> 
 
   // ─── Mutations ─────────────────────────────────────────────
   const createCessionLegale = useMutation({
+    // ✅ CORRECTION : Remplacer 'CessionLegale' par 'CreateCessionLegaleDto'
     mutationFn: (data: CreateCessionLegaleDto) => cessionLegaleApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 
   const updateCessionLegale = useMutation({
+    // Celui-ci était déjà correctement typé avec UpdateCessionLegaleDto 👍
     mutationFn: ({ id, data }: { id: number; data: UpdateCessionLegaleDto }) =>
       cessionLegaleApi.update(id, data),
     onSuccess: (_, { id }) => {

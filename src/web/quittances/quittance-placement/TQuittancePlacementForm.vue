@@ -14,7 +14,7 @@ import type {
 } from '@/services/quittances/quittance-placement/quittance-placement'
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store'
 
-import type { PaginationParams } from '@/type/pagination'
+import type { IResponse, PaginationParams } from '@/type/pagination'
 import { useCumulTauxCession } from '@/services/quittances/quittance-placement/useCumulTauxCession'
 import { PAGE_SIZE } from '@/utilitaire/utilitaire'
 
@@ -91,17 +91,37 @@ const loading = computed(() =>
 const errorMessage = ref<string | null>(null)
 
 // ==================== FETCH ASYNC ====================
-function makeFetcher(url: string) {
-  return async (query: string, page: number) => {
-    const res = await apiClient.get(url, { params: { search: query, page, limit: PAGE_SIZE } })
-    return {
-      options: res.data.items ?? res.data.data ?? [],
-      hasMore: (res.data.meta?.current_page ?? 1) < (res.data.meta?.last_page ?? 1),
-    }
+// function makeFetcher(url: string) {
+//   return async (query: string, page: number) => {
+//     const res = await apiClient.get(url, { params: { search: query, page, limit: PAGE_SIZE } })
+//     return {
+//       options: res.data.items ?? res.data.data ?? [],
+//       hasMore: (res.data.meta?.current_page ?? 1) < (res.data.meta?.last_page ?? 1),
+//     }
+//   }
+// }
+async function fetchActeur(query: string, page: number) {
+  const res = await apiClient.get('/acteur?roles=assureur,reassureur', {
+    params: { search: query, page, limit: 20 }
+  }) as IResponse
+
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
   }
 }
-const fetchActeur = makeFetcher('/acteur')
-const fetchNaturePlacement = makeFetcher('/nature-placement')
+async function fetchNaturePlacement(query: string, page: number) {
+  const res = await apiClient.get('/nature-placement', {
+    params: { search: query, page, limit: 20 }
+  }) as IResponse
+
+  return {
+    options: res.data.items || res.data.data || [],
+    hasMore: res.data.pageInfo?.page < res.data.pageInfo?.totalPages || false
+  }
+}
+//const fetchActeur = makeFetcher('/acteur')
+//const fetchNaturePlacement = makeFetcher('/nature-placement')
 
 // ==================== CHAMPS ====================
 const pourcentageNumberOption = {

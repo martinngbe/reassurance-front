@@ -15,7 +15,15 @@ import type { Acteur,  ActeurTypeKey } from '@/services/acteurs/acteur/acteur.ts
 import IconeNonValider from '@/composants/icone/IconeNonValider.vue'
 import IconeValider from '@/composants/icone/IconeValider.vue'
 import { useActeurStore } from '@/services/acteurs/acteur/acteur.store.ts'
+import { acteurApi } from '@/services/acteurs/acteur/acteur.api.ts'
+import TPdfViewer from '@/composants/display/TPdfViewer.vue'
 
+
+// ⭐ ÉTAT POUR LE PDF
+const showPdfModal = ref(false)
+const pdfBlob = ref<Blob | null>(null)
+const isPdfLoading = ref(false)
+const pdfFilename = ref('')
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -136,15 +144,15 @@ const handleModifier = () => {
   if (acteur) openEdit(acteur)
 }
 
-const handleSupprimer = () => {
-  if (selectedActeurs.value.length === 0) {
-    warning('Veuillez sélectionner une acteur', 'Attention')
-    return
-  }
-  const acteurId = selectedActeurs.value[0]
-  acteurToEdit.value = acteurRows.value.find((u: any) => u.id === acteurId) ?? null
-  if (acteurToEdit.value) showModalConfirmation.value = true
-}
+// const handleSupprimer = () => {
+//   if (selectedActeurs.value.length === 0) {
+//     warning('Veuillez sélectionner une acteur', 'Attention')
+//     return
+//   }
+//   const acteurId = selectedActeurs.value[0]
+//   acteurToEdit.value = acteurRows.value.find((u: any) => u.id === acteurId) ?? null
+//   if (acteurToEdit.value) showModalConfirmation.value = true
+// }
 
 const handleConfirmeSuppression = async () => {
   const acteur = acteurToEdit.value
@@ -169,6 +177,53 @@ const onRowClick = ( row: any, index: number)=>{
 }
 const handleActualise =()=>{
   acteurs.refresh()
+}
+
+
+// ⭐ FONCTIONS POUR L'IMPRESSION
+const handlePrintOne = async () => {
+  if (selectedActeurs.value.length === 0) {
+    info('Veuillez sélectionner un acteur à imprimer', 'Info')
+    return
+  }
+  
+  const acteurId = Number(selectedActeurs.value[0])
+  const acteur = acteurRows.value.find((u: any) => u.id === acteurId)
+  
+  isPdfLoading.value = true
+  pdfFilename.value = `Acteur-${acteur?.sigle || acteurId}.pdf`
+  showPdfModal.value = true
+  pdfBlob.value = null
+
+  try {
+    pdfBlob.value = await acteurApi.printOne(acteurId)
+  } catch (err: any) {
+    error('Erreur lors de la génération du PDF', 'Erreur')
+    showPdfModal.value = false
+  } finally {
+    isPdfLoading.value = false
+  }
+}
+
+const handlePrintList = async () => {
+  isPdfLoading.value = true
+  pdfFilename.value = 'Liste-Acteurs.pdf'
+  showPdfModal.value = true
+  pdfBlob.value = null
+
+  try {
+    // On réutilise les paramètres de recherche et tri actuels
+    const currentParams = { ...params.value }
+    delete currentParams.page
+    delete currentParams.limit
+
+    pdfBlob.value = await acteurApi.printList(currentParams as any)
+  } catch (err: any) {
+    error('Erreur lors de la génération de la liste PDF', 'Erreur')
+    showPdfModal.value = false
+  } finally {
+    isPdfLoading.value = false
+  }
 }
 // Debounce recherche
 let searchTimeout: number | undefined
@@ -224,12 +279,13 @@ watch(tableSearch, () => {
       <TAction v-if="!masquerBoutonAction"
         :active-modifier="isLigneSelectionnee"
         :active-nouveau="true"
-        :active-actualiser="total>0"
-        :masque-impression="true"
+        :active-actualiser="true"
+        :active-impression="total>0"
         :masque-supprimer="true"
         @nouveau="handleNouveau"
         @modifier="handleModifier"
         @actualiser="handleActualise"
+        @imprimer="handlePrintList"
        
       />
     </template>
@@ -298,4 +354,29 @@ watch(tableSearch, () => {
       </template>
     </TDemandeConfirmation>
   </TModal>
+
+  <!-- ⭐ MODALE D'AFFICHAGE PDF -->
+  <TModal 
+    v-model="showPdfModal" 
+    :title="`Aperçu : ${pdfFilename}`" 
+    width="95%" height="95%"
+  >
+    <div v-if="isPdfLoading" class="flex justify-center items-center h-64">
+      <span class="text-neutral-500 animate-pulse">Génération du PDF en cours...</span>
+    </div>
+    <TPdfViewer v-else :blob="pdfBlob" :filename="pdfFilename" />
+    
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <button 
+          @click="showPdfModal = false" 
+          class="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-800"
+        >
+          Fermer
+        </button>
+      </div>
+    </template>
+  </TModal>
+
+
 </template>

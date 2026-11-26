@@ -3,16 +3,16 @@ import TLayoutModule from '@/composants/layout/TLayoutModule.vue';
 import { useQuittanceStore } from '@/services/quittances/quittance/quittance.store';
 import { computed, ref } from 'vue'
 import TFicheQuittance from './fiche/ TFicheQuittance.vue';
-import TFichePolice from '@/web/polices/police/ TFichePolice.vue';
 import TTab from '@/composants/tab/TTab.vue';
 import TTabItem from '@/composants/tab/TTabItem.vue';
 import Bordereaux from '@/web/flux-financier/bordereau/Bordereaux.vue';
 import TTabPanel from '@/composants/tab/TTabPanel.vue';
-import QuittancePlacements from '../quittance-placement/QuittancePlacements.vue';
 import EcheancesPmd from '@/web/flux-financier/echeance-pmd/EcheancesPmd.vue';
 import Comptes from '@/web/flux-financier/comptes/compte/Comptes.vue';
 import QuittanceJsonNode from '@/web/quittances/quittance/QuittanceJsonNode.vue';
 import QuittanceInfoPolice from './fiche/QuittanceInfoPolice.vue';
+import TFicheListeSecurite from '../quittance-placement/fiche/ TFicheListeSecurite.vue';
+import TFicheListeTranche from '../quittance-tranche/fiche/ TFicheListeTranche.vue';
 
 
 
@@ -52,6 +52,7 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
                             <TTabItem value="accueil"      label="Accueil"    />
                             <TTabItem value="bordereau"    label="Bordereau"  v-if="isFacultative"/>
                             <TTabItem value="placement"    label="Sécurité" />
+                            <TTabItem value="tranche"      label="Tranche" />
                         
                             <TTabItem value="echeancePmd"  label="Echeance Pmd" v-if="!isProportionnelle" />
                             <TTabItem value="compte"       label="Compte"      v-if="!isFacultative"  />
@@ -74,8 +75,11 @@ console.log(' isProportionnelle : ',isProportionnelle.value)
                                                     <Comptes/>
                                             </TTabPanel>  
                                             <TTabPanel value="placement">
-                                                <QuittancePlacements />
-                                            </TTabPanel>       
+                                                <TFicheListeSecurite />
+                                            </TTabPanel> 
+                                            <TTabPanel value="tranche">
+                                                <TFicheListeTranche />
+                                            </TTabPanel>      
                                             <TTabPanel value="sinistre">
                                                 
                                             </TTabPanel>        

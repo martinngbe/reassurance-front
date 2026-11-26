@@ -48,17 +48,17 @@ const actualiseQuittancePlacement=()=>{
 <template>
   <TLayoutModule
     :show-bottom="false"
-    leftSize="30%"
+    :show-left="false"
     :show-top="false"
     >    
-        <template #left>
+        <!--template #left>
                 <TLayoutModule
                 :show-bottom="false"
                 topSize="50%"
                 :show-left="false"
                 >
                     <template  #header>
-                              <TFicheQuittancePlacement  v-if="currentQuittance && !isPatientez"/>           
+                              <TFicheQuittancePlacement  v-if="currentQuittance && !( isPatientez || isExecuteCessionLegale)"/>           
                               <TPatientez v-else-if="isPatientez"/> 
                               <div v-else class="flex w-full  p-4 h-full items-center justify-center">                 
                                       <TAlert variant="info">
@@ -73,7 +73,7 @@ const actualiseQuittancePlacement=()=>{
                 </TLayoutModule>
 
 
-        </template>
+        </template-->
         <template #default>
               <TPatientez v-if="isExecuteCessionLegale"/>
               <QuittancePlacements @form-success="actualiseFiche" v-else/>

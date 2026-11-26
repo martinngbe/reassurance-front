@@ -29,18 +29,27 @@ import type { MenuItem } from '@/composants/menu-contextuel/contextMenu.ts'
 import { useContextMenu } from '@/composants/menu-contextuel/useContextMenu.ts'
 import TQuittancePlacement from '../quittance-placement/TQuittancePlacement.vue'
 import { useQuittancePlacementStore } from '@/services/quittances/quittance-placement/quittance-placement.store.ts'
+import { useQuittanceTrancheStore } from '@/services/quittances/quittance-tranche/quittance-tranche.store.ts'
+import TQuittanceTranche from '../quittance-tranche/TQuittanceTranche.vue'
+import { quittanceApi } from '@/services/quittances/quittance/quittance.api.ts'
+import TPdfViewer from '@/composants/display/TPdfViewer.vue'
 
 const titreFenetre = ref('QUITTANCES')
-const { success, info } = useToast()
+const { success, info ,error } = useToast()
 const ecranStore = useEcransStore()
 const policeStore = usePoliceStore()
 const quittanceStore = useQuittanceStore()
 const quittancePlacementStore = useQuittancePlacementStore()
+const quittanceTrancheStore = useQuittanceTrancheStore()
 
 const currentPolice = policeStore.currentPolice
 const natureOffre = currentPolice?.natureOffre
 const quittanceSelected = ref<QuittanceRow | null>(null)
-
+//  ==================== ⭐ ÉTAT POUR LE PDF ====================
+const showPdfModal = ref(false)
+const pdfBlob = ref<Blob | null>(null)
+const isPdfLoading = ref(false)
+const pdfFilename = ref('')
 // ==================== ÉTAT LOCAL ====================
 const tableDensity = ref<'sm' | 'md' | 'lg'>('lg')
 const tableSearch = ref('')
@@ -49,6 +58,7 @@ const showModalFicheQuittance = ref(false)
 const showModalModification = ref(false)
 const showModaleVueSynotique = ref(false)
 const showModalSecurite = ref(false)
+const showModalTranche = ref(false)
 
 const policeId = currentPolice?.id ?? null
 
@@ -170,7 +180,58 @@ const handleModifier = () => {
 
 const handleActualiser = () => { quittances.refresh() }
 const isModifierQuittance = ref(true)
+// //////////////////////////////////////////
+// IMPRESSION 
+// //////////////////////////////////////////
 
+// ⭐ FONCTIONS POUR L'IMPRESSION
+const handlePrintOne = async () => {
+  if (selectedQuittances.value.length === 0) {
+    info('Veuillez sélectionner une quittance à imprimer', 'Info')
+    return
+  }
+  
+  // lecture de la quittance sélectionnée
+  const quittanceId = Number(selectedQuittances.value[0])
+  const quittance = quittanceRows.value.find((u: any) => u.id === quittanceId)
+   showPdfModal.value = true
+  isPdfLoading.value = true
+  pdfFilename.value = `Quittance-${quittance?.numero}.pdf`
+ 
+  pdfBlob.value = null
+  console.warn('QUITTANCES.VUES')
+  try {
+    pdfBlob.value = await quittanceApi.printOne(quittanceId)
+   
+    console.log('pdfBlob.value:',pdfBlob.value)
+  } catch (err: any) {
+    error('Erreur lors de la génération du PDF', 'Erreur')
+    showPdfModal.value = false
+  } finally {
+    isPdfLoading.value = false
+  }
+}
+
+// const handlePrintList = async () => {
+//   isPdfLoading.value = true
+//   pdfFilename.value = 'Liste-Acteurs.pdf'
+//   showPdfModal.value = true
+//   pdfBlob.value = null
+
+//   try {
+//     // On réutilise les paramètres de recherche et tri actuels
+//     const currentParams = { ...params.value }
+//     delete currentParams.page
+//     delete currentParams.limit
+
+//     pdfBlob.value = await acteurApi.printList(currentParams as any)
+//   } catch (err: any) {
+//     error('Erreur lors de la génération de la liste PDF', 'Erreur')
+//     showPdfModal.value = false
+//   } finally {
+//     isPdfLoading.value = false
+//   }
+// }
 
 // //////////////////////////////////////////
 // MENU CONTEXTUEL 
@@ -202,19 +263,34 @@ const getQuittanceMenu = (row: Quittance): MenuItem[] => [
     shortcut: 'Entrée',
     action: () => showModaleVueSynotique.value=true
   },
- {
+  {
     label: 'Modifier',
-    shortcut: 'F2',
+   // shortcut: 'F2',
     disabled:  false,
     action: () => showModalModification.value=true
   },
+  {
+    label: 'Imprimer',
+   // shortcut: 'F2',
+   // disabled:  false,
+    action: () => handlePrintOne()
+  },
+  
   { type: 'separator' },
   {
     label: 'Sécurité',
-    shortcut: 'Ctrl+S',
+    //shortcut: 'Ctrl+S',
     action: () => {
       quittancePlacementStore.clearSelection()
       showModalSecurite.value=true;
+    }
+  },
+  {
+    label: 'Tranche',
+    //shortcut: 'Ctrl+S',
+    action: () => {
+      quittanceTrancheStore.clearSelection()
+      showModalTranche.value=true;
     }
   },
   /*{
@@ -252,49 +328,6 @@ const getTableMenu = (): MenuItem[] => [
     //action: () => exporterExcel()
   }
 ]
-// const openMenu = (event: MouseEvent): void => {
-//   const menuItems: MenuItem[] = [
-//     { 
-//       icon: '👁️', 
-//       label: 'Vue synoptique', 
-//       action: () => showModaleVueSynotique.value=true 
-//     },
-//     { 
-//       icon: '🖨️', 
-//       label: 'Imprimer', 
-//       shortcut: 'Ctrl+P',
-//       action: () => console.log('Imprimer') 
-//     },
-//     { type: 'separator' },
-//     { 
-//       icon: '📧', 
-//       label: 'Sécurité', 
-//       action: () => showModalSecurite.value=true 
-//     },
-//     // { type: 'separator' },
-//     // { 
-//     //   icon: '📧', 
-//     //   label: 'Envoyer par email', 
-//     //   action: () => console.log('Email', quittance.id) 
-//     // },
-//     // { 
-//     //   icon: '📥', 
-//     //   label: 'Télécharger PDF', 
-//     //   action: () => console.log('PDF', quittance.id) 
-//     // },
-//     // { type: 'separator' },
-//     // { 
-//     //   icon: '🗑️', 
-//     //   label: 'Annuler la quittance', 
-//     //   danger: true,
-//     //   disabled: quittance.statut === 'ANNULÉE',
-//     //   action: () => console.log('Annuler', quittance.id) 
-//     // },
-
-//   ];  
-//   open(event, menuItems);
-// };
-// ==================== DEBOUNCE RECHERCHE ====================
 let searchTimeout: number | undefined
 watch(tableSearch, () => {
   window.clearTimeout(searchTimeout)
@@ -404,11 +437,11 @@ watch(tableSearch, () => {
     <template #cell-taxeSurCommission="{ value }"><TDisplayNumber :value="value" /></template> 
     <template #cell-taxeSurCommissionFixe="{ value }"><TDisplayNumber :value="value" /></template>
   </TTable>
-
+ <!-- ⭐ MODALE D'AFFICHAGE FICHE -->
   <TModal v-model="showModalFicheQuittance" width="50%">
     <template #default><TFicheQuittance /></template>
   </TModal>
-
+ <!-- ⭐ MODALE D'AFFICHAGE SYNOPTIQUE -->
   <TModal v-model="showModaleVueSynotique" width="95%" height="95%">
     <template #header><p>Vue synoptique de la quittance N° 1236652244</p></template>
     <template #default><TQuittanceVueSynoptique/></template>
@@ -419,6 +452,7 @@ watch(tableSearch, () => {
     </template>
   </TModal>
 
+  <!-- ⭐ MODALE D'AFFICHAGE PLACEMENT (SECURITE) -->
   <TModal v-model="showModalModification" :title="titleModal" width="60%" height="75%">
     <TQuittanceForm :loading="updateQuittance.isPending.value" @success="onFormSuccess" @cancel="closeModal" />
   </TModal>
@@ -429,5 +463,42 @@ watch(tableSearch, () => {
         <TButton variant="solid" width="xl" @click="showModalSecurite=false">Fermer</TButton>
       </div>
     </template>    
-  </TModal>  
+  </TModal>
+
+   <!-- ⭐ MODALE D'AFFICHAGE TRANCHE -->
+  <TModal v-model="showModalTranche" title="Tranche" width="90%" height="85%"> 
+      
+    <template #default><TQuittanceTranche/></template>
+    <template #footer>
+      <div class="flex justify-between">
+        <TButton variant="solid" width="xl" @click="showModalTranche=false">Fermer</TButton>
+      </div>
+    </template>    
+  </TModal>
+
+    <!-- ⭐ MODALE D'AFFICHAGE PDF -->
+    <TModal
+      v-model="showPdfModal"
+      :title="`Aperçu : ${pdfFilename}`"
+      width="95%"
+      height="95%"
+    >
+      <template #default>
+        <div v-if="isPdfLoading" class="flex justify-center items-center h-64">
+          <span class="text-neutral-500 animate-pulse">Génération du PDF en cours...</span>
+        </div>
+        <TPdfViewer v-else :blob="pdfBlob" :filename="pdfFilename" />
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <TButton 
+            variant="soft"
+            @click="showPdfModal = false" 
+            class="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-800"
+          >
+            Fermer
+          </TButton>
+        </div>
+      </template>
+    </TModal>
 </template>
